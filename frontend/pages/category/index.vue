@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
-import { customerSchema, customerForm } from "@/models/customer";
+import { categorySchema } from "@/models/category";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
-import { ref } from "vue";
 
 const data = ref([
   {
@@ -60,8 +59,9 @@ const columns = ref([
 ]);
 
 const showAdd = ref(false);
-const formSchema = toTypedSchema(customerForm);
+const formSchema = toTypedSchema(categorySchema);
 const form = useForm({
+  validationSchema: formSchema,
   initialValues: {
     name: "",
     address: "",
@@ -73,7 +73,6 @@ const form = useForm({
     country: "",
     balance: 0,
   },
-
 });
 const generateId = () => "CUST" + Math.floor(1000 + Math.random() * 9000);
 
@@ -99,7 +98,7 @@ const onSubmit = form.handleSubmit((values) => {
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <div class="flex justify-between">
-        <h2 class="text-2xl font-bold tracking-tight">Customer List</h2>
+        <h2 class="text-2xl font-bold tracking-tight">Category List</h2>
       </div>
       <Button @click="() => (showAdd = true)"> Add </Button>
     </div>
@@ -112,22 +111,11 @@ const onSubmit = form.handleSubmit((values) => {
           </DialogDescription>
         </DialogHeader>
         <AutoForm
-          class="grid grid-cols-2 gap-4"
+          class="grid grid-cols-2"
           :form="form"
-          :schema="customerForm"
+          :schema="customerSchema"
           @submit="onSubmit"
         >
-          <template #customAutoForm="{ shapes }">
-            <div
-              v-for="(shape, key) in shapes"
-              :key="key"
-              class="flex flex-col"
-            >
-              <label class="block text-sm font-medium mb-1">{{ key }}</label>
-              <AutoFormField :field-name="key.toString()" :shape="shape" />
-            </div>
-          </template>
-
           <div class="col-span-2 flex justify-center items-center mt-4">
             <Button type="submit"> Send now </Button>
           </div>
