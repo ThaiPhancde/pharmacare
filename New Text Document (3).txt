@@ -1,0 +1,11 @@
+Góc phải trên cùng lấy info với thông báo bỏ qua cái bên trái ngoài cùng
+Menu lấy từ dashboard đến stock
+Customer lấy 1 2
+Bỏ supplier
+medi lấy hết trừ leaf
+purchase lâys cả
+Invoice lấy 1 3
+Return lấy 1 2
+Stock lấy 1 3
+Search lấy 1 2
+Bank làm kiểu 1 cái save thông tin là được k cần list ra
