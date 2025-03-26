@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
-import { customerSchema, customerForm } from "@/models/customer";
+import { data, form } from "@/models/customer";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
@@ -64,8 +64,8 @@ const columns = ref([
 
 // Form handle
 const showAdd = ref(false);
-const formSchema = toTypedSchema(customerForm);
-const form = useForm({
+const formSchema = toTypedSchema(form);
+const formValue = useForm({
   initialValues: {
     name: "",
     address: "",
@@ -80,7 +80,7 @@ const form = useForm({
 });
 const generateId = () => "CUST" + Math.floor(1000 + Math.random() * 9000);
 
-const onSubmit = form.handleSubmit((values) => {
+const onSubmit = formValue.handleSubmit((values) => {
   const newCustomer = {
     id: generateId(),
     name: values.name,
@@ -116,8 +116,8 @@ const onSubmit = form.handleSubmit((values) => {
         </DialogHeader>
         <AutoForm
           class="grid grid-cols-2 gap-4"
-          :form="form"
-          :schema="customerForm"
+          :form="formValue"
+          :schema="form"
           @submit="onSubmit"
         >
           <template #customAutoForm="{ shapes }">
