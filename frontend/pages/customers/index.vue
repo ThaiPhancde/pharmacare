@@ -6,7 +6,7 @@ import { useForm } from "vee-validate";
 import { ref } from "vue";
 
 // Data
-const data = ref([
+const dataTable = ref([
   {
     id: "CUST001",
     name: "Alice Johnson",
@@ -66,6 +66,7 @@ const columns = ref([
 const showAdd = ref(false);
 const formSchema = toTypedSchema(form);
 const formValue = useForm({
+  validationSchema: formSchema,
   initialValues: {
     name: "",
     address: "",
@@ -93,7 +94,7 @@ const onSubmit = formValue.handleSubmit((values) => {
     country: values.country ?? "",
     balance: values.balance ?? 0, // ✅ Số không undefined
   };
-  data.value = [...data.value, newCustomer]; // ✅ Đảm bảo Vue phản ứng
+  dataTable.value = [...dataTable.value, newCustomer]; // ✅ Đảm bảo Vue phản ứng
   showAdd.value = false;
 });
 </script>
@@ -106,7 +107,7 @@ const onSubmit = formValue.handleSubmit((values) => {
       </div>
       <Button @click="() => (showAdd = true)"> Add </Button>
     </div>
-    <DataTable :data :columns />
+    <DataTable :data="dataTable" :columns />
     <Dialog v-model:open="showAdd">
       <DialogContent>
         <DialogHeader>
