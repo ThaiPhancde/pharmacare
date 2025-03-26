@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
-import { data, form } from "@/models/customer";
+import { form } from "@/models/customer";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
@@ -140,5 +140,3 @@ const onSubmit = formValue.handleSubmit((values) => {
     </Dialog>
   </div>
 </template>
-
-<style scoped></style>

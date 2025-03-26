@@ -24,9 +24,11 @@ import DataTableToolbar from "./Toolbar.vue";
 interface DataTableProps<T = any> {
   columns: ColumnDef<T>[];
   data: T[];
+  filterKey: string;
 }
-const props = defineProps<DataTableProps>();
-
+const props = withDefaults(defineProps<DataTableProps>(), {
+  filterKey: "name",
+});
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
@@ -69,7 +71,7 @@ const table = useVueTable({
 
 <template>
   <div class="space-y-4 w-full">
-    <DataTableToolbar :table="table" filterKey="name" placeholder="Search customer by name..." />
+    <DataTableToolbar :table="table" :filterKey placeholder="Search customer by name..." />
     <div class="border rounded-md">
       <Table>
         <TableHeader>
