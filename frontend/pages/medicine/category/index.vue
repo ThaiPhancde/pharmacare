@@ -1,93 +1,78 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
-import { categorySchema } from "@/models/category";
+import { category, form } from "@/models/category";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
+
+const statuses = [
+  {
+    value: true,
+    label: "Active",
+    icon: "check-circle",
+  },
+  {
+    value: false,
+    label: "Inactive",
+    icon: "check-circle",
+  },
+];
 
 const data = ref([
   {
     id: "CUST001",
     name: "Alice Johnson",
-    address: "456 Elm St",
-    phone: "+11234567890",
-    mail: "alice.johnson@example.com",
-    city: "Los Angeles",
-    state: "CA",
-    zip: "90001",
-    country: "USA",
-    balance: 200.5,
+    status: true,
   },
   {
     id: "CUST002",
     name: "Bob Smith",
-    address: "789 Oak St",
-    phone: "+19876543210",
-    mail: "bob.smith@example.com",
-    city: "Chicago",
-    state: "IL",
-    zip: "60601",
-    country: "USA",
-    balance: 320.75,
+    status: false,
   },
   {
     id: "CUST003",
     name: "Charlie Brown",
-    address: "101 Maple St",
-    phone: "+12125551234",
-    mail: "charlie.brown@example.com",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    country: "USA",
-    balance: 150.0,
+    status: true,
   },
 ]);
 
 const columns = ref([
   { accessorKey: "id", header: "ID" },
   { accessorKey: "name", header: "Name" },
-  { accessorKey: "mail", header: "Email" },
-  { accessorKey: "phone", header: "Phone" },
-  { accessorKey: "city", header: "City" },
   {
-    accessorKey: "balance",
-    header: "Balance ($)",
-    cell: (row: any) => {
-      return `$${row?.row?.original?.balance?.toFixed(2)}`;
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = statuses.find(
+        (status) => status.value === row.getValue("status")
+      );
+
+      if (!status) return null;
+
+      return h("div", { class: "flex items-center" }, [
+        // status.icon &&
+        // h(status.icon, { class: "mr-2 h-4 w-4 text-muted-foreground" }),
+        h("span", status.label),
+      ]);
     },
   },
 ]);
 
 const showAdd = ref(false);
-const formSchema = toTypedSchema(categorySchema);
-const form = useForm({
+const formSchema = toTypedSchema(category);
+const formValue = useForm({
   validationSchema: formSchema,
   initialValues: {
     name: "",
-    address: "",
-    phone: "",
-    mail: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "",
-    balance: 0,
+    description: "",
   },
 });
 const generateId = () => "CUST" + Math.floor(1000 + Math.random() * 9000);
 
-const onSubmit = form.handleSubmit((values) => {
+const onSubmit = formValue.handleSubmit((values) => {
   const newCustomer = {
     id: generateId(),
     name: values.name,
-    address: values.address ?? "", // ✅ Đảm bảo string không undefined
-    phone: values.phone ?? "",
-    mail: values.mail ?? "",
-    city: values.city ?? "",
-    state: values.state ?? "",
-    zip: values.zip ?? "",
-    country: values.country ?? "",
-    balance: values.balance ?? 0, // ✅ Số không undefined
+    description: values.description,
   };
   data.value = [...data.value, newCustomer]; // ✅ Đảm bảo Vue phản ứng
   showAdd.value = false;
@@ -110,10 +95,9 @@ const onSubmit = form.handleSubmit((values) => {
           <DialogDescription class="text-xs text-muted-foreground">
           </DialogDescription>
         </DialogHeader>
-        <AutoForm
-          class="grid grid-cols-2"
-          :form="form"
-          :schema="customerSchema"
+        <AutoForm class="flex flex-col gap-2"
+          :form="formValue"
+          :schema="form"
           @submit="onSubmit"
         >
           <div class="col-span-2 flex justify-center items-center mt-4">

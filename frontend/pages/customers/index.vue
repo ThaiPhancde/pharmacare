@@ -5,6 +5,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
 import { ref } from "vue";
 
+// Data
 const data = ref([
   {
     id: "CUST001",
@@ -44,6 +45,7 @@ const data = ref([
   },
 ]);
 
+// Column table
 const columns = ref([
   { accessorKey: "id", header: "ID" },
   { accessorKey: "name", header: "Name" },
@@ -59,6 +61,8 @@ const columns = ref([
   },
 ]);
 
+
+// Form handle
 const showAdd = ref(false);
 const formSchema = toTypedSchema(customerForm);
 const form = useForm({
@@ -73,7 +77,6 @@ const form = useForm({
     country: "",
     balance: 0,
   },
-
 });
 const generateId = () => "CUST" + Math.floor(1000 + Math.random() * 9000);
 

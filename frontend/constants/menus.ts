@@ -20,15 +20,15 @@ export const navMenu: NavMenu[] = [
         children: [
           {
             title: 'Category',
-            link: '/category',
+            link: '/medicine/category',
           },
           {
             title: 'Unit',
-            link: '/unit',
+            link: '/medicine/unit',
           },
           {
             title: 'Type',
-            link: '/type',
+            link: '/medicine/type',
           },
           {
             title: 'Medicine',

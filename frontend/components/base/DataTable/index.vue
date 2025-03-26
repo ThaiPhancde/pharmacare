@@ -68,7 +68,7 @@ const table = useVueTable({
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 w-full">
     <DataTableToolbar :table="table" filterKey="name" placeholder="Search customer by name..." />
     <div class="border rounded-md">
       <Table>
