@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+// @ts-ignore
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
@@ -7,7 +8,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // @ts-ignore
     mongoUri: process.env.MONGO_URI,
+    // @ts-ignore
     jwtSecret: process.env.JWT_SECRET,
   },
 
