@@ -2,6 +2,10 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
+  nitro: {
+    preset: 'vercel'
+  },
+
   runtimeConfig: {
     mongoUri: process.env.MONGO_URI,
     jwtSecret: process.env.JWT_SECRET,
