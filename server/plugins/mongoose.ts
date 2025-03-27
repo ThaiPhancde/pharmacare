@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export default defineNitroPlugin((nitroApp) => {
-  const config = useRuntimeConfig();
+  const config = useRuntimeConfig()
   const mongoUri = config.mongoUri || process.env.MONGO_URI;
   
   if (!mongoUri) {
