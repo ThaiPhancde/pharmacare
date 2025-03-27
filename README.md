@@ -1,11 +1,19 @@
 ![nuxt-shadcn-dashboard-social-card](https://nuxt-shadcn-dashboard.vercel.app/social-card.png)
 
-# Nuxt Shadcn UnoCSS - Dashboard
+# PharmaCare
 
 [![built with nuxt][nuxt-src]][nuxt-href]
 
-- [Live demo](https://nuxt-shadcn-dashboard.vercel.app)
+- [Live demo](https://pharmacare-sigma.vercel.app)
 - [Component Documentation](https://shadcn-vue.com/docs/introduction)
+
+## MongoDB Atlas Integration
+
+Dự án này đã tích hợp MongoDB Atlas cho cơ sở dữ liệu cloud.
+
+- Tự động kết nối với MongoDB Atlas
+- Xác thực bảo mật qua JWT
+- Cập nhật lúc: ngày 15/11/2024
 
 ## Quick Start
 
