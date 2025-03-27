@@ -12,8 +12,7 @@ Dự án được tổ chức thành các phần chính:
   - **models/**: Tương tác với cơ sở dữ liệu
   - **routes/**: Định nghĩa API endpoints
   - **scripts/**: Script khởi tạo cơ sở dữ liệu
-
-Phần frontend sẽ được phát triển riêng biệt.
+- **frontend/**: Chứa mã nguồn phía frontend (Nuxt.js, Vue.js, Tailwind CSS)
 
 ## Chức năng
 
@@ -29,4 +28,52 @@ Hệ thống PharmaCare bao gồm các chức năng:
 
 ## Cài đặt
 
-Xem hướng dẫn chi tiết trong thư mục `backend/`. 
+### Backend
+
+Xem hướng dẫn chi tiết trong thư mục `backend/`.
+
+### Frontend
+
+```bash
+# Di chuyển đến thư mục frontend
+cd frontend
+
+# Cài đặt dependencies
+yarn install
+
+# Khởi chạy môi trường development
+yarn dev
+
+# Build cho production
+yarn build
+```
+
+## Deploy lên Vercel
+
+Dự án đã được cấu hình sẵn để deploy lên Vercel.
+
+### Sử dụng Docker
+
+```bash
+# Build Docker image
+docker build -t pharmacare .
+
+# Chạy Docker container
+docker run -p 3000:3000 pharmacare
+```
+
+### Deploy trực tiếp lên Vercel
+
+1. Push code lên GitHub
+2. Kết nối repository với Vercel
+3. Vercel sẽ tự động phát hiện cấu hình trong file `vercel.json` và thiết lập build
+
+Hoặc sử dụng Vercel CLI:
+
+```bash
+# Cài đặt Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+``` 
