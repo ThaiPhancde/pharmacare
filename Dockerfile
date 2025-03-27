@@ -4,13 +4,13 @@ FROM node:20-alpine as build-stage
 WORKDIR /app
 
 # Sao chép các file cấu hình package
-COPY frontend/package.json frontend/yarn.lock ./
+COPY package.json yarn.lock ./
 
 # Cài đặt dependencies
 RUN yarn install --frozen-lockfile
 
-# Sao chép toàn bộ source code frontend
-COPY frontend/ ./
+# Sao chép toàn bộ source code
+COPY . .
 
 # Build ứng dụng
 RUN yarn build

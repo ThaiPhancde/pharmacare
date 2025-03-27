@@ -1,79 +1,67 @@
-# PharmaCare
+![nuxt-shadcn-dashboard-social-card](https://nuxt-shadcn-dashboard.vercel.app/social-card.png)
 
-Hệ thống quản lý hiệu thuốc hiện đại với Node.js và MySQL.
+# Nuxt Shadcn UnoCSS - Dashboard
 
-## Cấu trúc dự án
+[![built with nuxt][nuxt-src]][nuxt-href]
 
-Dự án được tổ chức thành các phần chính:
+- [Live demo](https://nuxt-shadcn-dashboard.vercel.app)
+- [Component Documentation](https://shadcn-vue.com/docs/introduction)
 
-- **backend/**: Chứa tất cả mã nguồn phía backend
-  - **config/**: Cấu hình cơ sở dữ liệu và ứng dụng
-  - **controllers/**: Xử lý logic nghiệp vụ
-  - **models/**: Tương tác với cơ sở dữ liệu
-  - **routes/**: Định nghĩa API endpoints
-  - **scripts/**: Script khởi tạo cơ sở dữ liệu
-- **frontend/**: Chứa mã nguồn phía frontend (Nuxt.js, Vue.js, Tailwind CSS)
+## Quick Start
 
-## Chức năng
-
-Hệ thống PharmaCare bao gồm các chức năng:
-
-1. Quản lý khách hàng
-2. Quản lý thuốc
-3. Quản lý hóa đơn 
-4. Quản lý kho
-5. Quản lý đơn hàng và trả hàng
-6. Quản lý tài khoản ngân hàng
-7. Dashboard hiển thị thông tin tổng quan
-
-## Cài đặt
-
-### Backend
-
-Xem hướng dẫn chi tiết trong thư mục `backend/`.
-
-### Frontend
-
-```bash
-# Di chuyển đến thư mục frontend
-cd frontend
-
-# Cài đặt dependencies
-yarn install
-
-# Khởi chạy môi trường development
-yarn dev
-
-# Build cho production
-yarn build
+```bash [Terminal]
+npx degit dianprata/nuxt-shadcn-dashboard my-dashboard-app
+cd my-dashboard-app
+pnpm i # If you don't have pnpm installed, run: npm install -g pnpm
 ```
 
 ## Deploy lên Vercel
 
-Dự án đã được cấu hình sẵn để deploy lên Vercel.
+Dự án này đã có sẵn cấu hình để deploy lên Vercel.
 
 ### Sử dụng Docker
 
-```bash
+Nếu bạn muốn sử dụng Docker:
+
+```bash [Terminal]
 # Build Docker image
-docker build -t pharmacare .
+docker build -t pharmacare-frontend ./frontend
 
 # Chạy Docker container
-docker run -p 3000:3000 pharmacare
+docker run -p 3000:3000 pharmacare-frontend
 ```
 
 ### Deploy trực tiếp lên Vercel
 
 1. Push code lên GitHub
 2. Kết nối repository với Vercel
-3. Vercel sẽ tự động phát hiện cấu hình trong file `vercel.json` và thiết lập build
+3. Vercel sẽ tự động phát hiện dự án Nuxt và thiết lập cấu hình build
 
 Hoặc sử dụng Vercel CLI:
 
-```bash
+```bash [Terminal]
 # Cài đặt Vercel CLI
 npm i -g vercel
 
 # Deploy
 vercel
-``` 
+```
+
+## Contributing
+
+1. Clone this repository.
+2. Install dependencies `pnpm install`.
+3. Use `pnpm run dev` to start dev server.
+
+## Credits
+
+- [Nuxt.js](https://nuxtjs.org/)
+- [Shadcn Vue](https://shadcn-vue.com/)
+- [UnoCSS](https://unocss.com/)
+
+## License
+
+MIT
+
+[nuxt-src]: https://img.shields.io/badge/Built%20With%20Nuxt-18181B?logo=nuxt.js
+[nuxt-href]: https://nuxt.com/
