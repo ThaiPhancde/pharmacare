@@ -2,6 +2,11 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
+  runtimeConfig: {
+    mongoUri: process.env.MONGO_URI,
+    jwtSecret: process.env.JWT_SECRET,
+  },
+
   modules: [
     "@unocss/nuxt",
     "shadcn-nuxt",
