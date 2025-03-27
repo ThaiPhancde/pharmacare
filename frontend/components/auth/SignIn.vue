@@ -1,24 +1,40 @@
 <script setup lang="ts">
 import { Loader2 } from "lucide-vue-next";
-import PasswordInput from "~/components/PasswordInput.vue";
-
-const email = ref("demo@gmail.com");
-const password = ref("password");
+import PasswordInput from "@/components/PasswordInput.vue";
+import { useToast } from "@/components/ui/toast";
+const email = ref("admin");
+const password = ref("admin");
 const isLoading = ref(false);
 
-function onSubmit(event: Event) {
+const cookie = useCookie("userAuth");
+const { toast } = useToast();
+const onSubmit = async (event: Event) => {
   event.preventDefault();
   if (!email.value || !password.value) return;
 
   isLoading.value = true;
 
-  setTimeout(() => {
-    if (email.value === "demo@gmail.com" && password.value === "password")
-      navigateTo("/");
+  try {
+    const response = await api.post<string>("/api/auth/login", {
+      email: email.value,
+      password: password.value,
+    });
 
+    if (response.data) {
+      cookie.value = response.data;
+      toast({
+        title: "Login success",
+      });
+      setTimeout(() => navigateTo("/"), 3000);
+    }
+  } catch (error) {
+    toast({
+      title: "Login failed. Try again later",
+    });
+  } finally {
     isLoading.value = false;
-  }, 3000);
-}
+  }
+};
 </script>
 
 <template>
@@ -28,7 +44,6 @@ function onSubmit(event: Event) {
       <Input
         id="email"
         v-model="email"
-        type="email"
         placeholder="name@example.com"
         :disabled="isLoading"
         auto-capitalize="none"

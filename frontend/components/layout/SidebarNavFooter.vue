@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSidebar } from '~/components/ui/sidebar'
+import { useSidebar } from '@/components/ui/sidebar'
 
 defineProps<{
   user: {
@@ -10,10 +10,6 @@ defineProps<{
 }>()
 
 const { isMobile, setOpenMobile } = useSidebar()
-
-function handleLogout() {
-  navigateTo('/login')
-}
 
 const showModalTheme = ref(false)
 </script>
@@ -95,7 +91,7 @@ const showModalTheme = ref(false)
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem @click="handleLogout">
+          <DropdownMenuItem @click="logout">
             <Icon name="i-lucide-log-out" />
             Log out
           </DropdownMenuItem>

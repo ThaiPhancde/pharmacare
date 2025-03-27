@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '@/server/models/User';
+import { IResponse } from '@/utils/api';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email: string; password: string }>(event);
@@ -10,5 +11,5 @@ export default defineEventHandler(async (event) => {
   }
   
   const token = jwt.sign({ id: user.id.toString() }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
-  return { token };
+  return { data: token, status: true, message: "Login success" } as IResponse<string>;
 });

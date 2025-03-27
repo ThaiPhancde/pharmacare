@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import DataTable from "@/components/base/DataTable/index.vue";
 import { form } from "@/models/medicine";
 import { toTypedSchema } from "@vee-validate/zod";

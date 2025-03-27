@@ -128,7 +128,7 @@ watch(
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem @click="handleLogout">
+            <DropdownMenuItem @click="logout">
               <Icon name="i-lucide-log-out" />
               Log out
             </DropdownMenuItem>

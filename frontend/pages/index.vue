@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import NumberFlow from '@number-flow/vue'
-import { Users, BriefcaseMedical, Archive, TestTubeDiagonal } from 'lucide-vue-next'
+import NumberFlow from "@number-flow/vue";
+import {
+  Users,
+  BriefcaseMedical,
+  Archive,
+  TestTubeDiagonal,
+} from "lucide-vue-next";
+import { useToast } from "@/components/ui/toast/use-toast";
 
 const dataCard = ref({
   totalCustomer: 0,
@@ -11,36 +17,37 @@ const dataCard = ref({
   salesDesc: 0,
   expiredMedicine: 0,
   expiredMedicineDesc: 0,
-})
+});
 
 const dataRecentSales = [
   {
-    name: 'Olivia Martin',
-    email: 'olivia.martin@email.com',
+    name: "Olivia Martin",
+    email: "olivia.martin@email.com",
     amount: 1999,
   },
   {
-    name: 'Jackson Lee',
-    email: 'jackson.lee@email.com',
+    name: "Jackson Lee",
+    email: "jackson.lee@email.com",
     amount: 39,
   },
   {
-    name: 'Isabella Nguyen',
-    email: 'isabella.nguyen@email.com',
+    name: "Isabella Nguyen",
+    email: "isabella.nguyen@email.com",
     amount: 299,
   },
   {
-    name: 'William Kim',
-    email: 'will@email.com',
+    name: "William Kim",
+    email: "will@email.com",
     amount: 99,
   },
   {
-    name: 'Sofia Davis',
-    email: 'sofia.davis@email.com',
+    name: "Sofia Davis",
+    email: "sofia.davis@email.com",
     amount: 39,
   },
-]
+];
 
+const { toast } = useToast();
 onMounted(() => {
   dataCard.value = {
     totalCustomer: 150,
@@ -51,25 +58,34 @@ onMounted(() => {
     salesDesc: 45 / 100,
     expiredMedicine: 20,
     expiredMedicineDesc: 10,
-  }
-})
+  };
+});
 </script>
 
 <template>
   <div class="w-full flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h2 class="text-2xl font-bold tracking-tight">
-        Dashboard
-      </h2>
+      <h2 class="text-2xl font-bold tracking-tight">Dashboard</h2>
       <div class="flex items-center space-x-2">
         <BaseDateRangePicker />
-        <Button>Download</Button>
+        <Button
+          @click="
+            () =>
+              toast({
+                title: 'Scheduled: Catch up',
+                description: 'Friday, February 10, 2023 at 5:57 PM',
+              })
+          "
+          >Download</Button
+        >
       </div>
     </div>
     <main class="flex flex-1 flex-col gap-4 md:gap-8">
       <div class="grid gap-4 lg:grid-cols-4 md:grid-cols-2 md:gap-8">
         <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader
+            class="flex flex-row items-center justify-between pb-2 space-y-0"
+          >
             <CardTitle class="text-primary text-sm font-medium">
               Total Customer
             </CardTitle>
@@ -77,9 +93,7 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.totalCustomer"
-              />
+              <NumberFlow :value="dataCard.totalCustomer" />
             </div>
             <p class="text-xs text-muted-foreground">
               <NumberFlow
@@ -92,7 +106,9 @@ onMounted(() => {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader
+            class="flex flex-row items-center justify-between pb-2 space-y-0"
+          >
             <CardTitle class="text-green-500 text-sm font-medium">
               Total Medicine
             </CardTitle>
@@ -100,22 +116,22 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.totalMedicine"
-                prefix="+"
-              />
+              <NumberFlow :value="dataCard.totalMedicine" prefix="+" />
             </div>
             <p class="text-xs text-muted-foreground">
               <NumberFlow
                 :value="dataCard.totalMedicineDesc"
                 prefix="+"
                 :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              /> from last month
+              />
+              from last month
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader
+            class="flex flex-row items-center justify-between pb-2 space-y-0"
+          >
             <CardTitle class="text-red-500 text-sm font-medium">
               Out of Stock
             </CardTitle>
@@ -123,22 +139,22 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.sales"
-                prefix="+"
-              />
+              <NumberFlow :value="dataCard.sales" prefix="+" />
             </div>
             <p class="text-xs text-muted-foreground">
               <NumberFlow
                 :value="dataCard.salesDesc"
                 prefix="+"
                 :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              /> from last month
+              />
+              from last month
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardHeader
+            class="flex flex-row items-center justify-between pb-2 space-y-0"
+          >
             <CardTitle class="text-orange-500 text-sm font-medium">
               Expired Medicine
             </CardTitle>
@@ -146,16 +162,11 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.expiredMedicine"
-                prefix="+"
-              />
+              <NumberFlow :value="dataCard.expiredMedicine" prefix="+" />
             </div>
             <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.expiredMedicineDesc"
-                prefix="-"
-              /> since last week
+              <NumberFlow :value="dataCard.expiredMedicineDesc" prefix="-" />
+              since last week
             </p>
           </CardContent>
         </Card>
@@ -175,11 +186,17 @@ onMounted(() => {
           </CardHeader>
           <CardContent class="grid gap-8">
             <div
-              v-for="recentSales in dataRecentSales" :key="recentSales.name"
+              v-for="recentSales in dataRecentSales"
+              :key="recentSales.name"
               class="flex items-center gap-4"
             >
               <Avatar class="hidden h-9 w-9 sm:flex">
-                <AvatarFallback>{{ recentSales.name.split(' ').map((n) => n[0]).join('') }}</AvatarFallback>
+                <AvatarFallback>{{
+                  recentSales.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                }}</AvatarFallback>
               </Avatar>
               <div class="grid gap-1">
                 <p class="text-sm font-medium leading-none">
@@ -192,7 +209,11 @@ onMounted(() => {
               <div class="ml-auto font-medium">
                 <NumberFlow
                   :value="recentSales.amount"
-                  :format="{ style: 'currency', currency: 'USD', trailingZeroDisplay: 'stripIfInteger' }"
+                  :format="{
+                    style: 'currency',
+                    currency: 'USD',
+                    trailingZeroDisplay: 'stripIfInteger',
+                  }"
                   prefix="+"
                 />
               </div>
