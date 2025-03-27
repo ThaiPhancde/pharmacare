@@ -2,7 +2,6 @@
   "version": 2,
   "buildCommand": "yarn install && yarn build",
   "outputDirectory": ".output",
-  "framework": "nuxt",
   "routes": [
     {
       "src": "/api/(.*)",
