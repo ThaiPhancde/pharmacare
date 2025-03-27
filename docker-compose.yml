@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   mongo:
     image: mongo
@@ -9,3 +10,25 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: thaian
+    volumes:
+      - mongodb_data:/data/db
+
+  app:
+    build: .
+    container_name: pharmacare_app
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: "mongodb://root:thaian@mongo:27017/pharmacare?authSource=admin"
+      JWT_SECRET: "pharmacare_secret_key"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  mongodb_data:
