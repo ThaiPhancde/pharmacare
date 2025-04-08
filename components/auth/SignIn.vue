@@ -25,7 +25,7 @@ const onSubmit = async (event: Event) => {
       toast({
         title: "Login success",
       });
-      setTimeout(() => navigateTo("/"), 3000);
+      navigateTo("/")
     }
   } catch (error) {
     toast({

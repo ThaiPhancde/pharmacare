@@ -14,7 +14,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useVueTable,
 } from "@tanstack/vue-table";
@@ -29,11 +28,26 @@ interface DataTableProps<T = any> {
 const props = withDefaults(defineProps<DataTableProps>(), {
   filterKey: "name",
 });
+const emit = defineEmits<{
+  (e: 'changePage', page: number, size: number): void;
+}>();
+
+const page = defineModel<number>("page", { default: 1 });
+const size = defineModel<number>("size", { default: 10 });
+const total = defineModel<number>("total", { default: 0 });
+const totalPages = computed(() => Math.ceil(total.value / size.value));
+
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
 const rowSelection = ref({});
-const updateState = <T>(stateRef: Ref<T>): OnChangeFn<T> => (updaterOrValue: any) => valueUpdater(updaterOrValue, stateRef);
+watch([page, size], () => {
+  emit('changePage', page.value, size.value);
+});
+const updateState =
+  <T,>(stateRef: Ref<T>): OnChangeFn<T> =>
+  (updaterOrValue: any) =>
+    valueUpdater(updaterOrValue, stateRef);
 const table = useVueTable({
   get data() {
     return props.data;
@@ -54,7 +68,15 @@ const table = useVueTable({
     get rowSelection() {
       return rowSelection.value;
     },
+    get pagination() {
+      return {
+        pageIndex: page.value - 1,
+        pageSize: size.value,
+        totalPages: totalPages.value,
+      };
+    },
   },
+  pageCount: totalPages.value,
   enableRowSelection: true,
   onSortingChange: updateState(sorting),
   onColumnFiltersChange: updateState(columnFilters),
@@ -62,7 +84,6 @@ const table = useVueTable({
   onRowSelectionChange: updateState(rowSelection),
   getCoreRowModel: getCoreRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFacetedRowModel: getFacetedRowModel(),
   getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -71,7 +92,11 @@ const table = useVueTable({
 
 <template>
   <div class="space-y-4 w-full">
-    <DataTableToolbar :table="table" :filterKey placeholder="Search customer by name..." />
+    <DataTableToolbar
+      :table="table"
+      :filterKey
+      placeholder="Search customer by name..."
+    />
     <div class="border rounded-md">
       <Table>
         <TableHeader>
@@ -112,6 +137,16 @@ const table = useVueTable({
         </TableBody>
       </Table>
     </div>
-    <DataTablePagination :table="table" />
+    <DataTablePagination
+      :table="table"
+      :total="total"
+      @update:page="(p) => (page = p)"
+      @update:size="
+        (s) => {
+          size = s;
+          page = 1; // reset về page đầu khi đổi size
+        }
+      "
+    />
   </div>
 </template>
