@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
+import { Pencil, Trash } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast";
 import { form, type Customer } from "@/models/customer";
 import { toTypedSchema } from "@vee-validate/zod";
@@ -13,12 +14,36 @@ const columns = ref([
   { accessorKey: "name", header: "Name" },
   { accessorKey: "mail", header: "Email" },
   { accessorKey: "phone", header: "Phone" },
+  { accessorKey: "address", header: "Address" },
   { accessorKey: "city", header: "City" },
   {
     accessorKey: "balance",
     header: "Balance ($)",
-    cell: (row: any) => {
-      return `$${row?.row?.original?.balance?.toFixed(2)}`;
+    cell: ({ row }: any) => {
+      const value = row?.original?.balance ?? 0;
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(value);
+    },
+  },
+  {
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }: any) => {
+      const item = row.original;
+      return h("div", { class: "flex gap-2" }, [
+        h(Pencil, {
+          class:
+            "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleEdit(item),
+        }),
+        h(Trash, {
+          class:
+            "w-4 h-4 text-red-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleDelete(item),
+        }),
+      ]);
     },
   },
 ]);
@@ -45,32 +70,82 @@ onMounted(fetchData);
 // Form handle
 const showAdd = ref(false);
 const formSchema = toTypedSchema(form);
+
+const showDelete = ref(false);
+const selectedCustomer = ref<Customer | null>(null);
+
 const formValue = useForm({
   validationSchema: formSchema,
   initialValues: {
     name: "",
-    address: "",
     phone: "",
     mail: "",
+    address: "",
     city: "",
-    state: "",
-    zip: "",
-    country: "",
+    country: "Vietnam",
     balance: 0,
   },
 });
 
-const onSubmit = formValue.handleSubmit(async (values) => {
-  const newCustomer = { ...values };
-  const response = await api.post("/api/customers", newCustomer);
-  if (response.status) {
-    toast({
-      title: "Add success",
-    });
+const handleEdit = (item: Customer) => {
+  selectedCustomer.value = item;
+  formValue.setValues(item); // fill the form
+  showAdd.value = true;
+};
+const confirmDelete = async () => {
+  if (!selectedCustomer.value) return;
+  const res = await api.delete(`/api/customers/${selectedCustomer.value._id}`);
+  if (res.status) {
+    toast({ title: "Xoá thành công" });
     await fetchData();
-    // navigateTo("/");
   }
+  showDelete.value = false;
+  selectedCustomer.value = null;
+};
+
+const handleDelete = (item: Customer) => {
+  selectedCustomer.value = item;
+  showDelete.value = true;
+};
+
+const handleAdd = () => {
+  selectedCustomer.value = null;
+
+  formValue.resetForm({
+    values: {
+      name: "",
+      phone: "",
+      mail: "",
+      address: "",
+      city: "",
+      country: "Vietnam", // default selected
+      balance: 0,
+    },
+  });
+
+  showAdd.value = true;
+};
+
+const onSubmit = formValue.handleSubmit(async (values) => {
+  const payload = { ...values };
+
+  let response;
+  if (selectedCustomer.value) {
+    // Update customer
+    response = await api.put(`/api/customers/${selectedCustomer.value._id}`, payload);
+  } else {
+    // Add new customer
+    response = await api.post("/api/customers", payload);
+  }
+
+  if (response.status) {
+    toast({ title: selectedCustomer.value ? "Update success" : "Add success" });
+    await fetchData();
+  }
+
   showAdd.value = false;
+  selectedCustomer.value = null;
+  formValue.resetForm(); // reset form after submit
 });
 </script>
 
@@ -80,7 +155,7 @@ const onSubmit = formValue.handleSubmit(async (values) => {
       <div class="flex justify-between">
         <h2 class="text-2xl font-bold tracking-tight">Customer List</h2>
       </div>
-      <Button @click="() => (showAdd = true)"> Add </Button>
+      <Button @click="handleAdd"> Add </Button>
     </div>
     <DataTable
       :data="dataTable"
@@ -91,10 +166,11 @@ const onSubmit = formValue.handleSubmit(async (values) => {
       v-model:size="pagination.limit"
       v-model:total="pagination.total"
     />
+    <!-- modal thêm -->
     <Dialog v-model:open="showAdd">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle> Add Medicine</DialogTitle>
+          <DialogTitle> Add Customer</DialogTitle>
           <DialogDescription class="text-xs text-muted-foreground">
           </DialogDescription>
         </DialogHeader>
@@ -105,9 +181,28 @@ const onSubmit = formValue.handleSubmit(async (values) => {
           @submit="onSubmit"
         >
           <div class="col-span-3 flex justify-center items-center mt-4">
-            <Button type="submit"> Send now </Button>
+            <Button type="submit"> Save </Button>
           </div>
         </AutoForm>
+      </DialogContent>
+    </Dialog>
+    <!-- modal xoá -->
+    <Dialog v-model:open="showDelete">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm delete</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete
+            <span class="font-semibold text-red-500">{{
+              selectedCustomer?.name
+            }}</span>
+            ?
+          </DialogDescription>
+        </DialogHeader>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button variant="ghost" @click="showDelete = false">Huỷ</Button>
+          <Button variant="destructive" @click="confirmDelete">Xoá</Button>
+        </div>
       </DialogContent>
     </Dialog>
   </div>

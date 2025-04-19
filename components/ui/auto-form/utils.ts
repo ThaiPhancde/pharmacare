@@ -9,14 +9,16 @@ export type ZodObjectOrWrapped =
  * Beautify a camelCase string.
  * e.g. "myString" -> "My String"
  */
-export function beautifyObjectName(string: string) {
-  // Remove bracketed indices
-  // if numbers only return the string
-  let output = string.replace(/\[\d+\]/g, '').replace(/([A-Z])/g, ' $1')
-  output = output.charAt(0).toUpperCase() + output.slice(1)
-  return output
+export function beautifyObjectName(str: string): string {
+  console.log("🚀 ~ beautifyObjectName ~ str:", str)
+  return str
+    .replace(/\[\d+\]/g, "") // remove [index]
+    .replace(/([A-Z])/g, " $1") // camelCase → space
+    .replace(/[_\-.]+/g, " ") // snake_case / kebab-case / dot → space
+    .replace(/\s+/g, " ") // normalize space
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase()); // Capitalize mỗi chữ
 }
-
 /**
  * Parse string and extract the index
  * @param string

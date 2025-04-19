@@ -1,3 +1,7 @@
+import AutoImport from 'unplugin-auto-import/vite'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+import Components from 'unplugin-vue-components/vite'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 // @ts-ignore
 export default defineNuxtConfig({
@@ -22,6 +26,7 @@ export default defineNuxtConfig({
     "@nuxt/icon",
     "@pinia/nuxt",
     "@nuxtjs/color-mode",
+    "nuxtjs-naive-ui",
   ],
   postcss: {
     plugins: {
@@ -29,6 +34,7 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+
 
   css: ["@unocss/reset/tailwind.css"],
 
@@ -40,7 +46,25 @@ export default defineNuxtConfig({
     // For UnoCSS
     inlineStyles: false,
   },
-
+  vite: {
+    plugins: [
+      AutoImport({
+        imports: [
+          {
+            'naive-ui': [
+              'useDialog',
+              'useMessage',
+              'useNotification',
+              'useLoadingBar'
+            ]
+          }
+        ]
+      }),
+      Components({
+        resolvers: [NaiveUiResolver()]
+      })
+    ]
+  },
   eslint: {
     config: {
       standalone: false,

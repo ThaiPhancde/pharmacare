@@ -5,11 +5,13 @@ import { z } from "zod";
 export const category = z.object({
   id: z.string(),
   name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
   status: z.boolean(),
 });
 
 export const form = z.object({
   name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
   status: z.boolean().optional(),
 });
 

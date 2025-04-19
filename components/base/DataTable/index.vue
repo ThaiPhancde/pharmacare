@@ -95,7 +95,7 @@ const table = useVueTable({
     <DataTableToolbar
       :table="table"
       :filterKey
-      placeholder="Search customer by name..."
+      placeholder="Search ..."
     />
     <div class="border rounded-md">
       <Table>

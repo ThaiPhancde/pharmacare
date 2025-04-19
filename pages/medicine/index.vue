@@ -1,177 +1,288 @@
-<script setup lang="tsx">
+<script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
-import { form } from "@/models/medicine";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useForm } from "vee-validate";
-import { ref } from "vue";
+import { Pencil, Trash } from "lucide-vue-next";
+import { useToast } from "@/components/ui/toast";
+const { toast } = useToast();
 
-// Data
-const dataTable = ref([
-  {
-    barcode: "MED001",
-    strength: "500mg",
-    boxSize: "30",
-    shelf: "A1",
-    category: "Antibiotic",
-    medicineType: "Tablet",
-    supplier: "PharmaCorp",
-    tax: 5,
-    medicineName: "Amoxicillin",
-    genericName: "Amoxicillin",
-    unit: "Bottle",
-    details: "Used for bacterial infections",
-    price: 12.5,
-    image: null,
-    supplierPrice: 8.5,
-    discount: 10,
-    status: "active",
-  },
-  {
-    barcode: "MED002",
-    strength: "250mg",
-    boxSize: "20",
-    shelf: "B3",
-    category: "Painkiller",
-    medicineType: "Capsule",
-    supplier: "MediSupply",
-    tax: 7,
-    medicineName: "Ibuprofen",
-    genericName: "Ibuprofen",
-    unit: "Box",
-    details: "Relieves pain and inflammation",
-    price: 8.99,
-    image: null,
-    supplierPrice: 5.99,
-    discount: 5,
-    status: "active",
-  },
-  {
-    barcode: "MED003",
-    strength: "50mg",
-    boxSize: "50",
-    shelf: "C2",
-    category: "Antihistamine",
-    medicineType: "Syrup",
-    supplier: "HealthCo",
-    tax: 6,
-    medicineName: "Cetirizine",
-    genericName: "Cetirizine Hydrochloride",
-    unit: "Bottle",
-    details: "Treats allergies and hay fever",
-    price: 15.75,
-    image: null,
-    supplierPrice: 10.5,
-    discount: 8,
-    status: "inactive",
-  },
-])
+const statuses = [
+  { value: true, label: "🟢 Active" },
+  { value: false, label: "🔴 Inactive" },
+];
 
+const showAdd = ref(false);
+const showDelete = ref(false);
+const selectedMedicine = ref(null);
 
-// Column table
-const columns = ref([
-  { accessorKey: "barcode", header: "Barcode" },
-  { accessorKey: "medicineName", header: "Medicine Name" },
-  { accessorKey: "genericName", header: "Generic Name" },
-  { accessorKey: "category", header: "Category" },
-  { accessorKey: "medicineType", header: "Medicine Type" },
-  { accessorKey: "supplier", header: "Supplier" },
-  { accessorKey: "boxSize", header: "Box Size" },
-  { accessorKey: "unit", header: "Unit" },
-  { accessorKey: "shelf", header: "Shelf Location" },
-  {
-    accessorKey: "price",
-    header: "Price ($)",
-    cell: (row: any) => `$${row?.row?.original?.price?.toFixed(2)}`,
-  },
-  {
-    accessorKey: "supplierPrice",
-    header: "Supplier Price ($)",
-    cell: (row: any) => `$${row?.row?.original?.supplierPrice?.toFixed(2)}`,
-  },
-  {
-    accessorKey: "discount",
-    header: "Discount (%)",
-    cell: (row: any) => `${row?.row?.original?.discount}%`,
-  },
-  {
-    accessorKey: "tax",
-    header: "Tax (%)",
-    cell: (row: any) => `${row?.row?.original?.tax}%`,
-  },
+const medicineTypes = ref([]);
+const units = ref([]);
+const categories = ref([]);
+
+const fileList = ref([]);
+
+const formValue = reactive({
+  bar_code: null,
+  name: null,
+  image: null,
+  unit_id: null,
+  type_id: null,
+  category_id: null,
+});
+
+const fetchType = async () => {
+  const resData = await api.get("/api/types", { params: { length: 99999 } });
+  if (resData.status) {
+    medicineTypes.value = resData.data.map((item) => ({
+      label: item.name,
+      value: item._id,
+    }));
+  }
+};
+
+const fetchUnit = async () => {
+  const resData = await api.get("/api/unit", { params: { length: 99999 } });
+  if (resData.status) {
+    units.value = resData.data.map((item) => ({
+      label: item.name,
+      value: item._id,
+    }));
+  }
+};
+
+const fetchCategories = async () => {
+  const resData = await api.get("/api/categories", {
+    params: { length: 99999 },
+  });
+  if (resData.status) {
+    categories.value = resData.data.map((item) => ({
+      label: item.name,
+      value: item._id,
+    }));
+  }
+};
+
+const preloadFormData = async () => {
+  await Promise.all([fetchType(), fetchUnit(), fetchCategories()]);
+};
+
+const {
+  data: responseData,
+  loading,
+  pagination,
+  fetchData,
+  handlePageChange,
+} = usePaginationData(async ({ page, limit }) => {
+  const res = await api.get("/api/medicine", {
+    params: { page, limit },
+  });
+  pagination.total = res.total ?? 0;
+  return res.data;
+});
+
+const dataTable = computed(() => {
+  return responseData.value;
+});
+
+const handleShowModalAdd = async () => {
+  await preloadFormData();
+  showAdd.value = true;
+};
+
+onMounted(fetchData);
+
+const columns = [
+  { accessorKey: "name", header: "Name" },
+  { accessorKey: "description", header: "Description" },
   {
     accessorKey: "status",
     header: "Status",
-    cell: (row: any) =>
-      row?.row?.original?.status === "active"
-        ? "🟢 Active"
-        : "🔴 Inactive",
+    cell: ({ row }) => {
+      const status = statuses.find((s) => s.value === row.getValue("status"));
+      return h("div", { class: "flex items-center" }, [
+        h("span", status?.label),
+      ]);
+    },
   },
-]);
-
-
-// Form handle
-const showAdd = ref(false);
-const formSchema = toTypedSchema(form);
-const formValue = useForm({
-  validationSchema: formSchema,
-  initialValues: {
-    barcode: "",
-    strength: "",
-    boxSize: "",
-    shelf: "",
-    category: "",
-    medicineType: "",
-    supplier: "",
-    tax: 15,
-    medicineName: "",
-    genericName: "",
-    unit: "",
-    details: "",
-    price: "",
-    image: null,
-    supplierPrice: "",
-    discount: 16,
-    status: "active",
+  {
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const item = row.original;
+      return h("div", { class: "flex gap-2" }, [
+        h(Pencil, {
+          class:
+            "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleEdit(item),
+        }),
+        h(Trash, {
+          class:
+            "w-4 h-4 text-red-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleDelete(item),
+        }),
+      ]);
+    },
   },
-});
-const generateId = () => "CUST" + Math.floor(1000 + Math.random() * 9000);
+];
 
-const onSubmit = formValue.handleSubmit((values) => {
-  const newMedicine = {
-    ...values,
-    id: generateId(),
+const handleEdit = async (item) => {
+  await preloadFormData();
+  selectedMedicine.value = item;
+  Object.assign(formValue, item); // Sử dụng Object.assign để sao chép giá trị vào formValue
+  showAdd.value = true;
+};
+
+const handleDelete = (item) => {
+  selectedMedicine.value = item;
+  showDelete.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!selectedMedicine.value) return;
+  const res = await api.delete(`/api/medicine/${selectedMedicine.value._id}`);
+  if (res.status) {
+    toast({ title: "Delete success" });
+    await fetchData();
+  }
+  selectedMedicine.value = null;
+  showDelete.value = false;
+};
+
+const handleImageUpload = (response) => {
+  console.log("🚀 ~ handleImageUpload ~ response:", response);
+  // Optionally handle server-side response here if needed
+  console.log("Image uploaded", response);
+};
+
+const beforeImageUpload = (file) => {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    formValue.image = reader.result; // Store the base64 result
   };
-  dataTable.value = [...dataTable.value, newMedicine]; // ✅ Đảm bảo Vue phản ứng
-  showAdd.value = false;
-});
+  reader.readAsDataURL(file); // Convert the file to base64
+  return false; // Prevent the default upload behavior
+};
+
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const handleChangeFile = async (files) => {
+  const fileInfo = files[0].file;
+  const base64 = await fileToBase64(fileInfo);
+  formValue.image = base64;
+};
 </script>
 
 <template>
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
-      <div class="flex justify-between">
-        <h2 class="text-2xl font-bold tracking-tight">Medicine List</h2>
-      </div>
-      <Button @click="() => (showAdd = true)"> Add </Button>
+      <h2 class="text-2xl font-bold tracking-tight">Medicine List</h2>
+      <Button @click="handleShowModalAdd">Add</Button>
     </div>
-    <DataTable :data="dataTable" filterKey="medicineName" :columns />
-    <Dialog v-model:open="showAdd">
+
+    <DataTable
+      :data="dataTable"
+      :columns
+      filterKey="name"
+      v-model:page="pagination.page"
+      @changePage="handlePageChange"
+      v-model:size="pagination.limit"
+      v-model:total="pagination.total"
+    />
+
+    <!-- Modal add -->
+    <n-modal v-model:show="showAdd" close-on-esc>
+      <div class="bg-white min-w-600px p-4 rounded-xl">
+        <n-form ref="formRef" :model="formValue">
+          <n-form-item label="Bar Code/QR Code" path="bar_code">
+            <n-input
+              v-model:value="formValue.bar_code"
+              placeholder="Bar Code/QR Code"
+            />
+          </n-form-item>
+          <n-form-item label="Name" path="name">
+            <n-input v-model:value="formValue.name" placeholder="Input Name" />
+          </n-form-item>
+          <n-form-item label="Category" path="category_id">
+            <n-select
+              clearable
+              filterable
+              v-model:value="formValue.category_id"
+              :options="categories"
+              placeholder="Select Unit ..."
+            />
+          </n-form-item>
+          <n-form-item label="Unit" path="unit_id">
+            <n-select
+              clearable
+              filterable
+              v-model:value="formValue.unit_id"
+              :options="units"
+              placeholder="Select Unit ..."
+            />
+          </n-form-item>
+          <n-form-item label="Type" path="type_id">
+            <n-select
+              clearable
+              filterable
+              v-model:value="formValue.type_id"
+              :options="medicineTypes"
+              placeholder="Select type ..."
+            />
+          </n-form-item>
+          <n-form-item label="Description" path="description">
+            <n-input
+              v-model:value="formValue.description"
+              placeholder="Input description ..."
+            />
+          </n-form-item>
+          <n-form-item label="Price" path="price">
+            <n-input-number
+              class="w-full"
+              clearable
+              filterable
+              v-model:value="formValue.price"
+              :precision="0"
+              :min="0"
+              placeholder="Input price ..."
+            />
+          </n-form-item>
+          <n-form-item label="Image" path="image">
+            <n-upload
+              :show-file-list="true"
+              @update:file-list="handleChangeFile"
+              list-type="image-card"
+              :max="1"
+              :on-success="handleImageUpload"
+              :before-upload="beforeImageUpload"
+            >
+            </n-upload>
+          </n-form-item>
+        </n-form>
+      </div>
+    </n-modal>
+
+    <!-- Modal delete -->
+    <Dialog v-model:open="showDelete">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle> Add Medicine</DialogTitle>
-          <DialogDescription class="text-xs text-muted-foreground">
+          <DialogTitle>Confirm delete</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete
+            <span class="font-semibold text-red-500">{{
+              selectedMedicine?.name
+            }}</span>
+            ?
           </DialogDescription>
         </DialogHeader>
-        <AutoForm
-          class="grid grid-cols-3 gap-4"
-          :form="formValue"
-          :schema="form"
-          @submit="onSubmit"
-        >
-          <div class="col-span-3 flex justify-center items-center mt-4">
-            <Button type="submit"> Send now </Button>
-          </div>
-        </AutoForm>
+        <div class="flex justify-end gap-2 mt-4">
+          <Button variant="ghost" @click="showDelete = false">Cancel</Button>
+          <Button variant="destructive" @click="confirmDelete">Delete</Button>
+        </div>
       </DialogContent>
     </Dialog>
   </div>

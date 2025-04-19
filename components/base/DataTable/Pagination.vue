@@ -63,7 +63,6 @@ const updatePage = (index: number) => {
         <Button
           variant="outline"
           class="hidden h-8 w-8 p-0 lg:flex"
-          :disabled="!table.getCanPreviousPage()"
           @click="updatePage(0)"
         >
           <Icon name="i-radix-icons-double-arrow-left" class="h-4 w-4" />
@@ -71,7 +70,6 @@ const updatePage = (index: number) => {
         <Button
           variant="outline"
           class="h-8 w-8 p-0"
-          :disabled="!table.getCanPreviousPage()"
           @click="updatePage(pageIndex - 1)"
         >
           <Icon name="i-radix-icons-chevron-left" class="h-4 w-4" />
@@ -79,7 +77,6 @@ const updatePage = (index: number) => {
         <Button
           variant="outline"
           class="h-8 w-8 p-0"
-          :disabled="!table.getCanNextPage()"
           @click="updatePage(pageIndex + 1)"
         >
           <Icon name="i-radix-icons-chevron-right" class="h-4 w-4" />
@@ -87,7 +84,6 @@ const updatePage = (index: number) => {
         <Button
           variant="outline"
           class="hidden h-8 w-8 p-0 lg:flex"
-          :disabled="!table.getCanNextPage()"
           @click="updatePage(totalPages - 1)"
         >
           <Icon name="i-radix-icons-double-arrow-right" class="h-4 w-4" />
