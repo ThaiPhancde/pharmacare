@@ -13,8 +13,7 @@ export default defineEventHandler(async (event) => {
       Medicine.find()
         .skip(skip)
         .limit(limit)
-        .populate("unit_id category_id type_id")
-        .lean(),
+        .populate("unit_id category_id type_id"),
       Medicine.countDocuments(),
     ]);
 

@@ -91,15 +91,22 @@ onMounted(fetchData);
 
 const columns = [
   { accessorKey: "name", header: "Name" },
+  { accessorKey: "generic_name", header: "Generic Name" },
   { accessorKey: "description", header: "Description" },
+  { accessorKey: "category.name", header: "Category" },
+  { accessorKey: "type.name", header: "Type" },
+  { accessorKey: "unit.name", header: "Unit" },
+  { accessorKey: "price", header: "Price" },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "image",
+    header: "Image",
     cell: ({ row }) => {
-      const status = statuses.find((s) => s.value === row.getValue("status"));
-      return h("div", { class: "flex items-center" }, [
-        h("span", status?.label),
-      ]);
+      const imageUrl = row.original.image; // Assuming 'image' contains the URL or base64 string
+      return imageUrl && h("img", {
+        src: imageUrl,
+        alt: "Medicine Image",
+        class: "w-12 h-12 object-fit", // You can style this as per your needs
+      });
     },
   },
   {
@@ -174,6 +181,25 @@ const handleChangeFile = async (files) => {
   const fileInfo = files[0].file;
   const base64 = await fileToBase64(fileInfo);
   formValue.image = base64;
+};
+
+const handleSubmit = async () => {
+  const isEditMode = selectedMedicine.value !== null;
+  const url = isEditMode
+    ? `/api/medicine/${selectedMedicine.value._id}`
+    : "/api/medicine";
+  const method = isEditMode ? "put" : "post";
+
+  try {
+    const res = await api[method](url, formValue);
+    if (res.status) {
+      toast({ title: isEditMode ? "Update success" : "Add success" });
+      await fetchData(); // Refresh data after submit
+      showAdd.value = false; // Close modal
+    }
+  } catch (error) {
+    toast({ title: "Error", description: error.message, type: "error" });
+  }
 };
 </script>
 
@@ -262,6 +288,9 @@ const handleChangeFile = async (files) => {
             >
             </n-upload>
           </n-form-item>
+          <div class="flex items-center justify-center">
+            <n-button @click="handleSubmit"> Save</n-button>
+          </div>
         </n-form>
       </div>
     </n-modal>
