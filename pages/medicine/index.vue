@@ -22,6 +22,7 @@ const fileList = ref([]);
 const formValue = reactive({
   bar_code: null,
   name: null,
+  generic: null,
   image: null,
   unit_id: null,
   type_id: null,
@@ -86,27 +87,42 @@ const handleShowModalAdd = async () => {
   await preloadFormData();
   showAdd.value = true;
 };
+const formatVND = (value) => {
+  if (!value) return "0 ₫";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    minimumFractionDigits: 0,
+  }).format(value);
+};
 
 onMounted(fetchData);
 
 const columns = [
   { accessorKey: "name", header: "Name" },
-  { accessorKey: "generic_name", header: "Generic Name" },
+  { accessorKey: "generic", header: "Generic Name" },
   { accessorKey: "description", header: "Description" },
   { accessorKey: "category.name", header: "Category" },
   { accessorKey: "type.name", header: "Type" },
   { accessorKey: "unit.name", header: "Unit" },
-  { accessorKey: "price", header: "Price" },
+  {
+    accessorKey: "price",
+    header: "Price",
+    cell: ({ row }) => formatVND(row.original.price),
+  },
   {
     accessorKey: "image",
     header: "Image",
     cell: ({ row }) => {
       const imageUrl = row.original.image; // Assuming 'image' contains the URL or base64 string
-      return imageUrl && h("img", {
-        src: imageUrl,
-        alt: "Medicine Image",
-        class: "w-12 h-12 object-fit", // You can style this as per your needs
-      });
+      return (
+        imageUrl &&
+        h("img", {
+          src: imageUrl,
+          alt: "Medicine Image",
+          class: "w-12 h-12 object-fit", // You can style this as per your needs
+        })
+      );
     },
   },
   {
@@ -134,6 +150,16 @@ const handleEdit = async (item) => {
   await preloadFormData();
   selectedMedicine.value = item;
   Object.assign(formValue, item); // Sử dụng Object.assign để sao chép giá trị vào formValue
+  fileList.value = item.image
+    ? [
+        {
+          id: "preview-img",
+          name: "image.jpg",
+          status: "finished",
+          url: item.image,
+        },
+      ]
+    : [];
   showAdd.value = true;
 };
 
@@ -230,6 +256,12 @@ const handleSubmit = async () => {
               placeholder="Bar Code/QR Code"
             />
           </n-form-item>
+          <n-form-item label="Generic Name" path="generic">
+            <n-input
+              v-model:value="formValue.generic"
+              placeholder="Input Generic Name"
+            />
+          </n-form-item>
           <n-form-item label="Name" path="name">
             <n-input v-model:value="formValue.name" placeholder="Input Name" />
           </n-form-item>
@@ -281,6 +313,7 @@ const handleSubmit = async () => {
             <n-upload
               :show-file-list="true"
               @update:file-list="handleChangeFile"
+              v-model:default-file-list="fileList"
               list-type="image-card"
               :max="1"
               :on-success="handleImageUpload"
