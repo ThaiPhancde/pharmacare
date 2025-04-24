@@ -153,7 +153,7 @@ const onSubmit = formValue.handleSubmit(async (values) => {
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <div class="flex justify-between">
-        <h2 class="text-2xl font-bold tracking-tight">Customer List</h2>
+        <h2 class="text-2xl font-bold tracking-tight">Supplier List</h2>
       </div>
       <Button @click="handleAdd"> Add </Button>
     </div>

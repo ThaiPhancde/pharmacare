@@ -42,7 +42,7 @@ const updatePage = (index: number) => {
           </SelectTrigger>
           <SelectContent side="top">
             <SelectItem
-              v-for="page in [5, 20, 30, 40, 50]"
+              v-for="page in [10, 20, 30, 40, 50]"
               :key="page"
               :value="`${page}`"
             >

@@ -24,6 +24,13 @@ useHead({
     class: computed(() => `theme-${theme.value}`),
     style: computed(() => `--radius: ${radius.value}rem;`),
   },
+  script: [
+    {
+      src: 'https://widget.cxgenie.ai/widget.js',
+      'data-aid': 'e30842b6-aabf-440c-9169-901f9540a312',
+      'data-lang': 'vi',
+    }
+  ]
 });
 
 const title = "An Thai Pharmacy";
