@@ -1,4 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
+// Import các schema phụ (Unit, Category, TypeMedicine)
+import "./Unit"; 
+import "./Category";
+import "./Types";
 
 // Interface for Medicine model
 interface IMedicine extends Document {
