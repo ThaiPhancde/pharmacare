@@ -41,6 +41,11 @@ export const navMenu: NavMenu[] = [
         icon: "i-lucide-package-search",
         link: "/stock"
       },
+      {
+        title: "Purchase",
+        icon: "i-lucide-package-search",
+        link: "/purchase"
+      },
     ],
   },
   // {

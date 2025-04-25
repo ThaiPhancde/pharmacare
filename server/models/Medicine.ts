@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 // Interface for Medicine model
 interface IMedicine extends Document {
@@ -6,9 +6,9 @@ interface IMedicine extends Document {
   image: string;
   strength: string;
   generic: string;
-  unit_id: { type: Schema.Types.ObjectId, ref: 'Unit' };  // Reference to Unit collection
-  category_id: { type: Schema.Types.ObjectId, ref: 'Category' };  // Reference to Category collection
-  type_id: { type: Schema.Types.ObjectId, ref: 'TypeMedicine' };  // Reference to Type collection
+  unit_id: { type: Schema.Types.ObjectId; ref: "Unit" }; // Reference to Unit collection
+  category_id: { type: Schema.Types.ObjectId; ref: "Category" }; // Reference to Category collection
+  type_id: { type: Schema.Types.ObjectId; ref: "TypeMedicine" }; // Reference to Type collection
   supplier: string;
   supplier_price: number;
   bar_code: string;
@@ -24,15 +24,15 @@ const MedicineSchema = new Schema<IMedicine>({
   image: String,
   strength: String,
   generic: String,
-  unit_id: { type: Schema.Types.ObjectId, ref: 'Unit' },  // Corrected type
-  category_id: { type: Schema.Types.ObjectId, ref: 'Category' },  // Corrected type
-  type_id: { type: Schema.Types.ObjectId, ref: 'TypeMedicine' },  // Corrected type
+  unit_id: { type: Schema.Types.ObjectId, ref: "Unit" }, // Corrected type
+  category_id: { type: Schema.Types.ObjectId, ref: "Category" }, // Corrected type
+  type_id: { type: Schema.Types.ObjectId, ref: "TypeMedicine" }, // Corrected type
   supplier: String,
   supplier_price: Number,
-  bar_code: String
+  bar_code: String,
 });
 
-MedicineSchema.set('toJSON', {
+MedicineSchema.set("toJSON", {
   transform: (doc, ret) => {
     // Đổi tên trường trả về
     ret.unit = ret.unit_id;
@@ -45,9 +45,9 @@ MedicineSchema.set('toJSON', {
     delete ret.type_id;
 
     return ret;
-  }
+  },
 });
 
-
 // Create and export the model
-export default mongoose.model<IMedicine>('Medicine', MedicineSchema);
+export default mongoose.models.Medicine ||
+  mongoose.model<IMedicine>("Medicine", MedicineSchema);
