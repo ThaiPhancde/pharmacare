@@ -1,6 +1,6 @@
-import Unit  from "@/server/models/Unit"
-import TypeMedicine  from "@/server/models/Types"
-import Category  from "@/server/models/Category"
+import "@/server/models/Unit"
+import "@/server/models/Types"
+import "@/server/models/Category"
 import Medicine from "@/server/models/Medicine";
 
 export default defineEventHandler(async (event) => {
