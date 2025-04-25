@@ -30,7 +30,7 @@ const formValue = reactive({
 });
 
 const fetchType = async () => {
-  const resData = await api.get("/api/types", { params: { length: 99999 } });
+  const resData = await api.get("/api/types", { params: { limit: 99999 } });
   if (resData.status) {
     medicineTypes.value = resData.data.map((item) => ({
       label: item.name,
@@ -40,7 +40,7 @@ const fetchType = async () => {
 };
 
 const fetchUnit = async () => {
-  const resData = await api.get("/api/unit", { params: { length: 99999 } });
+  const resData = await api.get("/api/unit", { params: { limit: 99999 } });
   if (resData.status) {
     units.value = resData.data.map((item) => ({
       label: item.name,
@@ -51,7 +51,7 @@ const fetchUnit = async () => {
 
 const fetchCategories = async () => {
   const resData = await api.get("/api/categories", {
-    params: { length: 99999 },
+    params: { limit: 99999 },
   });
   if (resData.status) {
     categories.value = resData.data.map((item) => ({
@@ -150,6 +150,9 @@ const handleEdit = async (item) => {
   await preloadFormData();
   selectedMedicine.value = item;
   Object.assign(formValue, item); // Sử dụng Object.assign để sao chép giá trị vào formValue
+  formValue.category_id = item.category_id?._id
+  formValue.unit_id = item.unit_id?._id
+  formValue.type_id = item.type_id?._id
   fileList.value = item.image
     ? [
         {
@@ -269,6 +272,8 @@ const handleSubmit = async () => {
             <n-select
               clearable
               filterable
+              :fallbackOption="false"
+
               v-model:value="formValue.category_id"
               :options="categories"
               placeholder="Select Unit ..."
@@ -278,6 +283,7 @@ const handleSubmit = async () => {
             <n-select
               clearable
               filterable
+              :fallbackOption="false"
               v-model:value="formValue.unit_id"
               :options="units"
               placeholder="Select Unit ..."
@@ -287,6 +293,8 @@ const handleSubmit = async () => {
             <n-select
               clearable
               filterable
+              :fallbackOption="false"
+
               v-model:value="formValue.type_id"
               :options="medicineTypes"
               placeholder="Select type ..."

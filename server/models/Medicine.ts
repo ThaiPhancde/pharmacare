@@ -6,9 +6,9 @@ interface IMedicine extends Document {
   image: string;
   strength: string;
   generic: string;
-  unit_id: { type: Schema.Types.ObjectId; ref: "Unit" }; // Reference to Unit collection
-  category_id: { type: Schema.Types.ObjectId; ref: "Category" }; // Reference to Category collection
-  type_id: { type: Schema.Types.ObjectId; ref: "TypeMedicine" }; // Reference to Type collection
+  unit_id: { type: Schema.Types.ObjectId; ref: "Unit" };
+  category_id: { type: Schema.Types.ObjectId; ref: "Category" };
+  type_id: { type: Schema.Types.ObjectId; ref: "TypeMedicine" };
   supplier: string;
   supplier_price: number;
   bar_code: string;
@@ -16,30 +16,33 @@ interface IMedicine extends Document {
   price: number;
 }
 
-// Medicine Schema definition
 const MedicineSchema = new Schema<IMedicine>({
   name: { type: String, required: true },
-  description: String,
-  price: Number,
+  description: { type: String, default: 'No description available' },
+  price: { type: Number, required: true },
   image: String,
   strength: String,
   generic: String,
-  unit_id: { type: Schema.Types.ObjectId, ref: "Unit" }, // Corrected type
-  category_id: { type: Schema.Types.ObjectId, ref: "Category" }, // Corrected type
-  type_id: { type: Schema.Types.ObjectId, ref: "TypeMedicine" }, // Corrected type
+  unit_id: { type: Schema.Types.ObjectId, ref: "Unit" },
+  category_id: { type: Schema.Types.ObjectId, ref: "Category" },
+  type_id: { type: Schema.Types.ObjectId, ref: "TypeMedicine" },
   supplier: String,
-  supplier_price: Number,
+  supplier_price: { type: Number, required: true },
   bar_code: String,
 });
 
+// Index trên các trường unit_id và category_id
+MedicineSchema.index({ unit_id: 1, category_id: 1 });
+
+// Tạo text index cho name và description
+MedicineSchema.index({ name: "text", description: "text" });
+
 MedicineSchema.set("toJSON", {
   transform: (doc, ret) => {
-    // Đổi tên trường trả về
-    ret.unit = ret.unit_id;
-    ret.category = ret.category_id;
-    ret.type = ret.type_id;
+    ret.unit = ret.unit_id.toString();
+    ret.category = ret.category_id.toString();
+    ret.type = ret.type_id.toString();
 
-    // Xóa các trường _id cũ và các trường không cần thiết
     delete ret.unit_id;
     delete ret.category_id;
     delete ret.type_id;
@@ -48,6 +51,6 @@ MedicineSchema.set("toJSON", {
   },
 });
 
-// Create and export the model
+// Ensure the model is created once
 export default mongoose.models.Medicine ||
   mongoose.model<IMedicine>("Medicine", MedicineSchema);
