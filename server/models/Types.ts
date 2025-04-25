@@ -14,8 +14,4 @@ const TypeMedicineSchema = new Schema<ITypeMedicine>(
   },
   { timestamps: true }
 );
-
-const TypeMedicine =
-  mongoose.models.TypeMedicine || mongoose.model<ITypeMedicine>("TypeMedicine", TypeMedicineSchema);
-
-export default TypeMedicine;
+export default mongoose.models.TypeMedicine || mongoose.model<ITypeMedicine>("TypeMedicine", TypeMedicineSchema);;
