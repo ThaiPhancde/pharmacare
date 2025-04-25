@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Category, Unit, TypeMedicine } from "@/server/models";
 
 let isConnected = false; // Cờ kiểm tra trạng thái kết nối
 
@@ -16,6 +17,9 @@ export default defineNitroPlugin((nitroApp) => {
 
   mongoose.connect(mongoUri as string, {})
     .then(() => {
+      mongoose.model('Unit', Unit.schema)
+      mongoose.model('Category', Category.schema)
+      mongoose.model('TypeMedicine', TypeMedicine.schema)
       console.log('✅ Connected to MongoDB');
       isConnected = true; // Đánh dấu đã kết nối thành công
     })
