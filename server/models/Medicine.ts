@@ -1,8 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
 // Import các schema phụ (Unit, Category, TypeMedicine)
-import "./Unit"; 
-import "./Category";
-import "./Types";
 
 // Interface for Medicine model
 interface IMedicine extends Document {
@@ -10,7 +7,7 @@ interface IMedicine extends Document {
   image: string;
   strength: string;
   generic: string;
-  unit_id: { type: Schema.Types.ObjectId; ref: "Unit" }; // Reference to Unit collection
+  unit_id: { type: Schema.Types.ObjectId; ref: 'Unit' }; // Reference to Unit collection
   category_id: { type: Schema.Types.ObjectId; ref: "Category" }; // Reference to Category collection
   type_id: { type: Schema.Types.ObjectId; ref: "TypeMedicine" }; // Reference to Type collection
   supplier: string;

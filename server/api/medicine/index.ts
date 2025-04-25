@@ -3,7 +3,6 @@ import Medicine from "@/server/models/Medicine";
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
-
   if (method === "GET") {
     const query = getQuery(event);
     const page = parseInt(query.page as string) || 1;
