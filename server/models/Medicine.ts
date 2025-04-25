@@ -49,5 +49,4 @@ MedicineSchema.set("toJSON", {
 });
 
 // Create and export the model
-export default mongoose.models.Medicine ||
-  mongoose.model<IMedicine>("Medicine", MedicineSchema);
+export default mongoose.models.Medicine || mongoose.model<IMedicine>("Medicine", MedicineSchema);
