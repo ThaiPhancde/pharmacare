@@ -1,6 +1,4 @@
-import "@/server/models/Unit";
-import "@/server/models/Types";
-import "@/server/models/Category";
+import "@/server/models";
 import Medicine from "@/server/models/Medicine";
 
 export default defineEventHandler(async (event) => {
