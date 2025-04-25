@@ -27,7 +27,7 @@ useHead({
   script: [
     {
       src: 'https://widget.cxgenie.ai/widget.js',
-      'data-aid': 'e30842b6-aabf-440c-9169-901f9540a312',
+      'data-aid': 'c2509bd7-7cea-4a1b-9dbb-f4079126256c',
       'data-lang': 'vi',
     }
   ]
