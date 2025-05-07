@@ -14,7 +14,7 @@ const {
   fetchData,
   handlePageChange,
 } = usePaginationData(async ({ page, limit }) => {
-  const res = await api.get("/api/stock", {
+  const res = await api.get("/api/purchase", {
     params: { page, limit },
   });
   pagination.total = res.total ?? 0;
@@ -28,18 +28,57 @@ const dataTable = computed(() => {
 onMounted(fetchData);
 
 const columns = [
-  { accessorKey: "name", header: "Name" },
-  { accessorKey: "description", header: "Description" },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "supplier",
+    header: "Supplier",
+    cell: ({ row }) => row.original.supplier ?? "-",
+  },
+  {
+    accessorKey: "invoice_no",
+    header: "Invoice No",
+  },
+  {
+    accessorKey: "payment_type",
+    header: "Payment",
+    cell: ({ row }) =>
+      row.original.payment_type.charAt(0).toUpperCase() +
+      row.original.payment_type.slice(1),
+  },
+  {
+    accessorKey: "items",
+    header: "Items",
     cell: ({ row }) => {
-      const status = statuses.find((s) => s.value === row.getValue("status"));
-      return h("div", { class: "flex items-center" }, [
-        h("span", status?.label),
-      ]);
+    const items = row.original.items ?? [];
+    const names = items
+      .map((item) => item.medicine)
+      .filter(Boolean)
+      .join(", ");
+    const truncated =
+      names.length > 50 ? names.slice(0, 50).trim() + "..." : names;
+    return h("span", { title: names }, truncated || "-");
+  },
+  },
+  {
+    accessorKey: "vat",
+    header: "VAT (%)",
+    cell: ({ row }) => {
+      return "10";
     },
   },
+  {
+    accessorKey: "total_price",
+    header: "Total",
+    cell: ({ row }) => {
+      const items = row.original.items ?? [];
+      const total = items.reduce(
+        (sum, item) =>
+          sum + (item.supplier_price || 0) * (item.unit_quantity || 0),
+        0
+      );
+      return total.toLocaleString("vi-VN") + "₫";
+    },
+  },
+
 ];
 
 </script>
@@ -47,7 +86,7 @@ const columns = [
 <template>
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
-      <h2 class="text-2xl font-bold tracking-tight">List Stock</h2>
+      <h2 class="text-2xl font-bold tracking-tight">List Purchase</h2>
     </div>
 
     <DataTable

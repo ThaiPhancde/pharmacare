@@ -28,18 +28,46 @@ const dataTable = computed(() => {
 onMounted(fetchData);
 
 const columns = [
-  { accessorKey: "name", header: "Name" },
-  { accessorKey: "description", header: "Description" },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = statuses.find((s) => s.value === row.getValue("status"));
-      return h("div", { class: "flex items-center" }, [
-        h("span", status?.label),
-      ]);
-    },
+    accessorKey: "medicine.name",
+    header: "Medicine",
+    cell: ({ row }) => row.original.medicine?.name || "-",
   },
+  {
+    accessorKey: "batch_id",
+    header: "Batch ID",
+  },
+  {
+    accessorKey: "expiry_date",
+    header: "Expiry Date",
+    cell: ({ row }) => new Date(row.original.expiry_date).toLocaleDateString(),
+  },
+  {
+    accessorKey: "box_pattern",
+    header: "Box Pattern",
+  },
+  {
+    accessorKey: "box_quantity",
+    header: "Box Qty",
+  },
+  {
+    accessorKey: "unit_quantity",
+    header: "Unit Qty",
+  },
+  // {
+  //   accessorKey: "purchase_price",
+  //   header: "Purchase Price",
+  //   cell: ({ row }) => formatVND(row.original.purchase_price)
+  // },
+  // {
+  //   accessorKey: "mrp",
+  //   header: "MRP",
+  //   cell: ({ row }) => formatVND(row.original.mrp)
+  // },
+  // {
+  //   accessorKey: "vat",
+  //   header: "VAT (%)",
+  // },
 ];
 
 </script>
