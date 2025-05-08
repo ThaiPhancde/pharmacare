@@ -1,5 +1,39 @@
 <script setup lang="ts">
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent, 
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+  DialogDescription
+} from "@/components/ui/dialog";
+
 const route = useRoute();
+
+// Demo data for expired medications
+const expiredMedications = ref([
+  { name: 'Paracetamol', batchId: '52678', expiryDate: '2024-12-31', daysLeft: -8, stock: 30 },
+  { name: 'Vitamin C', batchId: '589', expiryDate: '2024-12-25', daysLeft: -14, stock: 45 },
+  { name: 'Amoxicillin', batchId: '5665656', expiryDate: '2025-05-07', daysLeft: 1, stock: 40 },
+  { name: 'Loratadine', batchId: '87909876', expiryDate: '2025-04-30', daysLeft: -8, stock: 70 },
+  { name: 'Ibuprofen', batchId: 'Batch-2', expiryDate: '2025-05-01', daysLeft: -7, stock: 25 }
+]);
+
+// Total expired medications count
+const totalExpiredMedications = computed(() => expiredMedications.value.length);
+
+// Dialog open state
+const isNotificationOpen = ref(false);
 
 function setLinks() {
   if (route.fullPath === "/") {
@@ -61,9 +95,62 @@ watch(
         <BaseBreadcrumbCustom :links="links" />
       </div>
       <div class="flex items-center gap-2">
-        <Avatar class="h-8 w-8 rounded-lg">
-          <Icon name="i-lucide-bell" />
-        </Avatar>
+        <Dialog v-model:open="isNotificationOpen">
+          <DialogTrigger as-child>
+            <Button variant="ghost" size="icon" class="relative">
+              <Icon name="i-lucide-bell" class="h-5 w-5" />
+              <span class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
+                {{ totalExpiredMedications }}
+              </span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent class="sm:max-w-[600px] w-full">
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <DialogTitle class="text-red-600 flex items-center gap-2 font-semibold">
+                  <Icon name="i-lucide-alert-circle" class="h-5 w-5" />
+                  Date Expired Medicine
+                </DialogTitle>
+                <DialogDescription class="text-gray-600">
+                  Medications expiring within 30 days or already expired
+                </DialogDescription>
+              </div>
+              <!-- Đã loại bỏ nút X trùng lặp ở đây -->
+            </div>
+            <div class="overflow-auto max-h-[500px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Medicine Name</TableHead>
+                    <TableHead>Batch Id</TableHead>
+                    <TableHead>Expiry Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Stock</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="item in expiredMedications" :key="item.batchId"
+                            :class="{ 'bg-red-50 dark:bg-red-950': item.daysLeft <= 0 }">
+                    <TableCell class="font-medium">{{ item.name }}</TableCell>
+                    <TableCell>{{ item.batchId }}</TableCell>
+                    <TableCell>{{ new Date(item.expiryDate).toLocaleDateString('vi-VN') }}</TableCell>
+                    <TableCell>
+                      <Badge :variant="item.daysLeft <= 0 ? 'destructive' : 'warning'">
+                        {{ item.daysLeft <= 0 ? 'Expired' : `${item.daysLeft} days left` }}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{{ item.stock }}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+            <div class="flex justify-center mt-4">
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+            </div>
+          </DialogContent>
+        </Dialog>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Avatar class="h-8 w-8 rounded-lg">
