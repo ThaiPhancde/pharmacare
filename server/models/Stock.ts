@@ -16,13 +16,13 @@ const StockSchema = new Schema<IStock>(
   {
     medicine: { type: Schema.Types.ObjectId, ref: 'Medicine', required: true },
     batch_id: { type: String, required: true },
-    expiry_date: { type: Date, required: true },
-    box_pattern: { type: String, required: true },
+    expiry_date: { type: Date },
+    box_pattern: { type: String },
     box_quantity: { type: Number, default: 0 },
     unit_quantity: { type: Number, default: 0 },
-    purchase_price: { type: Number, required: true },
-    mrp: { type: Number, required: true },
-    vat: { type: Number }, // % VAT nếu có
+    // purchase_price: { type: Number, required: true },
+    // mrp: { type: Number, required: true },
+    // vat: { type: Number }, // % VAT nếu có
   },
   { timestamps: true }
 );

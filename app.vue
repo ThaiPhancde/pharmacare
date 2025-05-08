@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Sonner } from "@/components/ui/sonner";
 import { ConfigProvider } from "radix-vue";
+import { NConfigProvider } from "naive-ui";
 
 const colorMode = useColorMode();
 
@@ -26,11 +27,11 @@ useHead({
   },
   script: [
     {
-      src: 'https://widget.cxgenie.ai/widget.js',
-      'data-aid': 'c2509bd7-7cea-4a1b-9dbb-f4079126256c',
-      'data-lang': 'vi',
-    }
-  ]
+      src: "https://widget.cxgenie.ai/widget.js",
+      "data-aid": "c2509bd7-7cea-4a1b-9dbb-f4079126256c",
+      "data-lang": "vi",
+    },
+  ],
 });
 
 const title = "An Thai Pharmacy";
@@ -57,14 +58,16 @@ const dir = computed(() => (textDirection.value === "rtl" ? "rtl" : "ltr"));
 </script>
 
 <template>
-  <ConfigProvider :use-id="useIdFunction" :dir="dir">
-    <div vaul-drawer-wrapper class="relative">
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-      <AppSettings />
-    </div>
-    <Toaster />
-    <Sonner class="pointer-events-auto" />
-  </ConfigProvider>
+  <NConfigProvider>
+    <ConfigProvider :use-id="useIdFunction" :dir="dir">
+      <div vaul-drawer-wrapper class="relative">
+        <NuxtLayout>
+          <NuxtPage />
+        </NuxtLayout>
+        <AppSettings />
+      </div>
+      <Toaster />
+      <Sonner class="pointer-events-auto" />
+    </ConfigProvider>
+  </NConfigProvider>
 </template>

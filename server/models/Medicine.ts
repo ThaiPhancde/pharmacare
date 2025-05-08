@@ -7,7 +7,7 @@ interface IMedicine extends Document {
   image: string;
   strength: string;
   generic: string;
-  unit_id: { type: Schema.Types.ObjectId; ref: 'Unit' }; // Reference to Unit collection
+  unit_id: { type: Schema.Types.ObjectId; ref: "Unit" }; // Reference to Unit collection
   category_id: { type: Schema.Types.ObjectId; ref: "Category" }; // Reference to Category collection
   type_id: { type: Schema.Types.ObjectId; ref: "TypeMedicine" }; // Reference to Type collection
   supplier: string;
@@ -18,20 +18,23 @@ interface IMedicine extends Document {
 }
 
 // Medicine Schema definition
-const MedicineSchema = new Schema<IMedicine>({
-  name: { type: String, required: true },
-  description: String,
-  price: Number,
-  image: String,
-  strength: String,
-  generic: String,
-  unit_id: { type: Schema.Types.ObjectId, ref: "Unit" }, // Corrected type
-  category_id: { type: Schema.Types.ObjectId, ref: "Category" }, // Corrected type
-  type_id: { type: Schema.Types.ObjectId, ref: "TypeMedicine" }, // Corrected type
-  supplier: String,
-  supplier_price: Number,
-  bar_code: String,
-});
+const MedicineSchema = new Schema<IMedicine>(
+  {
+    name: { type: String, required: true },
+    description: String,
+    price: Number,
+    image: String,
+    strength: String,
+    generic: String,
+    unit_id: { type: Schema.Types.ObjectId, ref: "Unit" }, // Corrected type
+    category_id: { type: Schema.Types.ObjectId, ref: "Category" }, // Corrected type
+    type_id: { type: Schema.Types.ObjectId, ref: "TypeMedicine" }, // Corrected type
+    supplier: String,
+    supplier_price: Number,
+    bar_code: String,
+  },
+  { timestamps: true }
+);
 
 MedicineSchema.set("toJSON", {
   transform: (doc, ret) => {
@@ -50,4 +53,5 @@ MedicineSchema.set("toJSON", {
 });
 
 // Create and export the model
-export default mongoose.models.Medicine || mongoose.model<IMedicine>("Medicine", MedicineSchema);
+export default mongoose.models.Medicine ||
+  mongoose.model<IMedicine>("Medicine", MedicineSchema);

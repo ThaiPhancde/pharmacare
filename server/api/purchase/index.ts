@@ -113,29 +113,51 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  if (method === "POST") {
+  if (method === 'POST') {
     const body = await readBody(event);
-
-    // 1. Tạo purchase trước
-    const created = await Purchase.create(body);
-
-    // 2. Loop qua items để tạo Stock
-    const stockList = body.items.map((item) => ({
-      medicine: item.medicine,
-      batch_id: item.batch_id,
-      expiry_date: item.expiry_date,
-      box_pattern: item.box_pattern,
-      box_qty: item.box_qty,
-      unit_qty: item.unit_qty,
-      purchase_price: item.purchase_price,
-      mrp: item.mrp,
-      vat: item.vat,
-      purchase_id: created._id,
-    }));
-
-    // 3. Tạo hết stock một lần
-    await Stock.insertMany(stockList);
-
-    return { status: true, data: created };
+  
+    const session = await Purchase.startSession();
+    session.startTransaction();
+  
+    try {
+      // 1. Tạo purchase
+      const created = await Purchase.create([body], { session });
+  
+      // 2. Duyệt từng item để cập nhật hoặc tạo Stock
+      for (const item of body.items) {
+        const stock = await Stock.findOne({
+          medicine: item.medicine,
+          batch_id: item.batch_id,
+        }).session(session);
+  
+        if (stock) {
+          // Cập nhật số lượng
+          stock.box_pattern = item.box_pattern
+          stock.box_quantity += item.box_quantity;
+          stock.unit_quantity += item.unit_quantity;
+          await stock.save({ session });
+        } else {
+          // Tạo mới stock nếu chưa có
+          await Stock.create([{
+            medicine: item.medicine,
+            batch_id: item.batch_id,
+            expiry_date: item.expiry_date,
+            box_pattern: item.box_pattern,
+            box_quantity: item.box_quantity,
+            unit_quantity: item.unit_quantity,
+          }], { session });
+        }
+      }
+  
+      await session.commitTransaction();
+      session.endSession();
+  
+      return { status: true, data: created[0] };
+    } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
+      console.error('Purchase creation failed:', err);
+      return { status: false, error: 'Transaction failed' };
+    }
   }
 });
