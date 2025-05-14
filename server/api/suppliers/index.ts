@@ -1,8 +1,4 @@
 import Supplier from "@/server/models/Supplier";
-import { supplierFormSchema } from "@/server/models/Supplier";
-import { protectedProcedure } from "@/server/api/trpc";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -18,6 +14,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       data,
+      total,
       pagination: {
         page,
         limit,

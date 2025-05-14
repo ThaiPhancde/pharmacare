@@ -6,7 +6,7 @@ export function usePaginationData<T>(fetcher: (params: { page: number; limit: nu
 
   const pagination = reactive({
     page: 1,
-    limit: 6,
+    limit: 10,
     total: 0,
     get totalPages() {
       return Math.ceil(this.total / this.limit)
