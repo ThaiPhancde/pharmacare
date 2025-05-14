@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Sonner } from "@/components/ui/sonner";
 import { ConfigProvider } from "radix-vue";
-import { NConfigProvider } from "naive-ui";
+import { NConfigProvider, NMessageProvider } from "naive-ui";
 
 const colorMode = useColorMode();
 
@@ -59,15 +59,17 @@ const dir = computed(() => (textDirection.value === "rtl" ? "rtl" : "ltr"));
 
 <template>
   <NConfigProvider>
-    <ConfigProvider :use-id="useIdFunction" :dir="dir">
-      <div vaul-drawer-wrapper class="relative">
-        <NuxtLayout>
-          <NuxtPage />
-        </NuxtLayout>
-        <AppSettings />
-      </div>
-      <Toaster />
-      <Sonner class="pointer-events-auto" />
-    </ConfigProvider>
+    <NMessageProvider>
+      <ConfigProvider :use-id="useIdFunction" :dir="dir">
+        <div vaul-drawer-wrapper class="relative">
+          <NuxtLayout>
+            <NuxtPage />
+          </NuxtLayout>
+          <AppSettings />
+        </div>
+        <Toaster />
+        <Sonner class="pointer-events-auto" />
+      </ConfigProvider>
+    </NMessageProvider>
   </NConfigProvider>
 </template>

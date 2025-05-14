@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
 import { Pencil, Trash, Plus, Eye } from "lucide-vue-next";
-import { useToast } from "@/components/ui/toast";
-import { form, type Customer } from "@/models/customer";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useForm } from "vee-validate";
+import { type Customer } from "@/models/customer";
 import { ref } from "vue";
-const { toast } = useToast();
+import { useMessage } from "naive-ui";
+
+const message = useMessage();
 
 // Column table
 const columns = ref([
@@ -98,28 +97,25 @@ onMounted(fetchData);
 // Form handle
 const showAdd = ref(false);
 const showView = ref(false);
-const formSchema = toTypedSchema(form);
-
 const showDelete = ref(false);
 const selectedCustomer = ref<Customer | null>(null);
+const formErrors = ref<Record<string, string>>({});
 
-const formValue = useForm({
-  validationSchema: formSchema,
-  initialValues: {
-    customer_id: "",
-    full_name: "",
-    contact_info: {
-      phone: "",
-      email: "",
-      address: "",
-    },
-    medical_profile: {
-      chronic_conditions: [],
-      allergies: [],
-      current_medications: [],
-    },
-    notes: "",
+// Sử dụng ref thay vì useForm
+const formValue = ref({
+  customer_id: "",
+  full_name: "",
+  contact_info: {
+    phone: "",
+    email: "",
+    address: "",
   },
+  medical_profile: {
+    chronic_conditions: [""],
+    allergies: [""],
+    current_medications: [""],
+  },
+  notes: "",
 });
 
 const handleViewDetail = (item: Customer) => {
@@ -171,7 +167,8 @@ const handleEdit = (item: Customer) => {
     current_medications: currentMedicationsStr
   });
   
-  formValue.setValues({
+  // Cập nhật formValue thay vì sử dụng setValues
+  formValue.value = {
     customer_id: item.customer_id || '',
     full_name: item.full_name || '',
     contact_info: {
@@ -180,12 +177,13 @@ const handleEdit = (item: Customer) => {
       address: item.contact_info?.address || '',
     },
     medical_profile: {
-      chronic_conditions: chronicConditionsStr ? [chronicConditionsStr] : [''],
-      allergies: allergiesStr ? [allergiesStr] : [''],
-      current_medications: currentMedicationsStr ? [currentMedicationsStr] : [''],
+      chronic_conditions: [chronicConditionsStr],
+      allergies: [allergiesStr],
+      current_medications: [currentMedicationsStr],
     },
     notes: item.notes || '',
-  });
+  };
+  
   showAdd.value = true;
 };
 
@@ -193,7 +191,7 @@ const confirmDelete = async () => {
   if (!selectedCustomer.value) return;
   const res = await api.delete(`/api/customers/${selectedCustomer.value._id}`);
   if (res.status) {
-    toast({ title: "Successfully deleted" });
+    message.success("Successfully deleted");
     await fetchData();
   }
   showDelete.value = false;
@@ -211,103 +209,58 @@ const handleAdd = () => {
   // Create new customer ID, e.g., KH + timestamp
   const newCustomerId = "KH" + Date.now().toString().slice(-6);
 
-  formValue.resetForm({
-    values: {
-      customer_id: newCustomerId,
-      full_name: '',
-      contact_info: {
-        phone: '',
-        email: '',
-        address: '',
-      },
-      medical_profile: {
-        chronic_conditions: [''],
-        allergies: [''],
-        current_medications: [''],
-      },
-      notes: '',
+  // Reset form với giá trị mặc định
+  formValue.value = {
+    customer_id: newCustomerId,
+    full_name: '',
+    contact_info: {
+      phone: '',
+      email: '',
+      address: '',
     },
-  });
+    medical_profile: {
+      chronic_conditions: [''],
+      allergies: [''],
+      current_medications: [''],
+    },
+    notes: '',
+  };
 
   showAdd.value = true;
 };
 
-// Handle form submission directly
-const onSubmit = formValue.handleSubmit(async (values) => {
-  console.log("Form submitted with values:", values);
+// Validate form đơn giản
+const validateForm = () => {
+  const errors: Record<string, string> = {};
   
-  // Process medical profile data - convert comma-separated strings to arrays
-  const processedValues = {
-    ...values,
-    medical_profile: {
-      chronic_conditions: values.medical_profile.chronic_conditions.length > 0 && values.medical_profile.chronic_conditions[0] ? 
-        values.medical_profile.chronic_conditions[0].split(',').map(item => item.trim()).filter(item => item) : [],
-      allergies: values.medical_profile.allergies.length > 0 && values.medical_profile.allergies[0] ? 
-        values.medical_profile.allergies[0].split(',').map(item => item.trim()).filter(item => item) : [],
-      current_medications: values.medical_profile.current_medications.length > 0 && values.medical_profile.current_medications[0] ? 
-        values.medical_profile.current_medications[0].split(',').map(item => item.trim()).filter(item => item) : [],
-    }
-  };
-
-  console.log("Processed values:", processedValues);
-  
-  try {
-    let response;
-    if (selectedCustomer.value) {
-      // Update customer
-      console.log("Updating customer:", selectedCustomer.value._id);
-      response = await api.put(`/api/customers/${selectedCustomer.value._id}`, processedValues);
-    } else {
-      // Add new customer
-      console.log("Adding new customer");
-      response = await api.post("/api/customers", processedValues);
-    }
-
-    console.log("API response:", response);
-    
-    if (response.status) {
-      toast({ title: selectedCustomer.value ? "Successfully updated" : "Successfully added" });
-      await fetchData();
-      showAdd.value = false;
-      selectedCustomer.value = null;
-      formValue.resetForm();
-    } else {
-      toast({ 
-        title: "Error", 
-        description: response.message || "An error occurred",
-        variant: "destructive" 
-      });
-    }
-  } catch (error) {
-    console.error("API Error:", error);
-    toast({ 
-      title: "Error", 
-      description: "Failed to save customer data",
-      variant: "destructive" 
-    });
+  if (!formValue.value.full_name.trim()) {
+    errors.full_name = 'Full name is required';
   }
-});
+  
+  formErrors.value = errors;
+  return Object.keys(errors).length === 0;
+};
 
 const saveCustomer = async () => {
   try {
-    const values = formValue.values;
-    console.log("Full name value:", values.full_name);
-    
-    // Đơn giản hóa việc kiểm tra - chấp nhận bất kỳ input nào
-    if (values.full_name === undefined) {
-      values.full_name = ""; // Đặt giá trị mặc định nếu undefined
+    // Validate form trước khi submit
+    if (!validateForm()) {
+      return;
     }
+    
+    const values = formValue.value;
+    console.log("Form values:", values);
     
     // Process medical profile data - convert comma-separated strings to arrays
     const processedValues = {
       ...values,
       full_name: values.full_name || "",  // Đảm bảo full_name không null/undefined
       medical_profile: {
-        chronic_conditions: values.medical_profile?.chronic_conditions?.length > 0 && values.medical_profile.chronic_conditions[0] ? 
+        chronic_conditions: values.medical_profile.chronic_conditions[0] ? 
           values.medical_profile.chronic_conditions[0].split(',').map(item => item.trim()).filter(item => item) : [],
-        allergies: values.medical_profile?.allergies?.length > 0 && values.medical_profile.allergies[0] ? 
+        allergies: values.medical_profile.allergies[0] ? 
           values.medical_profile.allergies[0].split(',').map(item => item.trim()).filter(item => item) : [],
-        current_medications: values.medical_profile?.current_medications?.length > 0 && values.medical_profile.current_medications[0] ? 
+        current_medications: values.medical_profile.current_medications[0] ? 
           values.medical_profile.current_medications[0].split(',').map(item => item.trim()).filter(item => item) : [],
       }
     };
@@ -326,7 +279,7 @@ const saveCustomer = async () => {
     console.log("API response:", response);
     
     if (response.status) {
-      toast({ title: selectedCustomer.value ? "Successfully updated" : "Successfully added" });
+      message.success(selectedCustomer.value ? "Successfully updated" : "Successfully added");
       
       // Force a complete refresh of data
       pagination.page = 1; // Reset to first page to ensure we see the new/updated entry
@@ -334,21 +287,12 @@ const saveCustomer = async () => {
       
       showAdd.value = false;
       selectedCustomer.value = null;
-      formValue.resetForm();
     } else {
-      toast({ 
-        title: "Error", 
-        description: response.message || "An error occurred",
-        variant: "destructive" 
-      });
+      message.error(response.message || "An error occurred");
     }
   } catch (error) {
     console.error("API Error:", error);
-    toast({ 
-      title: "Error", 
-      description: "Failed to save customer data",
-      variant: "destructive" 
-    });
+    message.error("Failed to save customer data");
   }
 };
 </script>
@@ -359,10 +303,10 @@ const saveCustomer = async () => {
       <div class="flex justify-between">
         <h2 class="text-2xl font-bold tracking-tight">Customer List</h2>
       </div>
-      <Button @click="handleAdd">
+      <n-button type="primary" @click="handleAdd">
         <Plus class="mr-2 h-4 w-4" />
         Add Customer
-      </Button>
+      </n-button>
     </div>
     <DataTable
       :data="dataTable"
@@ -375,247 +319,215 @@ const saveCustomer = async () => {
     />
     
     <!-- View Detail Modal -->
-    <Dialog v-model:open="showView">
-      <DialogContent class="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Customer Details</DialogTitle>
-        </DialogHeader>
-        <div v-if="selectedCustomer" class="grid gap-4 py-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <h3 class="font-semibold mb-1">Customer ID:</h3>
-              <p>{{ selectedCustomer.customer_id }}</p>
-            </div>
-            <div>
-              <h3 class="font-semibold mb-1">Full Name:</h3>
-              <p>{{ selectedCustomer.full_name }}</p>
-            </div>
-          </div>
-          
+    <n-modal v-model:show="showView" preset="card" style="width: 600px" title="Customer Details">
+      <div v-if="selectedCustomer" class="grid gap-4 py-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
-            <h3 class="font-semibold mb-1">Contact Information:</h3>
-            <div class="pl-4">
-              <p><span class="font-medium">Phone:</span> {{ selectedCustomer.contact_info?.phone || '-' }}</p>
-              <p><span class="font-medium">Email:</span> {{ selectedCustomer.contact_info?.email || '-' }}</p>
-              <p><span class="font-medium">Address:</span> {{ selectedCustomer.contact_info?.address || '-' }}</p>
-            </div>
+            <h3 class="font-semibold mb-1">Customer ID:</h3>
+            <p>{{ selectedCustomer.customer_id }}</p>
           </div>
-          
           <div>
-            <h3 class="font-semibold mb-1">Medical Profile:</h3>
-            <div class="pl-4">
-              <div>
-                <p class="font-medium">Chronic Conditions:</p>
-                <div v-if="selectedCustomer.medical_profile?.chronic_conditions?.length">
-                  <ul class="list-disc pl-4">
-                    <li v-for="(condition, i) in selectedCustomer.medical_profile.chronic_conditions" :key="i">
-                      {{ condition }}
-                    </li>
-                  </ul>
-                </div>
-                <p v-else>None</p>
-              </div>
-              
-              <div class="mt-2">
-                <p class="font-medium">Allergies:</p>
-                <div v-if="selectedCustomer.medical_profile?.allergies?.length">
-                  <ul class="list-disc pl-4">
-                    <li v-for="(allergy, i) in selectedCustomer.medical_profile.allergies" :key="i">
-                      {{ allergy }}
-                    </li>
-                  </ul>
-                </div>
-                <p v-else>None</p>
-              </div>
-              
-              <div class="mt-2">
-                <p class="font-medium">Current Medications:</p>
-                <div v-if="selectedCustomer.medical_profile?.current_medications?.length">
-                  <ul class="list-disc pl-4">
-                    <li v-for="(med, i) in selectedCustomer.medical_profile.current_medications" :key="i">
-                      {{ med }}
-                    </li>
-                  </ul>
-                </div>
-                <p v-else>None</p>
-              </div>
-            </div>
-          </div>
-          
-          <div v-if="selectedCustomer.purchase_history?.length">
-            <h3 class="font-semibold mb-1">Purchase History:</h3>
-            <div v-for="(purchase, i) in selectedCustomer.purchase_history" :key="i" class="mb-2 pl-4">
-              <p class="font-medium">Date: {{ purchase.date }}</p>
-              <table class="w-full border-collapse mt-1">
-                <thead>
-                  <tr class="bg-muted">
-                    <th class="border p-1 text-left">Medicine</th>
-                    <th class="border p-1 text-center">Qty</th>
-                    <th class="border p-1 text-center">Unit</th>
-                    <th class="border p-1 text-center">Prescription</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(item, j) in purchase.items" :key="j">
-                    <td class="border p-1">{{ item.medicine_name }}</td>
-                    <td class="border p-1 text-center">{{ item.quantity }}</td>
-                    <td class="border p-1 text-center">{{ item.unit }}</td>
-                    <td class="border p-1 text-center">{{ item.with_prescription ? 'Yes' : 'No' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          
-          <div v-if="selectedCustomer.notes">
-            <h3 class="font-semibold mb-1">Notes:</h3>
-            <p>{{ selectedCustomer.notes }}</p>
-          </div>
-          
-          <div>
-            <h3 class="font-semibold mb-1">Created Date:</h3>
-            <p>{{ new Date(selectedCustomer.created_at || Date.now()).toLocaleString() }}</p>
+            <h3 class="font-semibold mb-1">Full Name:</h3>
+            <p>{{ selectedCustomer.full_name }}</p>
           </div>
         </div>
-        <DialogFooter>
-          <Button @click="showView = false">Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        
+        <div>
+          <h3 class="font-semibold mb-1">Contact Information:</h3>
+          <div class="pl-4">
+            <p><span class="font-medium">Phone:</span> {{ selectedCustomer.contact_info?.phone || '-' }}</p>
+            <p><span class="font-medium">Email:</span> {{ selectedCustomer.contact_info?.email || '-' }}</p>
+            <p><span class="font-medium">Address:</span> {{ selectedCustomer.contact_info?.address || '-' }}</p>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-1">Medical Profile:</h3>
+          <div class="pl-4">
+            <div>
+              <p class="font-medium">Chronic Conditions:</p>
+              <div v-if="selectedCustomer.medical_profile?.chronic_conditions?.length">
+                <ul class="list-disc pl-4">
+                  <li v-for="(condition, i) in selectedCustomer.medical_profile.chronic_conditions" :key="i">
+                    {{ condition }}
+                  </li>
+                </ul>
+              </div>
+              <p v-else>None</p>
+            </div>
+            
+            <div class="mt-2">
+              <p class="font-medium">Allergies:</p>
+              <div v-if="selectedCustomer.medical_profile?.allergies?.length">
+                <ul class="list-disc pl-4">
+                  <li v-for="(allergy, i) in selectedCustomer.medical_profile.allergies" :key="i">
+                    {{ allergy }}
+                  </li>
+                </ul>
+              </div>
+              <p v-else>None</p>
+            </div>
+            
+            <div class="mt-2">
+              <p class="font-medium">Current Medications:</p>
+              <div v-if="selectedCustomer.medical_profile?.current_medications?.length">
+                <ul class="list-disc pl-4">
+                  <li v-for="(med, i) in selectedCustomer.medical_profile.current_medications" :key="i">
+                    {{ med }}
+                  </li>
+                </ul>
+              </div>
+              <p v-else>None</p>
+            </div>
+          </div>
+        </div>
+        
+        <div v-if="selectedCustomer.purchase_history?.length">
+          <h3 class="font-semibold mb-1">Purchase History:</h3>
+          <div v-for="(purchase, i) in selectedCustomer.purchase_history" :key="i" class="mb-2 pl-4">
+            <p class="font-medium">Date: {{ purchase.date }}</p>
+            <n-table :bordered="true" :single-line="false">
+              <thead>
+                <tr>
+                  <th class="text-left">Medicine</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-center">Unit</th>
+                  <th class="text-center">Prescription</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, j) in purchase.items" :key="j">
+                  <td>{{ item.medicine_name }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-center">{{ item.unit }}</td>
+                  <td class="text-center">{{ item.with_prescription ? 'Yes' : 'No' }}</td>
+                </tr>
+              </tbody>
+            </n-table>
+          </div>
+        </div>
+        
+        <div v-if="selectedCustomer.notes">
+          <h3 class="font-semibold mb-1">Notes:</h3>
+          <p>{{ selectedCustomer.notes }}</p>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-1">Created Date:</h3>
+          <p>{{ new Date(selectedCustomer.created_at || Date.now()).toLocaleString() }}</p>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <n-button @click="showView = false">Close</n-button>
+        </div>
+      </template>
+    </n-modal>
     
     <!-- Add/Edit Modal -->
-    <Dialog v-model:open="showAdd">
-      <DialogContent class="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>
-            {{ selectedCustomer ? 'Edit Customer' : 'Add Customer' }}
-          </DialogTitle>
-        </DialogHeader>
-        
+    <n-modal v-model:show="showAdd" preset="card" style="width: 600px" :title="selectedCustomer ? 'Edit Customer' : 'Add Customer'">
+      <n-form>
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label for="customer_id">Customer ID</Label>
-              <Input
-                id="customer_id"
-                v-model="formValue.values.customer_id"
+            <n-form-item label="Customer ID">
+              <n-input
+                v-model:value="formValue.customer_id"
                 placeholder="Customer ID"
-                :readonly="!!selectedCustomer"
+                :disabled="!!selectedCustomer"
               />
-            </div>
+            </n-form-item>
             
-            <div class="space-y-2">
-              <Label for="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                v-model="formValue.values.full_name"
+            <n-form-item label="Full Name" :validation-status="formErrors.full_name ? 'error' : undefined" :feedback="formErrors.full_name">
+              <n-input
+                v-model:value="formValue.full_name"
                 placeholder="Enter full name"
               />
-              <span v-if="formValue.errors.full_name" class="text-xs text-red-500">
-                {{ formValue.errors.full_name }}
-              </span>
-            </div>
+            </n-form-item>
           </div>
           
           <div class="space-y-2">
-            <Label>Contact Information</Label>
+            <div class="text-sm mb-2">Contact Information</div>
             <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label for="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  v-model="formValue.values.contact_info.phone"
+              <n-form-item label="Phone">
+                <n-input
+                  v-model:value="formValue.contact_info.phone"
                   placeholder="Enter phone number"
                 />
-              </div>
+              </n-form-item>
               
-              <div class="space-y-2">
-                <Label for="email">Email</Label>
-                <Input
-                  id="email"
-                  v-model="formValue.values.contact_info.email"
+              <n-form-item label="Email">
+                <n-input
+                  v-model:value="formValue.contact_info.email"
                   placeholder="Enter email"
                 />
-              </div>
+              </n-form-item>
             </div>
             
-            <div class="space-y-2">
-              <Label for="address">Address</Label>
-              <Input
-                id="address"
-                v-model="formValue.values.contact_info.address"
+            <n-form-item label="Address">
+              <n-input
+                v-model:value="formValue.contact_info.address"
                 placeholder="Enter address"
               />
-            </div>
+            </n-form-item>
           </div>
           
           <div class="space-y-2">
-            <Label>Medical Profile</Label>
+            <div class="text-sm mb-2">Medical Profile</div>
             
-            <div class="space-y-2">
-              <Label for="chronic_conditions">Chronic Conditions</Label>
-              <Input
-                id="chronic_conditions"
-                v-model="formValue.values.medical_profile.chronic_conditions[0]"
+            <n-form-item label="Chronic Conditions">
+              <n-input
+                v-model:value="formValue.medical_profile.chronic_conditions[0]"
                 placeholder="Enter conditions (comma separated)"
               />
-            </div>
+            </n-form-item>
             
-            <div class="space-y-2">
-              <Label for="allergies">Allergies</Label>
-              <Input
-                id="allergies"
-                v-model="formValue.values.medical_profile.allergies[0]"
+            <n-form-item label="Allergies">
+              <n-input
+                v-model:value="formValue.medical_profile.allergies[0]"
                 placeholder="Enter allergies (comma separated)"
               />
-            </div>
+            </n-form-item>
             
-            <div class="space-y-2">
-              <Label for="current_medications">Current Medications</Label>
-              <Input
-                id="current_medications"
-                v-model="formValue.values.medical_profile.current_medications[0]"
+            <n-form-item label="Current Medications">
+              <n-input
+                v-model:value="formValue.medical_profile.current_medications[0]"
                 placeholder="Enter medications (comma separated)"
               />
-            </div>
+            </n-form-item>
           </div>
           
-          <div class="space-y-2">
-            <Label for="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              v-model="formValue.values.notes"
+          <n-form-item label="Notes">
+            <n-input
+              v-model:value="formValue.notes"
+              type="textarea"
               placeholder="Enter notes"
-              rows="3"
+              :rows="3"
             />
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" @click="showAdd = false">Cancel</Button>
-            <Button variant="default" @click="saveCustomer">Save</Button>
-          </DialogFooter>
+          </n-form-item>
         </div>
-      </DialogContent>
-    </Dialog>
+      </n-form>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <n-button @click="showAdd = false">Cancel</n-button>
+          <n-button type="primary" @click="saveCustomer">Save</n-button>
+        </div>
+      </template>
+    </n-modal>
     
     <!-- Delete Modal -->
-    <Dialog v-model:open="showDelete">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete customer
-            <span class="font-semibold text-red-500">{{
-              selectedCustomer?.full_name
-            }}</span>
-            ?
-          </DialogDescription>
-        </DialogHeader>
-        <div class="flex justify-end gap-2 mt-4">
-          <Button variant="outline" @click="showDelete = false">Cancel</Button>
-          <Button variant="destructive" @click="confirmDelete">Delete</Button>
+    <n-modal v-model:show="showDelete" preset="dialog" type="error" title="Confirm Delete" positive-text="Delete" negative-text="Cancel" @positive-click="confirmDelete" @negative-click="showDelete = false">
+      <template #default>
+        <div class="py-4">
+          Are you sure you want to delete customer
+          <span class="font-semibold text-red-500">{{ selectedCustomer?.full_name }}</span>?
         </div>
-      </DialogContent>
-    </Dialog>
+      </template>
+    </n-modal>
   </div>
 </template>
+
+<style scoped>
+:deep(.n-form-item) {
+  margin-bottom: 12px;
+}
+</style>

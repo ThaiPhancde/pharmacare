@@ -13,7 +13,7 @@ export interface IPurchaseItem {
 }
 
 export interface IPurchase extends Document {
-  supplier: string;
+  supplier: mongoose.Types.ObjectId;
   date: Date;
   invoice_no: string;
   payment_type: string;
@@ -42,7 +42,7 @@ const PurchaseItemSchema = new Schema<IPurchaseItem>(
 
 const PurchaseSchema = new Schema<IPurchase>(
   {
-    supplier: { type: String, required: true },
+    supplier: { type: Schema.Types.ObjectId, ref: "Supplier", required: true },
     date: { type: Date, default: Date.now },
     invoice_no: { type: String, required: true },
     payment_type: { type: String, required: true },

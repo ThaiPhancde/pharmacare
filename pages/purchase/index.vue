@@ -1,5 +1,6 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
+import { Eye, Pencil, Trash } from "lucide-vue-next";
 
 const statuses = [
   { value: true, label: "🟢 Active" },
@@ -30,7 +31,7 @@ const columns = [
   {
     accessorKey: "supplier",
     header: "Supplier",
-    cell: ({ row }) => row.original.supplier ?? "-",
+    cell: ({ row }) => row.original.supplier.name ?? "-",
   },
   {
     accessorKey: "invoice_no",
@@ -49,7 +50,7 @@ const columns = [
     cell: ({ row }) => {
     const items = row.original.items ?? [];
     const names = items
-      .map((item) => item.medicine)
+      .map((item) => item.medicine.name)
       .filter(Boolean)
       .join(", ");
     const truncated =
@@ -77,8 +78,57 @@ const columns = [
       return total.toLocaleString("vi-VN") + "₫";
     },
   },
-
+  {
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const item = row.original;
+      return h("div", { class: "flex gap-2" }, [
+        h(Eye, {
+          class:
+            "w-4 h-4 text-green-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => navigateTo(`/purchase/${item._id}`),
+        }),
+        // h(Pencil, {
+        //   class:
+        //     "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
+        //   onClick: () => navigateTo(`/purchase/edit/${item._id}`),
+        // }),
+        h(Trash, {
+          class:
+            "w-4 h-4 text-red-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => confirmDelete(item),
+        }),
+      ]);
+    },
+  }
 ];
+
+const confirmDelete = (item) => {
+  if (confirm(`Are you sure you want to delete purchase ${item.invoice_no}?`)) {
+    deletePurchase(item._id);
+  }
+};
+
+const deletePurchase = async (id) => {
+  try {
+    const response = await fetch(`/api/purchase/${id}`, {
+      method: 'DELETE',
+    });
+    
+    const result = await response.json();
+    
+    if (result.status) {
+      fetchData(); // Refresh data after delete
+    } else {
+      console.error('Delete failed:', result.message);
+      alert('Failed to delete purchase');
+    }
+  } catch (error) {
+    console.error('Error deleting purchase:', error);
+    alert('Error deleting purchase');
+  }
+};
 
 </script>
 

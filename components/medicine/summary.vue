@@ -44,12 +44,10 @@ import { Plus } from "lucide-vue-next";
 
 // dùng defineModel thay vì defineProps + defineEmits
 const form = defineModel("form");
-console.log("(❁´◡`❁)😒😒😒 ~ form:", form)
 
 const { vat, discount, paid, items } = toRefs(form.value);
 
 const subTotal = computed(() => {
-  console.log("(❁´◡`❁)😒😒😒 ~ subTotal ~ items:", items);
   return items.value.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
 });
 const total = computed(() => subTotal.value + vat.value - discount.value);
