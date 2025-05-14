@@ -20,11 +20,11 @@ const StockSchema = new Schema<IStock>(
     box_pattern: { type: String },
     box_quantity: { type: Number, default: 0 },
     unit_quantity: { type: Number, default: 0 },
-    // purchase_price: { type: Number, required: true },
-    // mrp: { type: Number, required: true },
-    // vat: { type: Number }, // % VAT nếu có
+    purchase_price: { type: Number, required: true },
+    mrp: { type: Number, required: true },
+    vat: { type: Number }, // % VAT nếu có
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Stock || mongoose.model<IStock>('Stock', StockSchema);;
+export default mongoose.models.Stock || mongoose.model<IStock>('Stock', StockSchema);

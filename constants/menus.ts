@@ -12,6 +12,11 @@ export const navMenu: NavMenu[] = [
       {
         title: "Supplier",
         icon: "i-lucide-user",
+        link: "/suppliers",
+      },
+      {
+        title: "Customer",
+        icon: "i-lucide-users",
         link: "/customers",
       },
       {
@@ -45,6 +50,20 @@ export const navMenu: NavMenu[] = [
         title: "Purchase",
         icon: "i-lucide-package-search",
         link: "/purchase"
+      },
+      {
+        title: "Bank",
+        icon: "i-lucide-credit-card",
+        children: [
+          {
+            title: "Manage Banks",
+            link: "/bank",
+          },
+          {
+            title: "Payment QR",
+            link: "/bank/payment",
+          },
+        ],
       },
     ],
   },

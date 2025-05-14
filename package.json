@@ -93,6 +93,7 @@
     "shadcn-nuxt": "^0.10.4",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
     "unocss": "^66.0.0",
     "unocss-preset-animations": "^1.1.1",

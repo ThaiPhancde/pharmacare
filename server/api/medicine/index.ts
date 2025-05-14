@@ -35,15 +35,20 @@ export default defineEventHandler(async (event) => {
       // 1. Tạo medicine
       const createdMedicine = await Medicine.create([body], { session });
 
-      // 2. Tạo stock liên kết
+      // 2. Tạo stock liên kết với đầy đủ các trường
+      // Sử dụng giá nhập và giá bán từ medicine nếu có
       await Stock.create(
         [
           {
             medicine: createdMedicine[0]._id,
-            batch_id: createdMedicine[0].bar_code,
+            batch_id: createdMedicine[0].barcode || `BATCH-${Date.now()}`,
+            expiry_date: new Date(new Date().setFullYear(new Date().getFullYear() + 2)), // Mặc định 2 năm hạn sử dụng
             box_pattern: "",
             box_quantity: 0,
             unit_quantity: 0,
+            purchase_price: createdMedicine[0].supplierPrice || 0,
+            mrp: createdMedicine[0].price || 0,
+            vat: 0 // Mặc định VAT là 0
           },
         ],
         { session }
@@ -54,11 +59,11 @@ export default defineEventHandler(async (event) => {
       session.endSession();
 
       return { status: true, data: createdMedicine[0] };
-    } catch (err) {
+    } catch (err: any) {
       await session.abortTransaction();
       session.endSession();
       console.error("Transaction failed:", err);
-      return { status: false, error: "Transaction failed" };
+      return { status: false, error: err.message || "Transaction failed" };
     }
   }
 });

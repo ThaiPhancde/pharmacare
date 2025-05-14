@@ -1,7 +1,7 @@
 import Purchase from "@/server/models/Purchase";
 import Stock from "@/server/models/Stock";
 import Medicine from "@/server/models/Medicine";
-import Customer from "@/server/models/Customer";
+import Supplier from "@/server/models/Supplier";
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       Purchase.countDocuments(),
     ]);
     const medicines = await Medicine.find().limit(3); // Lấy 3 loại thuốc có sẵn
-    const customers = await Customer.find().limit(3);
+    const suppliers = await Supplier.find().limit(3);
 
     if (medicines.length < 3) {
       console.error("❌ Cần ít nhất 3 loại thuốc trong collection `Medicine`.");
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   
     const purchases = [
       {
-        supplier: customers[0].name,
+        supplier: suppliers[0].name,
         date: new Date("2025-05-01"),
         invoice_no: "INV-001",
         payment_type: "cash",
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
         ],
       },
       {
-        supplier: customers[1].name,
+        supplier: suppliers[1].name,
         date: new Date("2025-05-03"),
         invoice_no: "INV-002",
         payment_type: "bank",
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
         ],
       },
       {
-        supplier: customers[2].name,
+        supplier: suppliers[2].name,
         date: new Date("2025-05-05"),
         invoice_no: "INV-003",
         payment_type: "credit",
@@ -131,10 +131,13 @@ export default defineEventHandler(async (event) => {
         }).session(session);
   
         if (stock) {
-          // Cập nhật số lượng
-          stock.box_pattern = item.box_pattern
+          // Cập nhật số lượng và giá nếu cần
+          stock.box_pattern = item.box_pattern;
           stock.box_quantity += item.box_quantity;
           stock.unit_quantity += item.unit_quantity;
+          stock.purchase_price = item.supplier_price; // Cập nhật giá nhập mới nhất
+          stock.mrp = item.mrp; // Cập nhật giá bán mới nhất
+          stock.vat = item.vat; // Cập nhật VAT mới nhất
           await stock.save({ session });
         } else {
           // Tạo mới stock nếu chưa có
@@ -145,6 +148,9 @@ export default defineEventHandler(async (event) => {
             box_pattern: item.box_pattern,
             box_quantity: item.box_quantity,
             unit_quantity: item.unit_quantity,
+            purchase_price: item.supplier_price,
+            mrp: item.mrp,
+            vat: item.vat
           }], { session });
         }
       }

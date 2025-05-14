@@ -17,12 +17,27 @@ export function usePaginationData<T>(fetcher: (params: { page: number; limit: nu
     loading.value = true
     try {
       const res = await fetcher({ page: pagination.page, limit: pagination.limit })
+      console.log("Fetched data:", res);
+      
       if (Array.isArray(res)) {
-        data.value = res.map((item, index) => ({
-          ...item,
-          stt: (pagination.page - 1) * pagination.limit + index + 1,
-        }))
+        // Process each item to ensure all properties are properly formatted
+        data.value = res.map((item, index) => {
+          // Add stt (sequence number) property
+          const processedItem = {
+            ...item,
+            stt: (pagination.page - 1) * pagination.limit + index + 1,
+          };
+          
+          console.log("Processed item for display:", processedItem);
+          return processedItem;
+        });
+      } else {
+        console.error("Expected array response but got:", res);
+        data.value = [];
       }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      data.value = [];
     } finally {
       loading.value = false
     }

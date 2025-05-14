@@ -1,0 +1,132 @@
+Đề xuất quy trình thiết kế luồng Stock - Purchase - Invoice trong hiệu thuốc
+
+1. Module Medi (Medicine Master)
+
+Mục đích: Quản lý danh mục thuốc - chỉ thiết lập 1 lần. Đây là danh mục cổ định.
+
+Trường cần thiết:
+
+BarCode / QR Code
+
+Generic Name
+
+Trade Name (Brand)
+
+Category (Antibiotics, Painkiller, etc.)
+
+Unit (Tablet, Strip, Bottle...)
+
+Type (Prescription / OTC)
+
+Description
+
+Price (default sale price)
+
+Image (nếu có)
+
+Không có trường: Expiry Date, Batch ID, Quantity... vì những mục này thay đổi theo lô hàng, phải thuộc về Purchase/Stock.
+
+2. Module Stock
+
+Mục đích: Theo dõi số lượng thuốc hiện tại trong kho.
+
+Mỗi record bao gồm:
+
+Medicine (liên kết với Medi Code)
+
+Batch ID
+
+Expiry Date
+
+Box Pattern (loại vỏ: 1 vỏ = 10 vỏ nhỏ...)
+
+Box Quantity
+
+Unit Quantity (Quantity lẻ)
+
+Purchase Price (giá nhập)
+
+MRP (giá bán)
+
+VAT (nếu có)
+
+Quan trọng: Stock không nhập tay, mà sinh ra tự động từ module Purchase
+
+3. Module Purchase
+
+Mục đích: Nhập hàng từ nhà cung cấp và sinh ra record trong Stock.
+
+Fields gồm:
+
+Supplier (manufacturer / distributor)
+
+Date
+
+Invoice No
+
+Payment Type
+
+List thuốc:
+
+Medicine (liên kết Medi)
+
+Batch ID
+
+Expiry Date
+
+Box Pattern
+
+Box Quantity
+
+Quantity (viên / chai)
+
+Supplier Price
+
+MRP
+
+VAT
+
+Cần tự động sinh:
+
+Subtotal / VAT / Discount / Grand Total / Paid / Due
+
+Sau khi "Save": Sinh ra các bản ghi trong Stock
+
+Loại bỏ:
+
+Field Details (không quan trọng cho logic kinh doanh)
+
+4. Module Invoice (Retail Invoice - Đúng nhu cầu hiệu thuốc)
+
+Loại: Bán lẻ từ kho
+
+Fields:
+
+Date
+
+Customer (tuỳ chọn, không cần bắt buộc)
+
+Medicine List:
+
+Medicine
+
+Batch ID (tự động fill theo stock còn date gần nhất)
+
+Expiry Date (readonly)
+
+Qty
+
+Price (MRP)
+
+VAT
+
+Subtotal
+
+Tính năng:
+
+Kiểm tra stock trước khi trừ
+
+Cập nhật lại Stock (giảm Qty)
+
+5. Kết nối tổng thể:
+Medi Code -> Purchase -> Sinh Stock -> Invoice -> Giảm Stock
