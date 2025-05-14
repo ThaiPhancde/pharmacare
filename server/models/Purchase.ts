@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPurchaseItem {
   medicine: mongoose.Types.ObjectId;
@@ -18,11 +18,16 @@ export interface IPurchase extends Document {
   invoice_no: string;
   payment_type: string;
   items: IPurchaseItem[];
+  vat?: number;
+  discount?: number;
+  total: number;
+  paid: number;
+  due: number;
 }
 
 const PurchaseItemSchema = new Schema<IPurchaseItem>(
   {
-    medicine: { type: Schema.Types.ObjectId, ref: 'Medicine', required: true },
+    medicine: { type: Schema.Types.ObjectId, ref: "Medicine", required: true },
     batch_id: { type: String, required: true },
     expiry_date: { type: Date, required: true },
     box_pattern: { type: String, required: true },
@@ -42,10 +47,17 @@ const PurchaseSchema = new Schema<IPurchase>(
     invoice_no: { type: String, required: true },
     payment_type: { type: String, required: true },
     items: { type: [PurchaseItemSchema], required: true },
+    vat: { type: Number },
+    discount: { type: Number },
+    total: { type: Number, required: true },
+    paid: { type: Number },
+    due: { type: Number },
   },
   { timestamps: true }
 );
 
-const Purchase = mongoose.models.Purchase || mongoose.model<IPurchase>('Purchase', PurchaseSchema);
+const Purchase =
+  mongoose.models.Purchase ||
+  mongoose.model<IPurchase>("Purchase", PurchaseSchema);
 
 export default Purchase;

@@ -1,6 +1,5 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
-import { useToast } from "@/components/ui/toast";
 
 const statuses = [
   { value: true, label: "🟢 Active" },

@@ -1,4 +1,5 @@
 import Medicine from "@/server/models/Medicine";
+import Stock from "@/server/models/Stock";
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
@@ -18,7 +19,14 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === "DELETE") {
-    await Medicine.findByIdAndDelete(id);
+    const medicine = await Medicine.findById(id);
+    if (!medicine) return { status: false, message: "Medicine not found" };
+  
+    await Promise.all([
+      Medicine.findByIdAndDelete(id),
+      Stock.deleteMany({ batch_id: medicine.bar_code }),
+    ]);
+  
     return { status: true };
   }
 });

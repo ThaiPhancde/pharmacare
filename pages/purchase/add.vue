@@ -42,8 +42,16 @@
           placeholder="Optional notes..."
         />
       </n-form-item>
-      <n-form-item label="Medicine" class="col-span-2">
-          <MedicineItem  v-model:value="form.items"/>
+      <n-form-item label="Medicine" :show-label="false" class="col-span-2">
+        <div class="flex flex-col gap-2">
+          <MedicineItem ref="itemRef" v-model:value="form.items" />
+          <MedicineSummary v-model:form="form" @add-row="addMedicine" />
+          <div class="flex justify-end">
+            <Button class="text-white" @click="addMedicine">
+              Add Medicine</Button
+            >
+          </div>
+        </div>
       </n-form-item>
     </n-form>
   </n-card>
@@ -53,11 +61,12 @@
 const form = ref({
   supplier: null,
   date: Date.now(),
-  invoice_no: "",
-  payment_type: "",
-  details: "",
+  invoice_no: null,
+  payment_type: null,
+  details: null,
   items: [
     {
+      id: 1,
       medicine: null,
       batchId: null,
       expiryDate: null,
@@ -70,7 +79,14 @@ const form = ref({
       totalPrice: 0,
     },
   ],
+  vat: 0,
+  discount: 0,
+  total: 0,
+  paid: 0,
+  due: 0,
 }); // expect { supplier, date, invoice_no, payment_type, details }
+
+const itemRef = ref(null);
 
 const supplierOptions = [
   { label: "ABC Pharma", value: "abc" },
@@ -82,6 +98,10 @@ const paymentOptions = [
   { label: "Bank Transfer", value: "bank" },
   { label: "Credit", value: "credit" },
 ];
+
+const addMedicine = () => {
+  itemRef.value?.addRow();
+};
 
 const rules = {
   supplier: { required: true, message: "Select supplier", trigger: "blur" },

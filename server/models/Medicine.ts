@@ -15,6 +15,8 @@ interface IMedicine extends Document {
   bar_code: string;
   description?: string;
   price: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Medicine Schema definition
