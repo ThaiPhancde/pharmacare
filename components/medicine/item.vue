@@ -6,38 +6,41 @@
       :pagination="false"
       bordered
     />
-
-    <div class="flex justify-end mt-4">
-      <n-button type="primary" secondary icon="add" @click="addRow">
-        Thêm thuốc
-      </n-button>
-    </div>
   </div>
 </template>
 
 <script setup lang="jsx">
-import {
-  NInput,
-  NSelect,
-  NDatePicker,
-  NButton,
-  NIcon,
-  NInputNumber,
-} from "naive-ui";
+import { NInput, NSelect, NDatePicker, NIcon, NInputNumber } from "naive-ui";
 import { Trash2 } from "lucide-vue-next";
 
-const boxPatternOptions = [
-  { label: "Vỉ 10", value: "leaf10" },
-  { label: "Vỉ 12", value: "leaf12" },
-];
+const medicineOptions = ref([]);
+const spinMedicine = ref(false);
+const fetchMedicine = async () => {
+  spinMedicine.value = true;
+  const resData = await api.get("/api/medicine", {
+    params: { limit: 99999 },
+  });
+  if (resData.status) {
+    medicineOptions.value = resData.data.map((item) => ({
+      label: item.name,
+      value: item._id,
+      bar_code: item.bar_code,
+    }));
+  }
+  spinMedicine.value = false;
+};
 
 const medicineRows = defineModel("value");
+
+onMounted(() => {
+  fetchMedicine();
+});
 
 function createRow() {
   return {
     id: crypto.randomUUID(),
-    medicine: "",
-    batchId: "",
+    medicine: null,
+    batchId: null,
     expiryDate: null,
     stockQty: 0,
     boxPattern: null,
@@ -60,15 +63,26 @@ const renderLucideIcon = (IconComp) => {
   });
 };
 
+const handleSelectMedicine = (value, option, row) => {
+  row.medicine = value;
+  row.batchId = option.bar_code;
+};
+
 const columns = [
   {
     title: "Medicine Info",
     key: "medicine",
+    minWidth: 240,
     render: (row) =>
-      h(NInput, {
+      h(NSelect, {
+        filterable: true,
+        clearable: true,
+        loading: spinMedicine.value,
+        options: medicineOptions.value,
+        fallbackOption: false,
         value: row.medicine,
-        placeholder: "Tên thuốc",
-        onUpdateValue: (v) => (row.medicine = v),
+        placeholder: "Select medicine",
+        onUpdateValue: (v, option) => handleSelectMedicine(v, option, row),
       }),
   },
   {
@@ -98,6 +112,7 @@ const columns = [
     render: (row) =>
       h(NInputNumber, {
         value: row.stockQty,
+        min: 0,
         onUpdateValue: (v) => (row.stockQty = +v),
       }),
   },
@@ -106,30 +121,31 @@ const columns = [
     key: "boxPattern",
     width: 120,
     render: (row) =>
-      h(NSelect, {
-        filterable: true,
-        clearable: true,
-        options: boxPatternOptions,
+      h(NInput, {
         value: row.boxPattern,
-        placeholder: "Chọn loại vỉ",
+        placeholder: "Input pattern...",
         onUpdateValue: (v) => (row.boxPattern = v),
       }),
   },
   {
     title: "Box Qty",
     key: "boxQty",
+    width: 120,
     render: (row) =>
       h(NInputNumber, {
         value: row.boxQty,
+        min: 0,
         onUpdateValue: (v) => (row.boxQty = +v),
       }),
   },
   {
     title: "Qty",
     key: "quantity",
+    width: 120,
     render: (row) =>
       h(NInputNumber, {
         value: row.quantity,
+        min: 0,
         onUpdateValue: (v) => {
           row.quantity = +v;
           row.totalPrice = row.quantity * row.supplierPrice;
@@ -142,6 +158,7 @@ const columns = [
     render: (row) =>
       h(NInputNumber, {
         value: row.supplierPrice,
+        min: 0,
         onUpdateValue: (v) => {
           row.supplierPrice = +v;
           row.totalPrice = row.quantity * row.supplierPrice;
@@ -154,13 +171,19 @@ const columns = [
     render: (row) =>
       h(NInputNumber, {
         value: row.boxMrp,
+        min: 0,
         onUpdateValue: (v) => (row.boxMrp = +v),
       }),
   },
   {
-    title: "Total Price",
+    title: () => <div class="flex items-center justify-end">Total Price</div>,
     key: "totalPrice",
-    render: (row) => row.totalPrice.toFixed(2),
+    minWidth: 180,
+    render: (row) => (
+      <div class="flex items-center justify-end">
+        {formatVND(row.totalPrice)}
+      </div>
+    ),
   },
   {
     title: "Action",
@@ -194,6 +217,8 @@ const columns = [
 const addRow = () => {
   medicineRows.value?.push(createRow());
 };
+
+defineExpose({ addRow });
 
 const removeRow = (id) => {
   medicineRows.value = medicineRows.value.filter((row) => row.id !== id);

@@ -31,7 +31,7 @@ const columns = [
   {
     accessorKey: "medicine.name",
     header: "Medicine",
-    cell: ({ row }) => row.original.medicine?.name || "-",
+    cell: ({ row }) => row.original.medicine?.name || "",
   },
   {
     accessorKey: "batch_id",
@@ -40,7 +40,7 @@ const columns = [
   {
     accessorKey: "expiry_date",
     header: "Expiry Date",
-    cell: ({ row }) => new Date(row.original.expiry_date).toLocaleDateString(),
+    cell: ({ row }) => row.original.expiry_date ? new Date(row.original.expiry_date).toLocaleDateString(): "",
   },
   {
     accessorKey: "box_pattern",
