@@ -42,6 +42,15 @@ function setLinks() {
 
   const segments = route.fullPath.split("/").filter((item) => item !== "");
 
+  // Xử lý đặc biệt cho trang chi tiết purchase
+  if (segments.length >= 2 && segments[0] === "purchase" && segments[1] !== "add") {
+    return [
+      { title: "Home", href: "/" },
+      { title: "Purchase", href: "/purchase" },
+      { title: "Purchase Details", href: route.fullPath }
+    ];
+  }
+
   const breadcrumbs = segments.map((item, index) => {
     const str = item.replace(/-/g, " ");
     const title = str

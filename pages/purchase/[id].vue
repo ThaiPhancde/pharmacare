@@ -90,124 +90,126 @@ onMounted(fetchPurchaseDetails);
 </script>
 
 <template>
-  <div class="w-full min-h-screen">
+  <div class="w-full bg-background text-foreground min-h-screen">
     <!-- Header with back button -->
-    <n-card>
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <n-button quaternary @click="goBack">
-            ←
-          </n-button>
-          <h1 class="text-xl font-bold">Purchase Details</h1>
-        </div>
-        <n-button @click="goBack">
-          Back to List
-        </n-button>
+    <div class="flex items-center justify-between p-4 border-b border-border">
+      <div class="flex items-center gap-2">
+        <button @click="goBack" class="text-primary hover:text-primary/80">
+          ←
+        </button>
+        <h1 class="text-xl text-primary font-bold">Purchase Details</h1>
       </div>
-    </n-card>
+      <button @click="goBack" class="px-4 py-2 border border-border rounded text-sm hover:bg-muted transition-colors">
+        Back to List
+      </button>
+    </div>
 
     <!-- Loading and error states -->
     <div v-if="loading" class="flex justify-center items-center p-10">
-      <n-spin size="large" />
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
     </div>
     
-    <n-result 
-      v-else-if="error" 
-      status="error" 
-      :title="error" 
-      :description="error"
-    >
-      <template #footer>
-        <n-button @click="fetchPurchaseDetails">
-          Try Again
-        </n-button>
-      </template>
-    </n-result>
+    <div v-else-if="error" class="p-6 bg-destructive/10 border border-destructive/20 m-4 rounded">
+      <h3 class="text-lg font-bold text-destructive">Error</h3>
+      <p class="text-destructive">{{ error }}</p>
+      <button 
+        @click="fetchPurchaseDetails" 
+        class="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
 
     <!-- Purchase details -->
     <div v-else-if="purchase" class="p-4 space-y-4">
       <!-- Basic information card -->
-      <n-card>
+      <div class="bg-card text-card-foreground rounded border border-border shadow-sm p-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
-            <div class="text-sm text-gray-500">Invoice No</div>
+            <div class="text-muted-foreground text-sm">Invoice No</div>
             <div class="font-medium">{{ purchase.invoice_no }}</div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Date</div>
+            <div class="text-muted-foreground text-sm">Date</div>
             <div class="font-medium">{{ formatDate(purchase.date) }}</div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Supplier</div>
+            <div class="text-muted-foreground text-sm">Supplier</div>
             <div class="font-medium">{{ purchase.supplier?.name || 'N/A' }}</div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Payment Type</div>
+            <div class="text-muted-foreground text-sm">Payment Type</div>
             <div class="font-medium capitalize">{{ purchase.payment_type }}</div>
           </div>
         </div>
-      </n-card>
+      </div>
 
       <!-- Items table -->
-      <n-card title="Medicine Items">
-        <n-table :bordered="true" :single-line="false">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Medicine</th>
-              <th>Batch ID</th>
-              <th>Expiry Date</th>
-              <th class="text-right">Box Pattern</th>
-              <th class="text-right">Box Qty</th>
-              <th class="text-right">Unit Qty</th>
-              <th class="text-right">Price</th>
-              <th class="text-right">VAT (%)</th>
-              <th class="text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, index) in purchase.items" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td>{{ item.medicine?.name || 'N/A' }}</td>
-              <td>{{ item.batch_id }}</td>
-              <td>{{ formatDate(item.expiry_date) }}</td>
-              <td class="text-right">{{ item.box_pattern }}</td>
-              <td class="text-right">{{ item.box_quantity }}</td>
-              <td class="text-right">{{ item.unit_quantity }}</td>
-              <td class="text-right">{{ formatVND(item.supplier_price) }}</td>
-              <td class="text-right">{{ item.vat || 0 }}%</td>
-              <td class="text-right font-medium">{{ formatVND(calculateItemTotal(item)) }}</td>
-            </tr>
-          </tbody>
-        </n-table>
-      </n-card>
+      <div class="bg-card text-card-foreground rounded border border-border shadow-sm">
+        <div class="p-4 border-b border-border">
+          <h2 class="font-medium">Medicine Items</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-muted/50 text-muted-foreground">
+                <th class="py-3 px-4 text-left border-b border-border">#</th>
+                <th class="py-3 px-4 text-left border-b border-border">Medicine</th>
+                <th class="py-3 px-4 text-left border-b border-border">Batch ID</th>
+                <th class="py-3 px-4 text-left border-b border-border">Expiry Date</th>
+                <th class="py-3 px-4 text-right border-b border-border">Box Pattern</th>
+                <th class="py-3 px-4 text-right border-b border-border">Box Qty</th>
+                <th class="py-3 px-4 text-right border-b border-border">Unit Qty</th>
+                <th class="py-3 px-4 text-right border-b border-border">Price</th>
+                <th class="py-3 px-4 text-right border-b border-border">VAT (%)</th>
+                <th class="py-3 px-4 text-right border-b border-border">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in purchase.items" :key="index" class="border-b border-border hover:bg-muted/50 transition-colors">
+                <td class="py-3 px-4">{{ index + 1 }}</td>
+                <td class="py-3 px-4">{{ item.medicine?.name || 'N/A' }}</td>
+                <td class="py-3 px-4">{{ item.batch_id }}</td>
+                <td class="py-3 px-4">{{ formatDate(item.expiry_date) }}</td>
+                <td class="py-3 px-4 text-right">{{ item.box_pattern }}</td>
+                <td class="py-3 px-4 text-right">{{ item.box_quantity }}</td>
+                <td class="py-3 px-4 text-right">{{ item.unit_quantity }}</td>
+                <td class="py-3 px-4 text-right">{{ formatVND(item.supplier_price) }}</td>
+                <td class="py-3 px-4 text-right">{{ item.vat || 0 }}%</td>
+                <td class="py-3 px-4 text-right font-medium">{{ formatVND(calculateItemTotal(item)) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- Summary card -->
-      <n-card>
+      <div class="bg-card text-card-foreground rounded border border-border shadow-sm p-6">
         <div class="flex justify-end">
           <div class="w-64">
             <div class="flex justify-between py-2">
-              <span class="text-gray-500">Subtotal:</span>
+              <span class="text-muted-foreground">Subtotal:</span>
               <span>{{ formatVND(subtotal) }}</span>
             </div>
             <div class="flex justify-between py-2">
-              <span class="text-gray-500">VAT:</span>
+              <span class="text-muted-foreground">VAT:</span>
               <span>{{ formatVND(totalVat) }}</span>
             </div>
-            <n-divider />
+            <div class="h-px bg-border my-2"></div>
             <div class="flex justify-between py-2">
-              <span class="font-bold">Total:</span>
-              <span class="font-bold">{{ formatVND(grandTotal) }}</span>
+              <span class="text-primary font-bold">Total:</span>
+              <span class="text-primary font-bold">{{ formatVND(grandTotal) }}</span>
             </div>
           </div>
         </div>
-      </n-card>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-:deep(.n-card) {
-  margin-bottom: 16px;
+table {
+  border-collapse: collapse;
+  width: 100%;
 }
 </style> 
