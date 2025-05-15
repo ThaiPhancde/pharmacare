@@ -7,6 +7,7 @@ import {
   TestTubeDiagonal,
 } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast/use-toast";
+import StockExpire from "@/components/stock/Expire.vue";
 
 const dataCard = ref({
   totalCustomer: 0,
@@ -181,8 +182,9 @@ onMounted(() => {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader class="flex flex-row items-center justify-between pb-2">
             <CardTitle>Recent Sales</CardTitle>
+            <StockExpire class="ml-auto" />
           </CardHeader>
           <CardContent class="grid gap-8">
             <div

@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IStock extends Document {
   medicine: mongoose.Types.ObjectId;
+  purchase: mongoose.Types.ObjectId;
   batch_id: string;
   expiry_date: Date;
   box_pattern: string; // VD: '1 hộp = 10 vỉ'
@@ -15,6 +16,7 @@ export interface IStock extends Document {
 const StockSchema = new Schema<IStock>(
   {
     medicine: { type: Schema.Types.ObjectId, ref: 'Medicine', required: true },
+    purchase: { type: Schema.Types.ObjectId, ref: 'Purchase', required: true },
     batch_id: { type: String, required: true },
     expiry_date: { type: Date },
     box_pattern: { type: String },
@@ -26,5 +28,7 @@ const StockSchema = new Schema<IStock>(
   },
   { timestamps: true }
 );
+
+StockSchema.index({ medicine: 1, batch_id: 1, expiry_date: 1 });
 
 export default mongoose.models.Stock || mongoose.model<IStock>('Stock', StockSchema);

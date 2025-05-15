@@ -44,7 +44,17 @@ export const navMenu: NavMenu[] = [
       {
         title: "Stock",
         icon: "i-lucide-package-search",
-        link: "/stock"
+        children: [
+          {
+            title: "All Stock",
+            link: "/stock",
+          },
+          {
+            title: "Expiring Medicines",
+            link: "/stock/expiring",
+            new: true,
+          },
+        ]
       },
       {
         title: "Purchase",

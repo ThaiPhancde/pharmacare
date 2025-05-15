@@ -118,20 +118,20 @@ watch(
               <div>
                 <DialogTitle class="text-red-600 flex items-center gap-2 font-semibold">
                   <Icon name="i-lucide-alert-circle" class="h-5 w-5" />
-                  Date Expired Medicine
+                  Expiring Medicines Alert
                 </DialogTitle>
                 <DialogDescription class="text-gray-600">
                   Medications expiring within 30 days or already expired
                 </DialogDescription>
               </div>
-              <!-- Đã loại bỏ nút X trùng lặp ở đây -->
+              <!-- Removed duplicate X button here -->
             </div>
             <div class="overflow-auto max-h-[500px]">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Medicine Name</TableHead>
-                    <TableHead>Batch Id</TableHead>
+                    <TableHead>Batch ID</TableHead>
                     <TableHead>Expiry Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Stock</TableHead>
@@ -142,9 +142,9 @@ watch(
                             :class="{ 'bg-red-50 dark:bg-red-950': item.daysLeft <= 0 }">
                     <TableCell class="font-medium">{{ item.name }}</TableCell>
                     <TableCell>{{ item.batchId }}</TableCell>
-                    <TableCell>{{ new Date(item.expiryDate).toLocaleDateString('vi-VN') }}</TableCell>
+                    <TableCell>{{ new Date(item.expiryDate).toLocaleDateString() }}</TableCell>
                     <TableCell>
-                      <Badge :variant="item.daysLeft <= 0 ? 'destructive' : 'warning'">
+                      <Badge :variant="item.daysLeft <= 0 ? 'destructive' : 'secondary'">
                         {{ item.daysLeft <= 0 ? 'Expired' : `${item.daysLeft} days left` }}
                       </Badge>
                     </TableCell>
@@ -198,7 +198,7 @@ watch(
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem as-child>
-                <NuxtLink to="/settings" @click="setOpenMobile(false)">
+                <NuxtLink to="/settings">
                   <Icon name="i-lucide-settings" />
                   Settings
                 </NuxtLink>
@@ -218,7 +218,7 @@ watch(
                   Github Repository
                 </NuxtLink>
               </DropdownMenuItem>
-              <DropdownMenuItem @click="showModalTheme = true">
+              <DropdownMenuItem>
                 <Icon name="i-lucide-paintbrush" />
                 Theme
               </DropdownMenuItem>

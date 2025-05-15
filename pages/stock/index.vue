@@ -76,6 +76,10 @@ const columns = [
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <h2 class="text-2xl font-bold tracking-tight">List Stock</h2>
+      <StockExpire  />
+    </div>
+    <div class="flex justify-end">
+
     </div>
 
     <DataTable
