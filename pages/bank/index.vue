@@ -1,35 +1,22 @@
 <template>
-  <div class="p-4">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Bank List</h1>
-    </div>
-    <div class="flex justify-end items-center mb-4">
-      <n-button type="primary" class="!bg-blue-600 hover:!bg-blue-700 text-white font-semibold px-6 py-2 rounded flex items-center gap-2" @click="showAddModal = true">
-        <Pencil class="w-4 h-4" />
+  <div class="space-y-3">
+    <div class="flex justify-between items-center ">
+      <h1 class="text-2xl font-bold">Bank List</h1>
+      <n-button type="primary" class="!bg-blue-600 hover:!bg-blue-700 text-white font-semibold"
+        @click="showAddModal = true">
+        <template #icon>
+          <Pencil />
+        </template>
         Add Bank
       </n-button>
     </div>
-    <div class="bg-white shadow">
-      <DataTable
-        :columns="columns"
-        :data="filteredBanks"
-        :loading="loading"
-        :pagination="pagination"
-        @page-change="handlePageChange"
-        class="px-2 pb-4"
-      />
-    </div>
+    <DataTable :columns="columns" :data="bankData.data" :loading="bankData.loading" :page="bankData.pagination.page"
+      :size="bankData.pagination.limit" :total="bankData.pagination.total" @changePage="bankData.handlePageChange" />
     <!-- Add Bank Modal -->
     <n-modal v-model:show="showAddModal" preset="card" style="width: 500px" title="Add Bank Account">
       <div class="bg-white rounded-lg shadow border p-6">
-        <n-form
-          ref="formRef"
-          :model="formValue"
-          :rules="rules"
-          label-placement="top"
-          label-width="auto"
-          require-mark-placement="right-hanging"
-        >
+        <n-form ref="formRef" :model="formValue" :rules="rules" label-placement="top" label-width="auto"
+          require-mark-placement="right-hanging">
           <n-form-item label="Bank Name" path="bank_name">
             <n-input v-model:value="formValue.bank_name" placeholder="Enter bank name" />
           </n-form-item>
@@ -43,12 +30,7 @@
             <n-input v-model:value="formValue.branch" placeholder="Enter branch name" />
           </n-form-item>
           <n-form-item label="QR Code Image" path="qr_image">
-            <n-upload
-              :default-upload="false"
-              :max="1"
-              list-type="image-card"
-              :on-change="handleImageChange"
-            >
+            <n-upload :default-upload="false" :max="1" list-type="image-card" :on-change="handleImageChange">
               Upload QR Code
             </n-upload>
           </n-form-item>
@@ -63,7 +45,8 @@
           <n-form-item>
             <n-space justify="end">
               <n-button @click="showAddModal = false">Cancel</n-button>
-              <n-button type="primary" class="!bg-blue-600 hover:!bg-blue-700 text-white font-semibold" @click="saveBank">Save</n-button>
+              <n-button type="primary" class="!bg-blue-600 hover:!bg-blue-700 text-white font-semibold"
+                @click="saveBank">Save</n-button>
             </n-space>
           </n-form-item>
         </n-form>
@@ -77,12 +60,11 @@ import { ref, computed, onMounted, h } from 'vue';
 import { useToast } from '@/components/ui/toast';
 import DataTable from '@/components/base/DataTable/index.vue';
 import { Pencil, Trash } from 'lucide-vue-next';
+import { usePaginationData } from '@/composables/usePaginationData';
 
 const toast = useToast();
 const showAddModal = ref(false);
 const formRef = ref(null);
-const loading = ref(false);
-const bankAccounts = ref([]);
 
 const formValue = ref({
   bank_name: '',
@@ -165,23 +147,10 @@ const columns = [
   }
 ];
 
-const pagination = ref({
-  page: 1,
-  pageSize: 10,
-  pageCount: 1,
-  total: 0
-});
-
-const handlePageChange = (page) => {
-  pagination.value.page = page;
-  fetchBankAccounts();
-};
-
-const fetchBankAccounts = async () => {
-  loading.value = true;
+const fetchBankAccounts = async (params) => {
   try {
     // Mock data for testing
-    bankAccounts.value = [
+    const mockData = [
       {
         id: 1,
         bank_name: 'Sample Bank',
@@ -192,27 +161,32 @@ const fetchBankAccounts = async () => {
         status: true
       }
     ];
-    
-    pagination.value.total = bankAccounts.value.length;
-    
+
+    // Giả lập độ trễ API
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Update pagination total
+    bankData.pagination.total = mockData.length;
+
     // Uncomment when API is working
     // const response = await fetch('/api/bank');
     // const result = await response.json();
     // if (result.status) {
-    //   bankAccounts.value = result.data || [];
-    //   pagination.value.total = result.total || 0;
+    //   return result.data || [];
     // } else {
     //   toast.error(result.message || 'Failed to fetch bank accounts');
+    //   return [];
     // }
+
+    return mockData;
   } catch (error) {
     console.error('Error fetching bank accounts:', error);
     toast.error('Failed to load bank accounts');
-  } finally {
-    loading.value = false;
+    return [];
   }
 };
 
-const filteredBanks = computed(() => bankAccounts.value);
+const bankData = usePaginationData(fetchBankAccounts);
 
 const handleImageChange = (options) => {
   const { file } = options;
@@ -230,7 +204,7 @@ const saveBank = () => {
     if (errors) {
       return;
     }
-    
+
     try {
       // For now, we'll just add to our local array
       // Later, this should be replaced with an API call
@@ -238,8 +212,8 @@ const saveBank = () => {
         id: Date.now(),
         ...formValue.value
       };
-      
-      bankAccounts.value.push(newBank);
+
+      bankData.data.value.push(newBank);
       toast.success('Bank account added successfully');
       showAddModal.value = false;
       resetForm();
@@ -256,9 +230,9 @@ const editBank = (bank) => {
 };
 
 const deleteBank = (id) => {
-  const index = bankAccounts.value.findIndex(bank => bank.id === id);
+  const index = bankData.data.value.findIndex(bank => bank.id === id);
   if (index !== -1) {
-    bankAccounts.value.splice(index, 1);
+    bankData.data.value.splice(index, 1);
     toast.success('Bank account deleted successfully');
   }
 };
@@ -275,6 +249,6 @@ const resetForm = () => {
 };
 
 onMounted(() => {
-  fetchBankAccounts();
+  bankData.fetchData();
 });
-</script> 
+</script>

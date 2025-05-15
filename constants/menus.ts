@@ -58,7 +58,7 @@ export const navMenu: NavMenu[] = [
       },
       {
         title: "Purchase",
-        icon: "i-lucide-package-search",
+        icon: "i-lucide-shopping-cart",
         link: "/purchase"
       },
       {

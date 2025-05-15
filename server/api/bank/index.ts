@@ -1,5 +1,4 @@
 import { defineEventHandler, readBody } from 'h3';
-import Bank from '../../models/Bank';
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
