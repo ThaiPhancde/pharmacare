@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Category, Unit, TypeMedicine } from "@/server/models";
+import { H3Event } from 'h3';
 
 let isConnected = false; // Cờ kiểm tra trạng thái kết nối
 
@@ -17,13 +17,18 @@ export default defineNitroPlugin((nitroApp) => {
 
   mongoose.connect(mongoUri as string, {})
     .then(() => {
-      mongoose.model('Unit', Unit.schema)
-      mongoose.model('Category', Category.schema)
-      mongoose.model('TypeMedicine', TypeMedicine.schema)
       console.log('✅ Connected to MongoDB');
       isConnected = true; // Đánh dấu đã kết nối thành công
     })
     .catch(err => {
       console.error('❌ Failed to connect to MongoDB', err);
     });
+  
+  // Đăng ký middleware để xử lý các lỗi MongoDB
+  nitroApp.hooks.hook('request', (event: H3Event) => {
+    // Handle MongoDB connection errors
+    if (!isConnected) {
+      console.warn('MongoDB connection is not established yet, but API was called');
+    }
+  });
 });

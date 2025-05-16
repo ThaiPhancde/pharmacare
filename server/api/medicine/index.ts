@@ -9,12 +9,25 @@ export default defineEventHandler(async (event) => {
     const page = parseInt(query.page as string) || 1;
     const limit = parseInt(query.limit as string) || 10;
     const skip = (page - 1) * limit;
+    const populate = query.populate as string || '';
+
+    // Xây dựng query dựa trên populate params
+    let medicineQuery = Medicine.find().skip(skip).limit(limit);
+    
+    // Populate các trường chính
+    medicineQuery = medicineQuery.populate("unit_id category_id type_id");
+
+    // Populate stocks nếu được yêu cầu
+    if (populate.includes('stocks')) {
+      medicineQuery = medicineQuery.populate({
+        path: 'stocks',
+        model: 'Stock',
+        match: { unit_quantity: { $gt: 0 } } // Chỉ lấy các stock có số lượng > 0
+      });
+    }
 
     const [data, total] = await Promise.all([
-      Medicine.find()
-        .skip(skip)
-        .limit(limit)
-        .populate("unit_id category_id type_id"),
+      medicineQuery,
       Medicine.countDocuments(),
     ]);
 

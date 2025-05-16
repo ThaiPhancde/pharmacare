@@ -17,6 +17,7 @@ interface IMedicine extends Document {
   price: number;
   createdAt?: Date;
   updatedAt?: Date;
+  stocks?: any[]; // Trường ảo để chứa stocks
 }
 
 // Medicine Schema definition
@@ -35,8 +36,19 @@ const MedicineSchema = new Schema<IMedicine>(
     supplier_price: Number,
     bar_code: String,
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+// Định nghĩa trường ảo stocks
+MedicineSchema.virtual('stocks', {
+  ref: 'Stock',
+  localField: '_id',
+  foreignField: 'medicine'
+});
 
 MedicineSchema.set("toJSON", {
   transform: (doc, ret) => {
@@ -52,6 +64,7 @@ MedicineSchema.set("toJSON", {
 
     return ret;
   },
+  virtuals: true
 });
 
 // Create and export the model

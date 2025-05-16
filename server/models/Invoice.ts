@@ -20,6 +20,8 @@ export interface IInvoice extends Document {
   grand_total: number;
   paid: number;
   due: number;
+  payment_method: string;
+  is_pos: boolean;
 }
 
 const InvoiceItemSchema = new Schema<IInvoiceItem>(
@@ -28,17 +30,16 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>(
     batch_id: { type: String, required: true },
     expiry_date: { type: Date, required: true },
     quantity: { type: Number, required: true },
-    price: { type: Number, required: true }, // MRP
+    price: { type: Number, required: true }, // Selling price (MRP)
     vat: { type: Number, default: 0 },
     subtotal: { type: Number, required: true },
-  },
-  { _id: false } // không cần _id cho mỗi item con
+  }
 );
 
 const InvoiceSchema = new Schema<IInvoice>(
   {
     date: { type: Date, default: Date.now },
-    customer: { type: Schema.Types.ObjectId, ref: 'Customer' }, // Optional
+    customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
     items: { type: [InvoiceItemSchema], required: true },
     subtotal: { type: Number, required: true },
     vat_total: { type: Number, default: 0 },
@@ -46,6 +47,8 @@ const InvoiceSchema = new Schema<IInvoice>(
     grand_total: { type: Number, required: true },
     paid: { type: Number, required: true },
     due: { type: Number, default: 0 },
+    payment_method: { type: String, default: 'cash' },
+    is_pos: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

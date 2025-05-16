@@ -1,184 +1,247 @@
 <template>
-  <div class="w-full max-w-4xl mx-auto my-8">
-    <h1 class="text-2xl font-bold mb-6">New Invoice</h1>
+  <n-card class="bg-gray-50 border-l-4 border-primary shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-primary">Create New Invoice</h2>
+    </div>
     
     <n-form
+      ref="formRef"
       :model="form"
       :rules="rules"
       label-placement="top"
-      class="grid grid-cols-1 md:grid-cols-2 gap-4"
+      class="grid grid-cols-2 gap-4"
     >
-      <n-form-item label="Date" path="date" class="col-span-1">
-        <n-date-picker v-model:value="form.date" type="date" clearable />
-      </n-form-item>
-
-      <n-form-item label="Customer (Optional)" path="customer" class="col-span-1">
+      <!-- Basic Info -->
+      <n-form-item label="Customer (Optional)" path="customer">
         <n-select
           v-model:value="form.customer"
           :options="customerOptions"
-          placeholder="Select Customer"
+          placeholder="Select customer or leave empty for walk-in"
           filterable
           clearable
         />
       </n-form-item>
 
-      <div class="col-span-2">
-        <h2 class="text-lg font-semibold mb-2">Medicine Items</h2>
-        
-        <n-data-table
-          :columns="columns"
-          :data="form.items"
-          :pagination="false"
-          bordered
+      <n-form-item label="Date" path="date">
+        <n-date-picker 
+          v-model:value="form.date" 
+          type="date" 
+          clearable 
+          value-format="timestamp"
         />
+      </n-form-item>
 
-        <div class="flex justify-end mt-4">
-          <n-button type="primary" secondary @click="addRow">
+      <n-form-item label="Invoice No" path="invoice_no">
+        <n-input
+          v-model:value="form.invoice_no"
+          placeholder="Auto generated"
+          disabled
+        />
+      </n-form-item>
+
+      <n-form-item label="Payment Method" path="payment_method">
+        <n-select
+          v-model:value="form.payment_method"
+          :options="paymentOptions"
+          placeholder="Select payment method"
+        />
+      </n-form-item>
+
+      <!-- Medicine List -->
+      <div class="col-span-2">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-medium text-primary">Medicine List</h3>
+          <n-button type="primary" @click="addMedicineItem" class="bg-primary">
             Add Medicine
           </n-button>
         </div>
+
+        <div v-for="(item, index) in form.items" :key="index" class="mb-4 p-4 border rounded-lg border-gray-200 hover:border-primary transition-colors">
+          <div class="grid grid-cols-3 gap-4">
+            <n-form-item :label="'Medicine ' + (index + 1)" :path="'items[' + index + '].medicine'">
+              <n-select
+                v-model:value="item.medicine"
+                :options="medicineOptions"
+                placeholder="Select medicine"
+                filterable
+                @update:value="(val) => handleMedicineSelect(val, index)"
+              />
+            </n-form-item>
+
+            <n-form-item label="Batch" :path="'items[' + index + '].batch_id'">
+              <n-select
+                v-model:value="item.batch_id"
+                :options="getBatchOptions(item.medicine)"
+                placeholder="Select batch"
+                filterable
+                :disabled="!item.medicine"
+                @update:value="(val) => handleBatchSelect(val, item.medicine, index)"
+              />
+            </n-form-item>
+
+            <n-form-item label="Expiry Date" :path="'items[' + index + '].expiry_date'">
+              <n-date-picker
+                v-model:value="item.expiry_date"
+                type="date"
+                clearable
+                disabled
+              />
+            </n-form-item>
+
+            <n-form-item label="Quantity" :path="'items[' + index + '].quantity'">
+              <n-input-number 
+                v-model:value="item.quantity" 
+                :min="1" 
+                :max="item.max_quantity || 1"
+                :disabled="!item.batch_id"
+                @update:value="updateItemTotal(item)"
+              />
+            </n-form-item>
+
+            <n-form-item label="Price" :path="'items[' + index + '].price'">
+              <n-input-number 
+                v-model:value="item.price" 
+                :min="0"
+                disabled
+              />
+            </n-form-item>
+
+            <n-form-item label="VAT (%)" :path="'items[' + index + '].vat'">
+              <n-input-number 
+                v-model:value="item.vat" 
+                :min="0" 
+                :max="100"
+                disabled
+              />
+            </n-form-item>
+
+            <n-form-item label="Subtotal" :path="'items[' + index + '].subtotal'" class="col-span-3">
+              <n-input-number
+                v-model:value="item.subtotal"
+                :min="0"
+                disabled
+                :formatter="value => `${value.toLocaleString('vi-VN')} ₫`"
+              />
+            </n-form-item>
+          </div>
+          
+          <div class="flex justify-end mt-2">
+            <n-button type="error" class="bg-red-500 hover:bg-red-600 text-white" @click="removeMedicineItem(index)">
+              Remove
+            </n-button>
+          </div>
+        </div>
       </div>
 
-      <div class="col-span-2 grid grid-cols-2 gap-4">
-        <n-form-item label="Subtotal" path="subtotal">
-          <n-input-number
-            v-model:value="form.subtotal"
-            disabled
-            :formatter="(value) => `₫ ${value}`"
-          />
-        </n-form-item>
-
-        <n-form-item label="VAT Total" path="vat_total">
-          <n-input-number
-            v-model:value="form.vat_total"
-            disabled
-            :formatter="(value) => `₫ ${value}`"
-          />
-        </n-form-item>
-
-        <n-form-item label="Discount" path="discount">
-          <n-input-number
-            v-model:value="form.discount"
-            @update:value="calculateTotal"
-            :formatter="(value) => `₫ ${value}`"
-          />
-        </n-form-item>
-
-        <n-form-item label="Grand Total" path="grand_total">
-          <n-input-number
-            v-model:value="form.grand_total"
-            disabled
-            :formatter="(value) => `₫ ${value}`"
-          />
-        </n-form-item>
-
-        <n-form-item label="Paid Amount" path="paid">
-          <n-input-number
-            v-model:value="form.paid"
-            @update:value="calculateDue"
-            :formatter="(value) => `₫ ${value}`"
-          />
-        </n-form-item>
-
-        <n-form-item label="Due Amount" path="due">
-          <n-input-number
-            v-model:value="form.due"
-            disabled
-            :formatter="(value) => `₫ ${value}`"
-          />
-        </n-form-item>
+      <!-- Summary -->
+      <div class="col-span-2">
+        <n-card title="Summary" class="mt-4 border-t-4 border-primary">
+          <div class="flex justify-end">
+            <div class="grid grid-cols-2 gap-4 min-w-[300px]">
+              <div class="text-right text-gray-600">Subtotal:</div>
+              <div class="font-medium">{{ formatVND(calculateSubTotal) }}</div>
+              
+              <div class="text-right text-gray-600">VAT Total:</div>
+              <div class="font-medium">{{ formatVND(calculateVatTotal) }}</div>
+              
+              <div class="text-right text-gray-600">Discount:</div>
+              <div class="font-medium">
+                <n-input-number 
+                  v-model:value="form.discount" 
+                  :min="0" 
+                  :max="calculateSubTotal + calculateVatTotal"
+                  @update:value="updateGrandTotal"
+                  :formatter="value => `${value.toLocaleString('vi-VN')} ₫`"
+                />
+              </div>
+              
+              <div class="text-right font-bold text-primary">Grand Total:</div>
+              <div class="font-bold text-primary">{{ formatVND(form.grand_total) }}</div>
+              
+              <div class="text-right text-gray-600">Amount Paid:</div>
+              <div class="font-medium">
+                <n-input-number 
+                  v-model:value="form.paid" 
+                  :min="0"
+                  @update:value="updateDue"
+                  :formatter="value => `${value.toLocaleString('vi-VN')} ₫`"
+                />
+              </div>
+              
+              <div class="text-right font-bold text-primary">Due Amount:</div>
+              <div class="font-bold text-primary">{{ formatVND(form.due) }}</div>
+            </div>
+          </div>
+        </n-card>
       </div>
 
-      <div class="col-span-2 flex justify-end gap-4 mt-6">
-        <n-button @click="resetForm">Reset</n-button>
-        <n-button type="primary" @click="submitForm" :loading="submitting">
-          Save Invoice
-        </n-button>
+      <!-- Submit buttons -->
+      <div class="col-span-2 flex justify-end gap-4 mt-4">
+        <n-button @click="resetForm" class="bg-gray-100 hover:bg-gray-200 text-gray-700">Reset</n-button>
+        <n-button type="primary" @click="handleSubmit" class="bg-primary hover:bg-primary-dark">Save Invoice</n-button>
       </div>
     </n-form>
-  </div>
+  </n-card>
 </template>
 
 <script setup>
-import { NForm, NFormItem, NButton, NSelect, NDatePicker, NDataTable, NInputNumber, NInput } from 'naive-ui';
-import { ref, h, computed, watch } from 'vue';
-import { useToast } from "@/components/ui/toast";
+import { ref, computed, onMounted, watch } from 'vue';
+import { api } from '@/utils/api';
+import { useRouter } from 'vue-router';
+import { useToast } from '@/components/ui/toast';
 
-const { toast } = useToast();
+const router = useRouter();
+const toast = useToast();
 
-const submitting = ref(false);
-
-// Form state
+const formRef = ref(null);
 const form = ref({
-  date: Date.now(),
   customer: null,
+  date: Date.now(),
+  invoice_no: null,
+  payment_method: 'cash',
   items: [],
   subtotal: 0,
   vat_total: 0,
   discount: 0,
   grand_total: 0,
   paid: 0,
-  due: 0
+  due: 0,
+  is_pos: false
 });
 
-// Validation rules
-const rules = {
-  date: { required: true, message: 'Date is required', trigger: 'blur' },
-  items: { 
-    required: true, 
-    validator: (rule, value) => value.length > 0,
-    message: 'At least one medicine item is required',
-    trigger: 'change'
-  },
-  paid: { required: true, message: 'Paid amount is required', trigger: 'blur' }
-};
-
-// Options for customer selection
 const customerOptions = ref([]);
-
-// Fetch customers
-const fetchCustomers = async () => {
-  try {
-    const response = await api.get('/api/customers', { params: { limit: 999 } });
-    if (response && response.data) {
-      customerOptions.value = response.data.map(customer => ({
-        label: customer.full_name || customer.customer_id,
-        value: customer._id
-      }));
-    }
-  } catch (error) {
-    console.error('Failed to fetch customers:', error);
-  }
-};
-
-// Medicine options
 const medicineOptions = ref([]);
 const medicineStockMap = ref({});
 
-// Fetch medicines and their stock data
+const paymentOptions = [
+  { label: "Cash", value: "cash" },
+  { label: "Credit Card", value: "card" },
+  { label: "Bank Transfer", value: "bank" }
+];
+
+// Fetch medicines
 const fetchMedicines = async () => {
   try {
-    // Fetch medicines
-    const medicineResponse = await api.get('/api/medicine', { params: { limit: 999 } });
+    const res = await api.get("/api/medicine", { params: { limit: 100 } });
     
-    if (medicineResponse && medicineResponse.data) {
-      medicineOptions.value = medicineResponse.data.map(medicine => ({
+    if (res.status && res.data) {
+      medicineOptions.value = res.data.map(medicine => ({
         label: medicine.name,
-        value: medicine._id,
-        price: medicine.price
+        value: medicine._id
       }));
     }
     
-    // Fetch stock data
-    const stockResponse = await api.get('/api/stock', { params: { limit: 999 } });
+    // Fetch stock data for medicines
+    const stockRes = await api.get("/api/stock", { params: { limit: 999 } });
     
-    if (stockResponse && stockResponse.data) {
+    if (stockRes.status && stockRes.data) {
       // Create map of medicine ID to stock details for easy lookup
-      stockResponse.data.forEach(stock => {
+      stockRes.data.forEach(stock => {
         if (stock.medicine) {
           if (!medicineStockMap.value[stock.medicine._id]) {
             medicineStockMap.value[stock.medicine._id] = [];
           }
+          
           medicineStockMap.value[stock.medicine._id].push({
             batch_id: stock.batch_id,
             expiry_date: stock.expiry_date,
@@ -191,32 +254,49 @@ const fetchMedicines = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch medicines or stock:', error);
+    toast.error('Failed to load medicines or stock');
   }
 };
 
-// Initialize component
-onMounted(async () => {
-  await Promise.all([fetchCustomers(), fetchMedicines()]);
-  addRow(); // Add first row
-});
-
-// Add a new row to the medicines list
-const addRow = () => {
-  form.value.items.push({
-    medicine: null,
-    batch_id: null,
-    expiry_date: null,
-    quantity: 1,
-    price: 0,
-    vat: 0,
-    subtotal: 0
-  });
+// Fetch customers
+const fetchCustomers = async () => {
+  try {
+    const res = await api.get("/api/customers", { params: { limit: 100 } });
+    
+    if (res.status && res.data) {
+      customerOptions.value = res.data.map(customer => ({
+        label: customer.full_name || customer.customer_id,
+        value: customer._id
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to fetch customers:', error);
+    toast.error('Failed to load customers');
+  }
 };
 
-// Remove a row by index
-const removeRow = (index) => {
-  form.value.items.splice(index, 1);
-  calculateTotals();
+// Function to generate next invoice number
+const generateInvoiceNo = async () => {
+  try {
+    const res = await api.get("/api/invoice", { params: { limit: 1 } });
+    
+    let nextNumber = 1;
+    
+    if (res.status && res.data && res.data.length > 0) {
+      const lastInvoice = res.data[0].invoice_no;
+      const match = lastInvoice?.match(/INV-(\d+)/);
+      if (match) {
+        nextNumber = parseInt(match[1]) + 1;
+      }
+    }
+    
+    form.value.invoice_no = `INV-${String(nextNumber).padStart(3, '0')}`;
+  } catch (error) {
+    console.error('Error generating invoice number:', error);
+    // Fallback to timestamp-based number
+    const timestamp = Date.now().toString().slice(-6);
+    form.value.invoice_no = `INV-${timestamp}`;
+  }
 };
 
 // Get batch options for a selected medicine
@@ -235,219 +315,239 @@ const getBatchOptions = (medicineId) => {
   }));
 };
 
-// Update item details when batch is selected
-const updateItemDetails = (row, batchInfo) => {
-  if (batchInfo) {
-    row.expiry_date = batchInfo.expiry_date;
-    row.price = batchInfo.mrp;
-    row.vat = batchInfo.vat;
-    
-    // Set max quantity to available quantity
-    if (row.quantity > batchInfo.available_qty) {
-      row.quantity = batchInfo.available_qty;
-    }
-    
-    // Calculate subtotal
-    row.subtotal = row.quantity * row.price;
+// Handle medicine selection
+const handleMedicineSelect = (medicineId, index) => {
+  if (!medicineId) {
+    const item = form.value.items[index];
+    item.batch_id = null;
+    item.expiry_date = null;
+    item.price = 0;
+    item.vat = 0;
+    item.quantity = 1;
+    item.max_quantity = 1;
+    item.subtotal = 0;
+    updateTotals();
   }
-  
-  calculateTotals();
 };
 
-// Calculate all totals
-const calculateTotals = () => {
-  // Calculate subtotal
-  form.value.subtotal = form.value.items.reduce((total, item) => total + (item.subtotal || 0), 0);
+// Handle batch selection
+const handleBatchSelect = (batchId, medicineId, index) => {
+  if (!batchId || !medicineId) return;
   
-  // Calculate VAT total
-  form.value.vat_total = form.value.items.reduce((total, item) => {
+  const batchOptions = getBatchOptions(medicineId);
+  const selectedBatch = batchOptions.find(option => option.value === batchId);
+  
+  if (selectedBatch) {
+    const item = form.value.items[index];
+    item.expiry_date = selectedBatch.expiry_date;
+    item.price = selectedBatch.mrp;
+    item.vat = selectedBatch.vat;
+    item.max_quantity = selectedBatch.available_qty;
+    
+    // Ensure quantity doesn't exceed available stock
+    if (item.quantity > selectedBatch.available_qty) {
+      item.quantity = selectedBatch.available_qty;
+    }
+    
+    updateItemTotal(item);
+  }
+};
+
+// Update item total
+const updateItemTotal = (item) => {
+  item.subtotal = item.quantity * item.price;
+  updateTotals();
+};
+
+// Calculate subtotal
+const calculateSubTotal = computed(() => {
+  return form.value.items.reduce((total, item) => total + (item.subtotal || 0), 0);
+});
+
+// Calculate VAT total
+const calculateVatTotal = computed(() => {
+  return form.value.items.reduce((total, item) => {
     const vatAmount = ((item.subtotal || 0) * (item.vat || 0)) / 100;
     return total + vatAmount;
   }, 0);
-  
-  // Calculate grand total
-  calculateTotal();
+});
+
+// Update totals
+const updateTotals = () => {
+  form.value.subtotal = calculateSubTotal.value;
+  form.value.vat_total = calculateVatTotal.value;
+  updateGrandTotal();
 };
 
-// Calculate grand total
-const calculateTotal = () => {
+// Update grand total
+const updateGrandTotal = () => {
   form.value.grand_total = form.value.subtotal + form.value.vat_total - form.value.discount;
-  calculateDue();
+  updateDue();
 };
 
-// Calculate due amount
-const calculateDue = () => {
+// Update due amount
+const updateDue = () => {
   form.value.due = form.value.grand_total - form.value.paid;
 };
 
-// Watch for changes in items to recalculate totals
-watch(
-  () => form.value.items,
-  () => calculateTotals(),
-  { deep: true }
-);
+// Add medicine item
+const addMedicineItem = () => {
+  form.value.items.push({
+    medicine: null,
+    batch_id: null,
+    expiry_date: null,
+    quantity: 1,
+    price: 0,
+    vat: 0,
+    subtotal: 0,
+    max_quantity: 1
+  });
+};
 
-// Table columns
-const columns = [
-  {
-    title: 'Medicine',
-    key: 'medicine',
-    render: (row, index) => h(NSelect, {
-      value: row.medicine,
-      options: medicineOptions.value,
-      placeholder: 'Select Medicine',
-      filterable: true,
-      onUpdateValue: (value) => {
-        row.medicine = value;
-        row.batch_id = null;
-        row.expiry_date = null;
-        row.price = 0;
-        row.vat = 0;
-        row.subtotal = 0;
-        calculateTotals();
-      }
-    })
+// Remove medicine item
+const removeMedicineItem = (index) => {
+  form.value.items.splice(index, 1);
+  updateTotals();
+};
+
+// Validation rules
+const rules = {
+  date: { 
+    required: true, 
+    message: "Please select date", 
+    trigger: ["blur", "change"],
+    type: 'number',
+    validator: (rule, value) => value !== null && value !== undefined && !isNaN(value)
   },
-  {
-    title: 'Batch',
-    key: 'batch_id',
-    render: (row) => h(NSelect, {
-      value: row.batch_id,
-      options: getBatchOptions(row.medicine),
-      placeholder: 'Select Batch',
-      disabled: !row.medicine,
-      onUpdateValue: (value) => {
-        row.batch_id = value;
-        const batchOptions = getBatchOptions(row.medicine);
-        const selectedBatch = batchOptions.find(option => option.value === value);
-        updateItemDetails(row, selectedBatch);
-      }
-    })
+  invoice_no: { required: true, message: "Invoice number is required", trigger: "blur" },
+  payment_method: { required: true, message: "Please select payment method", trigger: "change" },
+  "items": {
+    type: "array",
+    required: true,
+    message: "At least one item is required",
+    trigger: "change",
+    validator: (rule, value) => value && value.length > 0
   },
-  {
-    title: 'Expiry',
-    key: 'expiry_date',
-    render: (row) => row.expiry_date ? new Date(row.expiry_date).toLocaleDateString() : '-'
+  "items[].medicine": { required: true, message: "Please select medicine", trigger: "change" },
+  "items[].batch_id": { required: true, message: "Please select batch", trigger: "change" },
+  "items[].quantity": { 
+    required: true, 
+    type: "number", 
+    min: 1, 
+    message: "Quantity must be at least 1", 
+    trigger: "change" 
   },
-  {
-    title: 'Qty',
-    key: 'quantity',
-    render: (row) => h(NInputNumber, {
-      value: row.quantity,
-      min: 1,
-      max: getBatchOptions(row.medicine).find(b => b.value === row.batch_id)?.available_qty || 1,
-      disabled: !row.batch_id,
-      onUpdateValue: (value) => {
-        row.quantity = value;
-        row.subtotal = row.quantity * row.price;
-        calculateTotals();
-      }
-    })
-  },
-  {
-    title: 'Price',
-    key: 'price',
-    render: (row) => h(NInputNumber, {
-      value: row.price,
-      disabled: true,
-      formatter: (value) => `₫ ${value}`
-    })
-  },
-  {
-    title: 'VAT (%)',
-    key: 'vat',
-    render: (row) => `${row.vat || 0}%`
-  },
-  {
-    title: 'Subtotal',
-    key: 'subtotal',
-    render: (row) => `₫ ${row.subtotal || 0}`
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (row, index) => h(NButton, {
-      type: 'error',
-      size: 'small',
-      onClick: () => removeRow(index),
-      disabled: form.value.items.length <= 1
-    }, { default: () => 'Remove' })
+  paid: {
+    required: true,
+    type: "number",
+    message: "Paid amount is required",
+    trigger: "change"
   }
-];
+};
 
 // Reset form
-const resetForm = () => {
+const resetForm = async () => {
   form.value = {
-    date: Date.now(),
     customer: null,
+    date: Date.now(),
+    invoice_no: null,
+    payment_method: 'cash',
     items: [],
     subtotal: 0,
     vat_total: 0,
     discount: 0,
     grand_total: 0,
     paid: 0,
-    due: 0
+    due: 0,
+    is_pos: false
   };
-  addRow();
+  
+  addMedicineItem(); // Add first empty item
+  await generateInvoiceNo(); // Generate new invoice number
 };
 
-// Submit form
-const submitForm = async () => {
-  try {
-    submitting.value = true;
-    
-    // Validate form
-    if (form.value.items.length === 0) {
-      toast({ title: "Error", description: "Please add at least one medicine item", type: "error" });
+// Handle form submission
+const handleSubmit = () => {
+  formRef.value?.validate(async (errors) => {
+    if (errors) {
       return;
     }
     
-    // Check if any medicine or batch is not selected
-    if (form.value.items.some(item => !item.medicine || !item.batch_id)) {
-      toast({ title: "Error", description: "Please select medicine and batch for all items", type: "error" });
-      return;
+    try {
+      // Check if any medicine or batch is not selected
+      if (form.value.items.some(item => !item.medicine || !item.batch_id)) {
+        toast.error("Please select medicine and batch for all items");
+        return;
+      }
+      
+      // Check if paid amount is valid
+      if (form.value.paid < 0) {
+        toast.error("Paid amount cannot be negative");
+        return;
+      }
+      
+      // Create invoice data
+      const invoiceData = {
+        date: form.value.date,
+        customer: form.value.customer,
+        invoice_no: form.value.invoice_no,
+        payment_method: form.value.payment_method,
+        items: form.value.items.map(item => ({
+          medicine: item.medicine,
+          batch_id: item.batch_id,
+          expiry_date: item.expiry_date,
+          quantity: item.quantity,
+          price: item.price,
+          vat: item.vat,
+          subtotal: item.subtotal
+        })),
+        subtotal: form.value.subtotal,
+        vat_total: form.value.vat_total,
+        discount: form.value.discount,
+        grand_total: form.value.grand_total,
+        paid: form.value.paid,
+        due: form.value.due,
+        is_pos: false
+      };
+      
+      const response = await api.post('/api/invoice', invoiceData);
+      
+      if (response.status) {
+        toast.success('Invoice created successfully');
+        resetForm();
+        router.push('/invoice');
+      } else {
+        toast.error(response.message || 'Failed to create invoice');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error(error.message || 'An unexpected error occurred');
     }
-    
-    // Check if paid amount is valid
-    if (form.value.paid < 0 || form.value.paid > form.value.grand_total) {
-      toast({ title: "Error", description: "Invalid paid amount", type: "error" });
-      return;
-    }
-    
-    // Create invoice data
-    const invoiceData = {
-      date: form.value.date,
-      customer: form.value.customer,
-      items: form.value.items.map(item => ({
-        medicine: item.medicine,
-        batch_id: item.batch_id,
-        expiry_date: item.expiry_date,
-        quantity: item.quantity,
-        price: item.price,
-        vat: item.vat,
-        subtotal: item.subtotal
-      })),
-      subtotal: form.value.subtotal,
-      vat_total: form.value.vat_total,
-      discount: form.value.discount,
-      grand_total: form.value.grand_total,
-      paid: form.value.paid,
-      due: form.value.due
-    };
-    
-    // Submit invoice
-    const response = await api.post('/api/invoice', invoiceData);
-    
-    if (response && response.status) {
-      toast({ title: "Success", description: "Invoice created successfully" });
-      resetForm();
-    } else {
-      toast({ title: "Error", description: response.error || "Failed to create invoice", type: "error" });
-    }
-  } catch (error) {
-    toast({ title: "Error", description: error.message || "An unexpected error occurred", type: "error" });
-  } finally {
-    submitting.value = false;
-  }
+  });
 };
+
+// Format currency
+const formatVND = (value) => {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    minimumFractionDigits: 0
+  }).format(value);
+};
+
+// Init
+onMounted(async () => {
+  try {
+    await Promise.all([
+      fetchMedicines(),
+      fetchCustomers(),
+      generateInvoiceNo()
+    ]);
+    
+    addMedicineItem(); // Add first empty item
+  } catch (error) {
+    console.error('Error initializing:', error);
+    toast.error('Failed to initialize data');
+  }
+});
 </script> 

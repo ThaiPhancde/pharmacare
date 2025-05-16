@@ -75,6 +75,24 @@ export const navMenu: NavMenu[] = [
           },
         ],
       },
+      {
+        title: "Invoice",
+        icon: "i-lucide-receipt",
+        children: [
+          {
+            title: "Add Invoice",
+            link: "/invoice/add",
+          },
+          {
+            title: "POS Invoice",
+            link: "/invoice/pos",
+          },
+          {
+            title: "Invoice List",
+            link: "/invoice",
+          },
+        ],
+      },
     ],
   },
   // {
