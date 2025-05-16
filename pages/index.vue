@@ -7,9 +7,29 @@ import {
   TestTubeDiagonal,
 } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast/use-toast";
-import StockExpire from "@/components/stock/Expire.vue";
+import ExpiringMedicines from "@/components/dashboard/ExpiringMedicines.vue";
 
-const dataCard = ref({
+interface CardData {
+  totalCustomer: number;
+  totalCustomerDesc: number;
+  totalMedicine: number;
+  totalMedicineDesc: number;
+  sales: number;
+  salesDesc: number;
+  expiredMedicine: number;
+  expiredMedicineDesc: number;
+}
+
+interface DashboardResponse {
+  status: boolean;
+  data?: {
+    cardData: CardData;
+  };
+  error?: string;
+  message?: string;
+}
+
+const dataCard = ref<CardData>({
   totalCustomer: 0,
   totalCustomerDesc: 0,
   totalMedicine: 0,
@@ -20,47 +40,56 @@ const dataCard = ref({
   expiredMedicineDesc: 0,
 });
 
-const dataRecentSales = [
-  {
-    name: "Olivia Martin",
-    email: "olivia.martin@email.com",
-    amount: 1999,
-  },
-  {
-    name: "Jackson Lee",
-    email: "jackson.lee@email.com",
-    amount: 39,
-  },
-  {
-    name: "Isabella Nguyen",
-    email: "isabella.nguyen@email.com",
-    amount: 299,
-  },
-  {
-    name: "William Kim",
-    email: "will@email.com",
-    amount: 99,
-  },
-  {
-    name: "Sofia Davis",
-    email: "sofia.davis@email.com",
-    amount: 39,
-  },
-];
+// Default date range (current month)
+const date = ref({
+  from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  to: new Date(),
+});
+
+// Used to trigger data reload on date change
+const reloadTrigger = ref(0);
+
+// API to fetch dashboard data
+const fetchDashboardData = async () => {
+  try {
+    const response = await useFetch<DashboardResponse>('/api/dashboard', {
+      key: `dashboard-${reloadTrigger.value}`,
+      query: {
+        from: date.value.from?.toISOString(),
+        to: date.value.to?.toISOString(),
+      }
+    });
+    
+    const responseData = response.data.value;
+    if (responseData?.status && responseData.data) {
+      dataCard.value = responseData.data.cardData;
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    toast({
+      title: 'Error',
+      description: 'Unable to load dashboard data',
+      variant: 'destructive',
+    });
+  }
+};
+
+// Handle date range changes
+const handleDateRangeChange = (newDateRange: {from: Date, to: Date}) => {
+  date.value = newDateRange;
+  reloadTrigger.value++;
+};
 
 const { toast } = useToast();
+
 onMounted(() => {
-  dataCard.value = {
-    totalCustomer: 150,
-    totalCustomerDesc: 20.1 / 100,
-    totalMedicine: 1350,
-    totalMedicineDesc: 180.5 / 100,
-    sales: 12234,
-    salesDesc: 45 / 100,
-    expiredMedicine: 20,
-    expiredMedicineDesc: 10,
-  };
+  fetchDashboardData();
 });
+
+// Watch for date changes
+watch([() => date.value.from, () => date.value.to], () => {
+  reloadTrigger.value++;
+}, { deep: true });
 </script>
 
 <template>
@@ -68,7 +97,7 @@ onMounted(() => {
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h2 class="text-2xl font-bold tracking-tight">Dashboard</h2>
       <div class="flex items-center space-x-2">
-        <BaseDateRangePicker />
+        <BaseDateRangePicker v-model="date" @update:model-value="handleDateRangeChange" />
         <Button
           @click="
             () =>
@@ -182,44 +211,11 @@ onMounted(() => {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2">
-            <CardTitle>Recent Sales</CardTitle>
-            <StockExpire class="ml-auto" />
+          <CardHeader>
+            <CardTitle>Expiring Medicines</CardTitle>
           </CardHeader>
-          <CardContent class="grid gap-8">
-            <div
-              v-for="recentSales in dataRecentSales"
-              :key="recentSales.name"
-              class="flex items-center gap-4"
-            >
-              <Avatar class="hidden h-9 w-9 sm:flex">
-                <AvatarFallback>{{
-                  recentSales.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                }}</AvatarFallback>
-              </Avatar>
-              <div class="grid gap-1">
-                <p class="text-sm font-medium leading-none">
-                  {{ recentSales.name }}
-                </p>
-                <p class="text-sm text-muted-foreground">
-                  {{ recentSales.email }}
-                </p>
-              </div>
-              <div class="ml-auto font-medium">
-                <NumberFlow
-                  :value="recentSales.amount"
-                  :format="{
-                    style: 'currency',
-                    currency: 'USD',
-                    trailingZeroDisplay: 'stripIfInteger',
-                  }"
-                  prefix="+"
-                />
-              </div>
-            </div>
+          <CardContent>
+            <ExpiringMedicines />
           </CardContent>
         </Card>
       </div>

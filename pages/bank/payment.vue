@@ -1,8 +1,7 @@
 <template>
-  <div>
-    <PageHeader title="Payment Information" subtitle="Scan QR code to make payment" />
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-4">
+  <div class="w-full flex items-center justify-center">
+    <div class="grid grid-cols-1  gap-6 mt-4">
+      <PageHeader class="col-span-3" title="Payment Information" subtitle="Scan QR code to make payment" />
       <n-card v-for="bank in activeBank" :key="bank.id" class="shadow-md hover:shadow-lg transition-shadow">
         <template #header>
           <div class="text-xl font-bold text-primary">{{ bank.bank_name }}</div>

@@ -16,7 +16,7 @@ export interface IStock extends Document {
 const StockSchema = new Schema<IStock>(
   {
     medicine: { type: Schema.Types.ObjectId, ref: 'Medicine', required: true },
-    purchase: { type: Schema.Types.ObjectId, ref: 'Purchase', required: true },
+    purchase: { type: Schema.Types.ObjectId, ref: 'Purchase' },
     batch_id: { type: String, required: true },
     expiry_date: { type: Date },
     box_pattern: { type: String },
