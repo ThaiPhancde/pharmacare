@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { H3Event } from 'h3';
+import { Category, Unit, TypeMedicine, Supplier, Purchase, Medicine, Customer, Invoice, Stock, User } from "@/server/models";
 
 let isConnected = false; // Cờ kiểm tra trạng thái kết nối
 
@@ -17,7 +18,16 @@ export default defineNitroPlugin((nitroApp) => {
 
   mongoose.connect(mongoUri as string, {})
     .then(() => {
-      console.log('✅ Connected to MongoDB');
+      mongoose.model('Unit', Unit.schema)
+      mongoose.model('Category', Category.schema)
+      mongoose.model('TypeMedicine', TypeMedicine.schema)
+      mongoose.model('Supplier', Supplier.schema)
+      mongoose.model('Purchase', Purchase.schema)
+      mongoose.model('Medicine', Medicine.schema)
+      mongoose.model('Customer', Customer.schema)
+      mongoose.model('Invoice', Invoice.schema)
+      mongoose.model('Stock', Stock.schema)
+      mongoose.model('User', User.schema)
       isConnected = true; // Đánh dấu đã kết nối thành công
     })
     .catch(err => {
