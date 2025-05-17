@@ -10,29 +10,83 @@ export default defineEventHandler(async (event) => {
     const limit = parseInt(query.limit as string) || 10;
     const skip = (page - 1) * limit;
     const populate = query.populate as string || '';
+    const search = query.search as string || '';
 
-    // Xây dựng query dựa trên populate params
-    let medicineQuery = Medicine.find().skip(skip).limit(limit);
-    
-    // Populate các trường chính
-    medicineQuery = medicineQuery.populate("unit_id category_id type_id");
+    // Xây dựng query condition
+    const condition: any = {};
+    if (search) {
+      condition.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { barcode: { $regex: search, $options: 'i' } }
+      ];
+    }
 
-    // Populate stocks nếu được yêu cầu
+    // Tối ưu query bằng cách:
+    // 1. Chỉ select các trường cần thiết
+    // 2. Sử dụng lean() để giảm overhead
+    // 3. Thêm index cho các trường tìm kiếm
+    let medicineQuery = Medicine.find(condition)
+      .skip(skip)
+      .limit(limit)
+      .select('name barcode image price supplierPrice unit_id category_id type_id')
+      .lean();
+
+    // Populate các trường chính với select tối thiểu
+    medicineQuery = medicineQuery.populate([
+      { 
+        path: 'unit_id',
+        select: 'name -_id'
+      },
+      { 
+        path: 'category_id',
+        select: 'name -_id'
+      },
+      { 
+        path: 'type_id',
+        select: 'name -_id'
+      }
+    ]);
+
+    // Populate stocks nếu được yêu cầu và tối ưu bằng cách:
+    // 1. Chỉ lấy các trường cần thiết
+    // 2. Chỉ lấy stock có số lượng > 0
+    // 3. Sử dụng lean()
     if (populate.includes('stocks')) {
       medicineQuery = medicineQuery.populate({
         path: 'stocks',
-        model: 'Stock',
-        match: { unit_quantity: { $gt: 0 } } // Chỉ lấy các stock có số lượng > 0
+        match: { unit_quantity: { $gt: 0 } },
+        select: 'unit_quantity batch_id expiry_date purchase_price mrp -_id',
+        options: { lean: true }
       });
     }
 
+    // Thực hiện song song việc đếm và lấy dữ liệu
+    // Sử dụng countDocuments với điều kiện tìm kiếm
     const [data, total] = await Promise.all([
       medicineQuery,
-      Medicine.countDocuments(),
+      Medicine.countDocuments(condition)
     ]);
 
+    // Transform data để đổi tên field từ *_id thành *
+    const transformedData = data.map((item: any) => {
+      const transformed = { ...item };
+      if (item.category_id) {
+        transformed.category = item.category_id;
+        delete transformed.category_id;
+      }
+      if (item.unit_id) {
+        transformed.unit = item.unit_id;
+        delete transformed.unit_id;
+      }
+      if (item.type_id) {
+        transformed.type = item.type_id;
+        delete transformed.type_id;
+      }
+      return transformed;
+    });
+
     return {
-      data,
+      data: transformedData,
       total,
       status: true,
       message: "Get data successfully",
