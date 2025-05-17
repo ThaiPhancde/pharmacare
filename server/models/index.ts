@@ -9,6 +9,7 @@ import Customer from './Customer';
 import Invoice from './Invoice';
 import Stock from './Stock';
 import User from './User';
+import Bank from './Bank';
 
 // Đảm bảo rằng các model đã được import và đăng ký đúng cách
 export { 
@@ -21,7 +22,8 @@ export {
   Customer, 
   Invoice, 
   Stock, 
-  User 
+  User,
+  Bank
 };
 
 // Export default là một object chứa tất cả các model để sử dụng linh hoạt hơn
@@ -35,5 +37,6 @@ export default {
   Customer,
   Invoice,
   Stock,
-  User
+  User,
+  Bank
 };

@@ -1,4 +1,6 @@
-import { defineEventHandler, readBody } from 'h3';
+import { defineEventHandler, readBody, getQuery } from 'h3';
+import Bank from '../../models/Bank';
+import { IResponse } from "@/utils/api";
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -6,34 +8,23 @@ export default defineEventHandler(async (event) => {
   // GET - Fetch all bank accounts
   if (method === 'GET') {
     try {
-      // For now, return mock data
-      const banks = [
-        {
-          id: '1',
-          bank_name: 'Sample Bank',
-          account_name: 'John Doe',
-          account_number: '1234567890',
-          branch: 'Main Branch',
-          qr_image: null,
-          status: true
-        }
-      ];
-
+      const query = getQuery(event);
+      const page = parseInt(query.page as string) || 1;
+      const limit = parseInt(query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      const active = query.active === 'true' ? { status: true } : {};
+      
+      const [data, total] = await Promise.all([
+        Bank.find(active).skip(skip).limit(limit).lean(),
+        Bank.countDocuments(active),
+      ]);
+      
       return {
-        data: banks,
-        total: banks.length,
+        data,
+        total,
         status: true,
         message: 'Get bank accounts successfully'
       };
-      
-      // When database is connected:
-      // const banks = await Bank.find();
-      // return {
-      //   data: banks,
-      //   total: banks.length,
-      //   status: true,
-      //   message: 'Get bank accounts successfully'
-      // };
     } catch (error: any) {
       return {
         data: [],
@@ -57,24 +48,17 @@ export default defineEventHandler(async (event) => {
         };
       }
 
-      // For now, return success message without saving to DB
-      return {
-        status: true,
-        message: 'Bank account created successfully',
-        data: { 
-          id: Date.now().toString(),
-          ...body
-        }
-      };
+      // Add created_at timestamp
+      body.created_at = new Date();
+
+      const newBank = new Bank(body);
+      await newBank.save();
       
-      // When database is connected:
-      // const newBank = new Bank(body);
-      // await newBank.save();
-      // return {
-      //   status: true,
-      //   message: 'Bank account created successfully',
-      //   data: newBank
-      // };
+      return {
+        data: newBank,
+        status: true,
+        message: 'Bank account created successfully'
+      } satisfies IResponse<typeof newBank>;
     } catch (error: any) {
       return {
         status: false,
@@ -95,26 +79,18 @@ export default defineEventHandler(async (event) => {
         };
       }
 
-      // For now, return success message without updating DB
+      const updatedBank = await Bank.findByIdAndUpdate(body.id, body, { new: true });
+      if (!updatedBank) {
+        return {
+          status: false,
+          message: 'Bank account not found'
+        };
+      }
       return {
         status: true,
         message: 'Bank account updated successfully',
-        data: body
+        data: updatedBank
       };
-      
-      // When database is connected:
-      // const updatedBank = await Bank.findByIdAndUpdate(body.id, body, { new: true });
-      // if (!updatedBank) {
-      //   return {
-      //     status: false,
-      //     message: 'Bank account not found'
-      //   };
-      // }
-      // return {
-      //   status: true,
-      //   message: 'Bank account updated successfully',
-      //   data: updatedBank
-      // };
     } catch (error: any) {
       return {
         status: false,
@@ -135,24 +111,17 @@ export default defineEventHandler(async (event) => {
         };
       }
 
-      // For now, return success message without deleting from DB
+      const deletedBank = await Bank.findByIdAndDelete(body.id);
+      if (!deletedBank) {
+        return {
+          status: false,
+          message: 'Bank account not found'
+        };
+      }
       return {
         status: true,
         message: 'Bank account deleted successfully'
       };
-      
-      // When database is connected:
-      // const deletedBank = await Bank.findByIdAndDelete(body.id);
-      // if (!deletedBank) {
-      //   return {
-      //     status: false,
-      //     message: 'Bank account not found'
-      //   };
-      // }
-      // return {
-      //   status: true,
-      //   message: 'Bank account deleted successfully'
-      // };
     } catch (error: any) {
       return {
         status: false,

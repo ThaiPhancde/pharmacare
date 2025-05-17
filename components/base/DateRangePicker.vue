@@ -10,7 +10,7 @@ const df = new DateFormatter('en-US', {
   dateStyle: 'medium',
 })
 
-const calendarDate = new CalendarDate(2024, 0, 20)
+const calendarDate = new CalendarDate(2025, 0, 20)
 
 const value = ref({
   start: calendarDate,

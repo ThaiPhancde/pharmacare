@@ -33,7 +33,7 @@ const dataPlaceholder: ChartDataItem[] = [
 const chartData = ref<ChartDataItem[]>(dataPlaceholder);
 
 // Current year selection
-const currentYear = new Date().getFullYear();
+const currentYear = 2025;
 const selectedYear = ref(currentYear);
 
 // Year options (5 years before and after current year)

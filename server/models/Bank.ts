@@ -7,8 +7,8 @@ export interface IBank extends Document {
   branch?: string;
   qr_image?: string;
   status: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 const BankSchema = new Schema<IBank>(
@@ -19,6 +19,8 @@ const BankSchema = new Schema<IBank>(
     branch: { type: String },
     qr_image: { type: String },
     status: { type: Boolean, default: true },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date },
   },
   { timestamps: true }
 );

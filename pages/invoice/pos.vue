@@ -11,9 +11,10 @@
           <n-button 
             v-for="category in categories" 
             :key="category.id"
-            :type="activeCategory === category.id ? 'primary' : 'info'"
+            :type="activeCategory === category.id ? 'primary' : 'default'"
             @click="setActiveCategory(category.id)"
-            class="whitespace-nowrap"
+            class="whitespace-nowrap bg-blue-100 text-blue-700 hover:bg-blue-200"
+            :class="{ 'bg-blue-600 text-white hover:bg-blue-700': activeCategory === category.id }"
           >
             {{ category.name }}
           </n-button>
