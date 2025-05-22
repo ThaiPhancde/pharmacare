@@ -41,7 +41,8 @@
     "postinstall": "nuxt prepare",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint .",
-    "format": "eslint --fix ."
+    "format": "eslint --fix .",
+    "chatbot:import": "node scripts/import-chatbot-data.js"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.30",

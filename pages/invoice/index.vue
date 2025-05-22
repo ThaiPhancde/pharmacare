@@ -1,7 +1,7 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
 import { useToast } from "@/components/ui/toast";
-import { Plus } from "lucide-vue-next";
+import { Plus, FileText } from "lucide-vue-next";
 
 const { toast } = useToast();
 const router = useRouter();
@@ -35,6 +35,10 @@ const formatCurrency = (value) => {
     style: "currency",
     currency: "VND",
   }).format(value);
+};
+
+const viewInvoice = (id) => {
+  router.push(`/invoice/${id}`);
 };
 
 const columns = [
@@ -86,6 +90,17 @@ const columns = [
     accessorKey: "due",
     header: "Due",
     cell: ({ row }) => formatCurrency(row.original.due),
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => (
+      <div class="flex items-center space-x-2">
+        <Button size="icon" variant="ghost" onClick={() => viewInvoice(row.original._id)}>
+          <FileText class="h-4 w-4" />
+        </Button>
+      </div>
+    ),
   },
 ];
 

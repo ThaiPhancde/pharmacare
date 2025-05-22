@@ -58,6 +58,13 @@
               <span class="text-xs text-gray-500">{{ medicine.category?.name || 'N/A' }}</span>
               <span class="text-xs font-semibold">{{ formatCurrency(medicine.price) }}</span>
             </div>
+            <!-- Add stock quantity information -->
+            <div class="flex justify-between items-center mt-1">
+              <span class="text-xs text-gray-500">Tồn kho:</span>
+              <span class="text-xs font-medium" :class="{'text-green-600': getMedicineAvailableStock(medicine) > 10, 'text-amber-600': getMedicineAvailableStock(medicine) > 0 && getMedicineAvailableStock(medicine) <= 10, 'text-red-600': getMedicineAvailableStock(medicine) === 0}">
+                {{ getMedicineAvailableStock(medicine) }}
+              </span>
+            </div>
           </n-card>
         </div>
       </n-card>
@@ -82,20 +89,33 @@
           Giỏ hàng trống
         </div>
         <div v-else class="space-y-3">
-          <div v-for="(item, index) in cart" :key="index" class="flex items-center justify-between border-b border-gray-200 pb-2">
-            <div class="flex-1">
-              <div class="font-medium text-sm">{{ item.name }}</div>
-              <div class="text-xs text-gray-500">
-                {{ formatCurrency(item.price) }} × {{ item.quantity }}
+          <div v-for="(item, index) in cart" :key="index" class="flex flex-col border-b border-gray-200 pb-2">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="font-medium text-sm">{{ item.name }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ formatCurrency(item.price) }} × 
+                  <n-input-number 
+                    v-model:value="item.quantity" 
+                    size="small" 
+                    :min="1" 
+                    :max="item.max_quantity" 
+                    @update:value="updateCartTotal"
+                    class="inline-block w-16"
+                  />
+                </div>
+                <div class="text-xs text-amber-600">
+                  Tồn kho: {{ item.max_quantity }}
+                </div>
               </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="font-semibold">{{ formatCurrency(item.price * item.quantity) }}</span>
-              <n-button quaternary circle size="small" @click="removeItem(index)">
-                <template #icon>
-                  <Trash class="h-4 w-4 text-red-500" />
-                </template>
-              </n-button>
+              <div class="flex items-center gap-2">
+                <span class="font-semibold">{{ formatCurrency(item.price * item.quantity) }}</span>
+                <n-button quaternary circle size="small" @click="removeItem(index)">
+                  <template #icon>
+                    <Trash class="h-4 w-4 text-red-500" />
+                  </template>
+                </n-button>
+              </div>
             </div>
           </div>
         </div>
@@ -413,6 +433,28 @@ const fetchCustomers = async () => {
   } catch (error) {
     console.error('Failed to fetch customers:', error);
   }
+};
+
+// Function to get available stock for a medicine
+const getMedicineAvailableStock = (medicine) => {
+  if (!medicine.stocks || medicine.stocks.length === 0) {
+    return 0;
+  }
+  
+  // Filter valid stocks (not expired and quantity > 0)
+  const validStocks = medicine.stocks.filter(stock => 
+    stock.unit_quantity > 0 && 
+    new Date(stock.expiry_date) > new Date()
+  );
+  
+  // Sum up available quantities
+  return validStocks.reduce((total, stock) => total + stock.unit_quantity, 0);
+};
+
+// Update cart total
+const updateCartTotal = () => {
+  // Recalculate subtotal, vatTotal, grandTotal
+  // This will automatically update due to the computed properties
 };
 
 onMounted(async () => {

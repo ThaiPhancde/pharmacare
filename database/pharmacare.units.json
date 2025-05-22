@@ -1,0 +1,124 @@
+[
+{
+  "_id": {
+    "$oid": "680797c803bcd96ca4d4f20c"
+  },
+  "name": "Tablet",
+  "description": "",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328072527"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328072527"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680797cd03bcd96ca4d4f210"
+  },
+  "name": "Capsule",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328077205"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328077205"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680797d203bcd96ca4d4f214"
+  },
+  "name": "Effervescent",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328082294"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328082294"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680797d803bcd96ca4d4f218"
+  },
+  "name": "Syrup",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328088310"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328088310"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680797dc03bcd96ca4d4f21c"
+  },
+  "name": "Inhaler",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328092803"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328092803"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680b1e8a6179670a2e03ba53"
+  },
+  "name": "Cream",
+  "description": "",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745559178100"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745559733650"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

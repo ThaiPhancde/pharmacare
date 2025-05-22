@@ -1,0 +1,82 @@
+[
+{
+  "_id": {
+    "$oid": "6824b2c85e95ee7728a7054e"
+  },
+  "customer_id": "KH523490",
+  "full_name": "Linh",
+  "contact_info": {
+    "phone": "0917519364",
+    "email": "thaian@gmail.com",
+    "address": "TP.Vinh"
+  },
+  "medical_profile": {
+    "chronic_conditions": [],
+    "allergies": [],
+    "current_medications": []
+  },
+  "notes": "",
+  "created_at": {
+    "$date": {
+      "$numberLong": "1747235528696"
+    }
+  },
+  "purchase_history": [],
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747266998688"
+    }
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747235528697"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68284e26fc84cd66e8353a07"
+  },
+  "customer_id": "KH904169",
+  "full_name": "Linh",
+  "contact_info": {
+    "phone": "0569083547",
+    "email": "thaian@gmail.com",
+    "address": "Vinh"
+  },
+  "medical_profile": {
+    "chronic_conditions": [
+      "1"
+    ],
+    "allergies": [
+      "1"
+    ],
+    "current_medications": [
+      "1"
+    ]
+  },
+  "notes": "1",
+  "created_at": {
+    "$date": {
+      "$numberLong": "1747471910128"
+    }
+  },
+  "purchase_history": [],
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747471910140"
+    }
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747471910140"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

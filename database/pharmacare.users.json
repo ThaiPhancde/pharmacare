@@ -1,0 +1,22 @@
+[
+{
+  "_id": {
+    "$oid": "67e5720c2576289779bd4118"
+  },
+  "email": "admin",
+  "password": "$2b$10$XqH1oKa46rSfTcMWPEmvS.GDfTWpIq8I0pKBSteHfH7aV9dTbLetO",
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68004c99e8d1e7bdf22c0ce9"
+  },
+  "email": "anthaipx@gmail.com",
+  "password": "$2b$10$GhOMuzM055VE2ixFsd.wfOKH6AjVC./5H8mTnaApiSdyaazJm16gq",
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

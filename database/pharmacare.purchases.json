@@ -1,0 +1,180 @@
+[
+{
+  "_id": {
+    "$oid": "68249f4c368d5775b5b2dd5c"
+  },
+  "supplier": "68078e024abd41a535dc1d0b",
+  "date": {
+    "$date": {
+      "$numberLong": "1747328400000"
+    }
+  },
+  "invoice_no": "INV-002",
+  "payment_type": "bank",
+  "items": [
+    {
+      "medicine": {
+        "$oid": "680799094e083ca8e3390f7e"
+      },
+      "batch_id": "8930001002",
+      "expiry_date": {
+        "$date": {
+          "$numberLong": "1747242000000"
+        }
+      },
+      "box_pattern": "20x20",
+      "box_quantity": {
+        "$numberInt": "20"
+      },
+      "unit_quantity": {
+        "$numberInt": "8000"
+      },
+      "supplier_price": {
+        "$numberInt": "2000000"
+      },
+      "mrp": {
+        "$numberInt": "0"
+      },
+      "vat": {
+        "$numberInt": "10"
+      }
+    }
+  ],
+  "total": {
+    "$numberDouble": "17600000000.0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747230540694"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747230540694"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "6825b7f5d70b8963cc5d90a5"
+  },
+  "supplier": {
+    "$oid": "68078e024abd41a535dc1d0b"
+  },
+  "date": {
+    "$date": {
+      "$numberLong": "1747587600000"
+    }
+  },
+  "invoice_no": "INV-003",
+  "payment_type": "cash",
+  "items": [
+    {
+      "medicine": {
+        "$oid": "68079a6baceecf11e2094840"
+      },
+      "batch_id": "8930001005",
+      "expiry_date": {
+        "$date": {
+          "$numberLong": "1747674000000"
+        }
+      },
+      "box_pattern": "2x2",
+      "box_quantity": {
+        "$numberInt": "2"
+      },
+      "unit_quantity": {
+        "$numberInt": "8"
+      },
+      "supplier_price": {
+        "$numberInt": "22222"
+      },
+      "mrp": {
+        "$numberInt": "0"
+      },
+      "vat": {
+        "$numberInt": "8"
+      }
+    }
+  ],
+  "total": {
+    "$numberDouble": "191998.08"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747302389510"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747302389510"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "6825ff1cb15be08e2402237d"
+  },
+  "supplier": {
+    "$oid": "68078e4e4abd41a535dc1d31"
+  },
+  "date": {
+    "$date": {
+      "$numberLong": "1747328400000"
+    }
+  },
+  "invoice_no": "INV-001",
+  "payment_type": "bank",
+  "items": [
+    {
+      "medicine": {
+        "$oid": "68079b1606fdd585b12e3932"
+      },
+      "batch_id": "8930001011",
+      "expiry_date": {
+        "$date": {
+          "$numberLong": "1748106000000"
+        }
+      },
+      "box_pattern": "4x4",
+      "box_quantity": {
+        "$numberInt": "10"
+      },
+      "unit_quantity": {
+        "$numberInt": "160"
+      },
+      "supplier_price": {
+        "$numberInt": "50000"
+      },
+      "mrp": {
+        "$numberInt": "60000"
+      },
+      "vat": {
+        "$numberInt": "10"
+      }
+    }
+  ],
+  "total": {
+    "$numberInt": "8800000"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747320604674"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747320604674"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

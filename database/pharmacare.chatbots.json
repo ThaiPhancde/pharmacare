@@ -1,0 +1,95 @@
+[
+{
+  "_id": {
+    "$oid": "6809a9547e3f9fdd15600ab3"
+  },
+  "userId": "user123",
+  "role": "customer",
+  "messages": [
+    {
+      "content": "nói chuyện được không",
+      "role": "user",
+      "timestamp": {
+        "$date": {
+          "$numberLong": "1745463637003"
+        }
+      },
+      "_id": {
+        "$oid": "6809a9557e3f9fdd15600ab4"
+      }
+    },
+    {
+      "content": "Xin lỗi, hiện tại tôi đang gặp một chút vấn đề kỹ thuật. Bạn có thể thử lại sau hoặc liên hệ trực tiếp với nhân viên hỗ trợ.",
+      "role": "assistant",
+      "timestamp": {
+        "$date": {
+          "$numberLong": "1745463638409"
+        }
+      },
+      "_id": {
+        "$oid": "6809a9567e3f9fdd15600ab5"
+      }
+    },
+    {
+      "content": "nói chuyện được không",
+      "role": "user",
+      "timestamp": {
+        "$date": {
+          "$numberLong": "1745465917471"
+        }
+      },
+      "_id": {
+        "$oid": "6809b23df0c351f35779b6c9"
+      }
+    },
+    {
+      "content": "Xin lỗi, hệ thống AI đang được bảo trì. Vui lòng thử lại sau.",
+      "role": "assistant",
+      "timestamp": {
+        "$date": {
+          "$numberLong": "1745465917990"
+        }
+      },
+      "_id": {
+        "$oid": "6809b23df0c351f35779b6ca"
+      }
+    },
+    {
+      "content": "nói chuyện được không",
+      "role": "user",
+      "timestamp": {
+        "$date": {
+          "$numberLong": "1745465950552"
+        }
+      },
+      "_id": {
+        "$oid": "6809b25ef0c351f35779b6d6"
+      }
+    },
+    {
+      "content": "Xin lỗi, hệ thống AI đang được bảo trì. Vui lòng thử lại sau.",
+      "role": "assistant",
+      "timestamp": {
+        "$date": {
+          "$numberLong": "1745465950554"
+        }
+      },
+      "_id": {
+        "$oid": "6809b25ef0c351f35779b6d7"
+      }
+    }
+  ],
+  "context": {
+    "sessionStart": {
+      "$date": {
+        "$numberLong": "1745463636997"
+      }
+    },
+    "lastQuery": "nói chuyện được không",
+    "lastResponse": "Xin lỗi, hệ thống AI đang được bảo trì. Vui lòng thử lại sau."
+  },
+  "__v": {
+    "$numberInt": "2"
+  }
+}
+]
