@@ -1,7 +1,8 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
 import { useToast } from "@/components/ui/toast";
-import { Plus, FileText } from "lucide-vue-next";
+import { Plus, FileText, Edit, Trash } from "lucide-vue-next";
+import { h } from 'vue';
 
 const { toast } = useToast();
 const router = useRouter();
@@ -39,6 +40,34 @@ const formatCurrency = (value) => {
 
 const viewInvoice = (id) => {
   router.push(`/invoice/${id}`);
+};
+
+const editInvoice = (id) => {
+  // For now, this just navigates to the detail page
+  // This can be expanded to a proper edit form later
+  router.push(`/invoice/${id}`);
+};
+
+const deleteInvoice = async (id) => {
+  if (confirm("Bạn có chắc chắn muốn xóa hóa đơn này không?")) {
+    try {
+      const res = await fetch(`/api/invoice/${id}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await res.json();
+      
+      if (data.status) {
+        toast.success("Xóa hóa đơn thành công");
+        fetchData();
+      } else {
+        toast.error(data.message || "Xóa hóa đơn thất bại");
+      }
+    } catch (error) {
+      toast.error("Xóa hóa đơn thất bại");
+      console.error("Failed to delete invoice:", error);
+    }
+  }
 };
 
 const columns = [
@@ -94,18 +123,21 @@ const columns = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
-      <div class="flex items-center space-x-2">
-        <Button size="icon" variant="ghost" onClick={() => viewInvoice(row.original._id)}>
-          <FileText class="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => h('div', { class: 'flex items-center space-x-2' }, [
+      h('button', { 
+        class: 'p-2 rounded-full hover:bg-gray-100',
+        onClick: () => viewInvoice(row.original._id)
+      }, [h(FileText, { class: 'h-4 w-4' })]),
+      h('button', { 
+        class: 'p-2 rounded-full hover:bg-gray-100',
+        onClick: () => deleteInvoice(row.original._id)
+      }, [h(Trash, { class: 'h-4 w-4 text-red-500' })])
+    ])
   },
 ];
 
-const navigateToAddInvoice = () => {
-  router.push("/invoice/add");
+const navigateToPosInvoice = () => {
+  router.push("/invoice/pos");
 };
 </script>
 
@@ -113,9 +145,9 @@ const navigateToAddInvoice = () => {
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <h2 class="text-2xl font-bold tracking-tight">Invoice List</h2>
-      <Button @click="navigateToAddInvoice">
+      <Button @click="navigateToPosInvoice">
         <Plus class="mr-2 h-4 w-4" />
-        New Invoice
+        New POS Invoice
       </Button>
     </div>
 

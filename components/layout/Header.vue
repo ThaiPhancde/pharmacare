@@ -79,7 +79,7 @@ const user: {
   email: string;
   avatar: string;
 } = {
-  name: "Dian Pratama",
+  name: "An Thái",
   email: "dianpratama2@gmail.com",
   avatar: "/avatars/avatartion.png",
 };

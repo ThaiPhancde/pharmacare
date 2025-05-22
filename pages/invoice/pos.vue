@@ -166,20 +166,98 @@
             ]"
           />
         </div>
-        <div class="flex justify-between items-center">
-          <span>Số tiền trả</span>
-          <n-input-number v-model:value="amountPaid" class="w-32" size="small" :min="0" />
-        </div>
-        <div class="flex justify-between items-center font-bold">
-          <span>Tiền thừa</span>
-          <span>{{ formatCurrency(change) }}</span>
-        </div>
+        
+        <!-- Cash payment -->
+        <template v-if="paymentMethod === 'cash'">
+          <div class="flex justify-between items-center">
+            <span>Số tiền trả</span>
+            <n-input-number v-model:value="amountPaid" class="w-32" size="small" :min="0" />
+          </div>
+          <div v-if="change > 0" class="flex justify-between items-center font-bold text-green-600">
+            <span>Tiền thừa</span>
+            <span>{{ formatCurrency(change) }}</span>
+          </div>
+        </template>
+        
+        <!-- Card payment -->
+        <template v-else-if="paymentMethod === 'card'">
+          <div class="border border-gray-200 rounded p-4 bg-gray-50">
+            <p class="text-sm text-center text-gray-500 mb-2">Vui lòng cung cấp thông tin thẻ</p>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center">
+                <span class="w-24 text-xs">Tên chủ thẻ</span>
+                <n-input v-model:value="cardInfo.name" size="small" placeholder="Nhập tên chủ thẻ" />
+              </div>
+              <div class="flex items-center">
+                <span class="w-24 text-xs">Số thẻ</span>
+                <n-select v-model:value="cardInfo.number" size="small" placeholder="Chọn thẻ test" :options="testCardOptions" />
+              </div>
+              <div class="flex items-center">
+                <span class="w-24 text-xs">Ngày hết hạn</span>
+                <div class="flex gap-1">
+                  <n-select v-model:value="cardInfo.expMonth" size="small" placeholder="MM" class="w-16" :options="monthOptions" />
+                  <span>/</span>
+                  <n-select v-model:value="cardInfo.expYear" size="small" placeholder="YY" class="w-16" :options="yearOptions" />
+                </div>
+              </div>
+              <div class="flex items-center">
+                <span class="w-24 text-xs">CVV</span>
+                <n-input v-model:value="cardInfo.cvv" size="small" placeholder="XXX" class="w-16" />
+              </div>
+            </div>
+            <div class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-600">
+              Thẻ test được cung cấp bởi PayPal Sandbox. Chọn bất kỳ thẻ nào để test thanh toán.
+            </div>
+          </div>
+          <div class="flex justify-between items-center mt-2">
+            <span>Thanh toán đủ</span>
+            <span class="font-bold">{{ formatCurrency(grandTotal) }}</span>
+          </div>
+          <n-button 
+            type="primary" 
+            class="w-full mt-2"
+            :disabled="!cardInfo.name || !cardInfo.number || !cardInfo.expMonth || !cardInfo.expYear || !cardInfo.cvv"
+            @click="processCardPayment"
+          >
+            Thanh toán
+          </n-button>
+        </template>
+        
+        <!-- Bank transfer -->
+        <template v-else-if="paymentMethod === 'bank'">
+          <div class="border border-gray-200 rounded p-4 bg-gray-50 flex flex-col items-center">
+            <div class="w-32 h-32 bg-gray-200 mb-2 flex items-center justify-center">
+              <span class="text-xs text-gray-500">QR Code</span>
+            </div>
+            <p class="text-sm text-center">Quét mã QR để thanh toán</p>
+            <p class="text-xs text-center text-gray-500">Số tiền: {{ formatCurrency(grandTotal) }}</p>
+            <p class="text-xs text-center text-gray-500">Nội dung: Thanh toán đơn hàng</p>
+          </div>
+          <div class="flex justify-between items-center mt-2">
+            <span>Tổng tiền</span>
+            <span class="font-bold">{{ formatCurrency(grandTotal) }}</span>
+          </div>
+          <n-button 
+            type="primary" 
+            class="w-full mt-2"
+            @click="processQRPayment"
+          >
+            Hoàn tất thanh toán
+          </n-button>
+        </template>
       </n-card>
       
       <!-- Action buttons -->
       <div class="flex gap-2">
         <n-button type="default" class="flex-1" @click="clearCart">Xóa hết</n-button>
-        <n-button type="primary" class="flex-1" @click="processPayment" :disabled="!canCheckout">
+        <n-button 
+          v-if="paymentMethod === 'cash'" 
+          type="primary" 
+          class="flex-1" 
+          @click="processPayment" 
+          :disabled="!canCheckout || paymentProcessing"
+          :loading="paymentProcessing"
+        >
           Hoàn thành
         </n-button>
       </div>
@@ -211,6 +289,22 @@ const cart = ref([]);
 const discount = ref(0);
 const paymentMethod = ref('cash');
 const amountPaid = ref(0);
+const cardInfo = ref({
+  name: '',
+  number: '',
+  expMonth: '',
+  expYear: '',
+  cvv: ''
+});
+const testCardOptions = ref([
+  { label: '4242424242424242', value: '4242424242424242' },
+  { label: '4000111111111115', value: '4000111111111115' },
+  { label: '5555555555554444', value: '5555555555554444' },
+  { label: '378282246310005', value: '378282246310005' },
+  { label: '371449635398431', value: '371449635398431' }
+]);
+const monthOptions = ref(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']);
+const yearOptions = ref(['2024', '2025', '2026', '2027', '2028', '2029', '2030']);
 
 // Format currency
 const formatCurrency = (value) => {
@@ -265,7 +359,15 @@ const change = computed(() => {
 });
 
 const canCheckout = computed(() => {
-  return cart.value.length > 0 && Number(amountPaid.value) >= grandTotal.value;
+  if (cart.value.length === 0) return false;
+  
+  // For cash payments, check if amount paid is sufficient
+  if (paymentMethod.value === 'cash') {
+    return Number(amountPaid.value) >= grandTotal.value;
+  }
+  
+  // For card and bank transfer, always allow checkout if cart has items
+  return true;
 });
 
 // Set active category
@@ -335,19 +437,35 @@ const clearCart = () => {
   discount.value = 0;
   amountPaid.value = 0;
   selectedCustomer.value = null;
+  cardInfo.value = {
+    name: '',
+    number: '',
+    expMonth: '',
+    expYear: '',
+    cvv: ''
+  };
 };
 
 // Process payment
+const paymentProcessing = ref(false);
+
 const processPayment = async () => {
   if (cart.value.length === 0) {
     message.error('Giỏ hàng đang trống');
     return;
   }
   
-  if (Number(amountPaid.value) < grandTotal.value) {
+  // Validate payment based on method
+  if (paymentMethod.value === 'cash' && Number(amountPaid.value) < grandTotal.value) {
     message.error('Số tiền thanh toán ít hơn tổng cộng');
     return;
   }
+  
+  if (paymentProcessing.value) {
+    return; // Prevent multiple submissions
+  }
+  
+  paymentProcessing.value = true;
   
   try {
     const invoiceData = {
@@ -368,9 +486,14 @@ const processPayment = async () => {
       vat_total: vatTotal.value,
       discount: discount.value,
       grand_total: grandTotal.value,
-      paid: Number(amountPaid.value),
+      paid: paymentMethod.value === 'cash' ? Number(amountPaid.value) : grandTotal.value, // For card and bank transfer, paid = grand_total
       due: 0,
-      payment_method: paymentMethod.value
+      payment_method: paymentMethod.value,
+      payment_details: paymentMethod.value === 'card' ? {
+        card_type: getCardType(cardInfo.value.number),
+        card_number: maskCardNumber(cardInfo.value.number),
+        card_holder: cardInfo.value.name
+      } : null
     };
     
     // Submit invoice to POS API endpoint
@@ -385,6 +508,8 @@ const processPayment = async () => {
   } catch (error) {
     message.error(error.message || 'Đã xảy ra lỗi không mong muốn');
     console.error('POS Invoice error:', error);
+  } finally {
+    paymentProcessing.value = false;
   }
 };
 
@@ -455,6 +580,69 @@ const getMedicineAvailableStock = (medicine) => {
 const updateCartTotal = () => {
   // Recalculate subtotal, vatTotal, grandTotal
   // This will automatically update due to the computed properties
+};
+
+// Process card payment
+const processCardPayment = () => {
+  // Validate card information
+  if (!cardInfo.value.name.trim()) {
+    message.error('Vui lòng nhập tên chủ thẻ');
+    return;
+  }
+  
+  if (!cardInfo.value.number) {
+    message.error('Vui lòng chọn số thẻ');
+    return;
+  }
+  
+  if (!cardInfo.value.expMonth || !cardInfo.value.expYear) {
+    message.error('Vui lòng chọn ngày hết hạn');
+    return;
+  }
+  
+  if (!cardInfo.value.cvv || cardInfo.value.cvv.length < 3) {
+    message.error('Vui lòng nhập CVV hợp lệ');
+    return;
+  }
+  
+  // Process payment
+  message.success('Thanh toán thẻ thành công');
+  processPayment();
+};
+
+// Process QR payment
+const processQRPayment = () => {
+  // In a real implementation, this would show a QR code and wait for callback confirmation
+  message.success('Thanh toán chuyển khoản thành công');
+  processPayment();
+};
+
+// Utility functions for card processing
+const getCardType = (number) => {
+  if (!number) return '';
+  
+  // Visa
+  if (/^4/.test(number)) return 'Visa';
+  
+  // Mastercard
+  if (/^5[1-5]/.test(number)) return 'Mastercard';
+  
+  // Amex
+  if (/^3[47]/.test(number)) return 'American Express';
+  
+  // Discover
+  if (/^6(?:011|5)/.test(number)) return 'Discover';
+  
+  return 'Unknown';
+};
+
+const maskCardNumber = (number) => {
+  if (!number) return '';
+  
+  const lastFour = number.slice(-4);
+  const masked = '*'.repeat(number.length - 4);
+  
+  return masked + lastFour;
 };
 
 onMounted(async () => {

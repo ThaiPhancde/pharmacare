@@ -80,10 +80,6 @@ export const navMenu: NavMenu[] = [
         icon: "i-lucide-receipt",
         children: [
           {
-            title: "Add Invoice",
-            link: "/invoice/add",
-          },
-          {
             title: "POS Invoice",
             link: "/invoice/pos",
           },
@@ -92,6 +88,12 @@ export const navMenu: NavMenu[] = [
             link: "/invoice",
           },
         ],
+      },
+      {
+        title: "Returns",
+        icon: "i-lucide-rotate-ccw",
+        link: "/returns",
+        new: true,
       },
     ],
   },

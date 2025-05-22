@@ -23,7 +23,7 @@ const ChatbotQASchema = new Schema<IChatbotQA>(
   {
     question: { type: String, required: true, index: true },
     answer: { type: String, required: true },
-    category: { type: String, index: true },
+    category: { type: String},
     keywords: { type: String }, // Từ khóa trích xuất để cải thiện tìm kiếm
     medicineTerms: { type: String }, // Tên thuốc liên quan
   },
