@@ -5,7 +5,7 @@
       <!-- Search and category filters -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="relative">
-          <n-input type="text" placeholder="Tìm kiếm thuốc..." v-model:value="searchQuery" />
+          <n-input type="text" placeholder="Search medicines..." v-model:value="searchQuery" />
         </div>
         <div class="flex gap-2 overflow-x-auto pb-2">
           <n-button 
@@ -33,7 +33,7 @@
           v-else-if="filteredMedicines.length === 0" 
           class="flex justify-center items-center h-full text-gray-500"
         >
-          Không tìm thấy thuốc nào
+          No medicines found
         </div>
         <div
           v-else
@@ -60,7 +60,7 @@
             </div>
             <!-- Add stock quantity information -->
             <div class="flex justify-between items-center mt-1">
-              <span class="text-xs text-gray-500">Tồn kho:</span>
+              <span class="text-xs text-gray-500">Stock:</span>
               <span class="text-xs font-medium" :class="{'text-green-600': getMedicineAvailableStock(medicine) > 10, 'text-amber-600': getMedicineAvailableStock(medicine) > 0 && getMedicineAvailableStock(medicine) <= 10, 'text-red-600': getMedicineAvailableStock(medicine) === 0}">
                 {{ getMedicineAvailableStock(medicine) }}
               </span>
@@ -74,19 +74,19 @@
     <div class="w-full md:w-1/3 flex flex-col gap-4">
       <!-- Customer selection -->
       <n-card size="small">
-        <h3 class="font-medium mb-2">Khách hàng</h3>
+        <h3 class="font-medium mb-2">Customer</h3>
         <n-select 
           v-model:value="selectedCustomer" 
           :options="customers" 
-          placeholder="Khách lẻ" 
+          placeholder="Walk-in Customer" 
           clearable
         />
       </n-card>
       
       <!-- Cart items -->
-      <n-card title="Giỏ hàng" size="small" class="flex-1 overflow-y-auto">
+      <n-card title="Cart" size="small" class="flex-1 overflow-y-auto">
         <div v-if="cart.length === 0" class="flex justify-center items-center h-32 text-gray-500">
-          Giỏ hàng trống
+          Cart is empty
         </div>
         <div v-else class="space-y-3">
           <div v-for="(item, index) in cart" :key="index" class="flex flex-col border-b border-gray-200 pb-2">
@@ -105,7 +105,7 @@
                   />
                 </div>
                 <div class="text-xs text-amber-600">
-                  Tồn kho: {{ item.max_quantity }}
+                  Stock: {{ item.max_quantity }}
                 </div>
               </div>
               <div class="flex items-center gap-2">
@@ -124,7 +124,7 @@
       <!-- Checkout summary -->
       <n-card size="small" class="space-y-2">
         <div class="flex justify-between items-center">
-          <span>Tạm tính</span>
+          <span>Subtotal</span>
           <span>{{ formatCurrency(subtotal) }}</span>
         </div>
         <div class="flex justify-between items-center">
@@ -132,7 +132,7 @@
           <span>{{ formatCurrency(vatTotal) }}</span>
         </div>
         <div class="flex justify-between items-center">
-          <span>Giảm giá</span>
+          <span>Discount</span>
           <div class="flex items-center gap-2">
             <n-input-number 
               v-model:value="discount" 
@@ -146,7 +146,7 @@
         </div>
         <n-divider />
         <div class="flex justify-between items-center font-bold">
-          <span>Tổng cộng</span>
+          <span>Total</span>
           <span>{{ formatCurrency(grandTotal) }}</span>
         </div>
       </n-card>
@@ -154,15 +154,15 @@
       <!-- Payment options -->
       <n-card size="small" class="space-y-2">
         <div class="flex justify-between items-center">
-          <span>Thanh toán</span>
+          <span>Payment Method</span>
           <n-select 
             v-model:value="paymentMethod" 
             class="w-32" 
             size="small"
             :options="[
-              { label: 'Tiền mặt', value: 'cash' },
-              { label: 'Thẻ', value: 'card' },
-              { label: 'Chuyển khoản', value: 'bank' }
+              { label: 'Cash', value: 'cash' },
+              { label: 'Card', value: 'card' },
+              { label: 'Bank Transfer', value: 'bank' }
             ]"
           />
         </div>
@@ -170,11 +170,11 @@
         <!-- Cash payment -->
         <template v-if="paymentMethod === 'cash'">
           <div class="flex justify-between items-center">
-            <span>Số tiền trả</span>
+            <span>Amount Paid</span>
             <n-input-number v-model:value="amountPaid" class="w-32" size="small" :min="0" />
           </div>
           <div v-if="change > 0" class="flex justify-between items-center font-bold text-green-600">
-            <span>Tiền thừa</span>
+            <span>Change</span>
             <span>{{ formatCurrency(change) }}</span>
           </div>
         </template>
@@ -182,18 +182,18 @@
         <!-- Card payment -->
         <template v-else-if="paymentMethod === 'card'">
           <div class="border border-gray-200 rounded p-4 bg-gray-50">
-            <p class="text-sm text-center text-gray-500 mb-2">Vui lòng cung cấp thông tin thẻ</p>
+            <p class="text-sm text-center text-gray-500 mb-2">Please provide card information</p>
             <div class="flex flex-col gap-2">
               <div class="flex items-center">
-                <span class="w-24 text-xs">Tên chủ thẻ</span>
-                <n-input v-model:value="cardInfo.name" size="small" placeholder="Nhập tên chủ thẻ" />
+                <span class="w-24 text-xs">Card Holder</span>
+                <n-input v-model:value="cardInfo.name" size="small" placeholder="Enter cardholder name" />
               </div>
               <div class="flex items-center">
-                <span class="w-24 text-xs">Số thẻ</span>
-                <n-select v-model:value="cardInfo.number" size="small" placeholder="Chọn thẻ test" :options="testCardOptions" />
+                <span class="w-24 text-xs">Card Number</span>
+                <n-select v-model:value="cardInfo.number" size="small" placeholder="Select test card" :options="testCardOptions" />
               </div>
               <div class="flex items-center">
-                <span class="w-24 text-xs">Ngày hết hạn</span>
+                <span class="w-24 text-xs">Expiry Date</span>
                 <div class="flex gap-1">
                   <n-select v-model:value="cardInfo.expMonth" size="small" placeholder="MM" class="w-16" :options="monthOptions" />
                   <span>/</span>
@@ -206,11 +206,11 @@
               </div>
             </div>
             <div class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-600">
-              Thẻ test được cung cấp bởi PayPal Sandbox. Chọn bất kỳ thẻ nào để test thanh toán.
+              Test cards are provided by PayPal Sandbox. Select any card to test payment.
             </div>
           </div>
           <div class="flex justify-between items-center mt-2">
-            <span>Thanh toán đủ</span>
+            <span>Full Payment</span>
             <span class="font-bold">{{ formatCurrency(grandTotal) }}</span>
           </div>
           <n-button 
@@ -219,37 +219,56 @@
             :disabled="!cardInfo.name || !cardInfo.number || !cardInfo.expMonth || !cardInfo.expYear || !cardInfo.cvv"
             @click="processCardPayment"
           >
-            Thanh toán
+            Pay
           </n-button>
         </template>
         
         <!-- Bank transfer -->
         <template v-else-if="paymentMethod === 'bank'">
           <div class="border border-gray-200 rounded p-4 bg-gray-50 flex flex-col items-center">
-            <div class="w-32 h-32 bg-gray-200 mb-2 flex items-center justify-center">
-              <span class="text-xs text-gray-500">QR Code</span>
+            <h3 class="font-medium text-lg mb-1">Payment Information</h3>
+            <p class="text-sm text-center mb-4">Scan QR code to make payment</p>
+            
+            <div class="bg-white p-3 rounded shadow-sm mb-4">
+              <h4 class="text-blue-600 font-medium mb-2">Techcombank</h4>
+              <div class="flex justify-center mb-2">
+                <img :src="selectedBank?.qr_image || '/techcom-qr.png'" alt="Bank QR Code" class="w-48 h-48" />
+              </div>
             </div>
-            <p class="text-sm text-center">Quét mã QR để thanh toán</p>
-            <p class="text-xs text-center text-gray-500">Số tiền: {{ formatCurrency(grandTotal) }}</p>
-            <p class="text-xs text-center text-gray-500">Nội dung: Thanh toán đơn hàng</p>
+            
+            <div class="w-full">
+              <div class="flex justify-between py-2 border-b">
+                <span class="font-medium">Account Name:</span>
+                <span>{{ selectedBank?.account_name || 'Thái' }}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="font-medium">Account Number:</span>
+                <span>{{ selectedBank?.account_number || '8524092000' }}</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="font-medium">Amount:</span>
+                <span class="font-bold">{{ formatCurrency(grandTotal) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="font-medium">Reference:</span>
+                <span>Payment for order</span>
+              </div>
+            </div>
           </div>
-          <div class="flex justify-between items-center mt-2">
-            <span>Tổng tiền</span>
-            <span class="font-bold">{{ formatCurrency(grandTotal) }}</span>
-          </div>
+          
           <n-button 
             type="primary" 
-            class="w-full mt-2"
+            class="w-full mt-4"
             @click="processQRPayment"
           >
-            Hoàn tất thanh toán
+            Complete Payment
           </n-button>
         </template>
       </n-card>
       
       <!-- Action buttons -->
       <div class="flex gap-2">
-        <n-button type="default" class="flex-1" @click="clearCart">Xóa hết</n-button>
+        <n-button type="default" class="flex-1" @click="clearCart">Clear All</n-button>
         <n-button 
           v-if="paymentMethod === 'cash'" 
           type="primary" 
@@ -258,7 +277,7 @@
           :disabled="!canCheckout || paymentProcessing"
           :loading="paymentProcessing"
         >
-          Hoàn thành
+          Complete
         </n-button>
       </div>
     </div>
@@ -305,6 +324,7 @@ const testCardOptions = ref([
 ]);
 const monthOptions = ref(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']);
 const yearOptions = ref(['2024', '2025', '2026', '2027', '2028', '2029', '2030']);
+const selectedBank = ref(null);
 
 // Format currency
 const formatCurrency = (value) => {
@@ -377,24 +397,24 @@ const setActiveCategory = (categoryId) => {
 
 // Add medicine to cart
 const addToCart = (medicine) => {
-  // Kiểm tra nếu thuốc có stock
+  // Check if medicine has stock
   if (!medicine.stocks || medicine.stocks.length === 0) {
-    message.error(`${medicine.name} không có trong kho`);
+    message.error(`${medicine.name} is out of stock`);
     return;
   }
   
-  // Chọn stock mới nhất và chưa hết hạn
+  // Select the newest stock that is not expired
   const validStocks = medicine.stocks.filter(stock => 
     stock.unit_quantity > 0 && 
     new Date(stock.expiry_date) > new Date()
   );
   
   if (validStocks.length === 0) {
-    message.error(`${medicine.name} đã hết hàng hoặc hết hạn sử dụng`);
+    message.error(`${medicine.name} is out of stock or expired`);
     return;
   }
   
-  // Sắp xếp theo ngày hết hạn tăng dần (FIFO)
+  // Sort by expiry date ascending (FIFO)
   validStocks.sort((a, b) => new Date(a.expiry_date) - new Date(b.expiry_date));
   const stock = validStocks[0];
   
@@ -405,9 +425,9 @@ const addToCart = (medicine) => {
   if (existingItem) {
     if (existingItem.quantity < stock.unit_quantity) {
       existingItem.quantity += 1;
-      message.success(`Thêm ${medicine.name} vào giỏ hàng`);
+      message.success(`Added ${medicine.name} to cart`);
     } else {
-      message.warning(`Không thể thêm nữa. Chỉ còn ${stock.unit_quantity} ${medicine.name} trong lô ${stock.batch_id}`);
+      message.warning(`Cannot add more. Only ${stock.unit_quantity} ${medicine.name} left in batch ${stock.batch_id}`);
     }
   } else {
     cart.value.push({
@@ -422,7 +442,7 @@ const addToCart = (medicine) => {
       stock_id: stock._id,
       purchase: stock.purchase
     });
-    message.success(`Thêm ${medicine.name} vào giỏ hàng`);
+    message.success(`Added ${medicine.name} to cart`);
   }
 };
 
@@ -451,13 +471,13 @@ const paymentProcessing = ref(false);
 
 const processPayment = async () => {
   if (cart.value.length === 0) {
-    message.error('Giỏ hàng đang trống');
+    message.error('Cart is empty');
     return;
   }
   
   // Validate payment based on method
   if (paymentMethod.value === 'cash' && Number(amountPaid.value) < grandTotal.value) {
-    message.error('Số tiền thanh toán ít hơn tổng cộng');
+    message.error('Amount paid is less than the total');
     return;
   }
   
@@ -500,13 +520,13 @@ const processPayment = async () => {
     const response = await api.post('/api/invoice/pos', invoiceData);
     
     if (response && response.status) {
-      message.success('Hoàn thành giao dịch thành công');
+      message.success('Transaction completed successfully');
       clearCart();
     } else {
-      message.error(response.error || 'Tạo hóa đơn thất bại');
+      message.error(response.error || 'Failed to create invoice');
     }
   } catch (error) {
-    message.error(error.message || 'Đã xảy ra lỗi không mong muốn');
+    message.error(error.message || 'An unexpected error occurred');
     console.error('POS Invoice error:', error);
   } finally {
     paymentProcessing.value = false;
@@ -517,7 +537,7 @@ const processPayment = async () => {
 const fetchMedicines = async () => {
   loading.value = true;
   try {
-    // Lấy thuốc và populate thông tin stock
+    // Get medicines and populate stock information
     const response = await api.get('/api/medicine', { 
       params: { 
         limit: 100,
@@ -542,7 +562,7 @@ const fetchMedicines = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch medicines:', error);
-    message.error('Không thể tải dữ liệu thuốc');
+    message.error('Could not load medicine data');
   } finally {
     loading.value = false;
   }
@@ -586,34 +606,34 @@ const updateCartTotal = () => {
 const processCardPayment = () => {
   // Validate card information
   if (!cardInfo.value.name.trim()) {
-    message.error('Vui lòng nhập tên chủ thẻ');
+    message.error('Please enter the cardholder name');
     return;
   }
   
   if (!cardInfo.value.number) {
-    message.error('Vui lòng chọn số thẻ');
+    message.error('Please select a card number');
     return;
   }
   
   if (!cardInfo.value.expMonth || !cardInfo.value.expYear) {
-    message.error('Vui lòng chọn ngày hết hạn');
+    message.error('Please select an expiry date');
     return;
   }
   
   if (!cardInfo.value.cvv || cardInfo.value.cvv.length < 3) {
-    message.error('Vui lòng nhập CVV hợp lệ');
+    message.error('Please enter a valid CVV');
     return;
   }
   
   // Process payment
-  message.success('Thanh toán thẻ thành công');
+  message.success('Card payment successful');
   processPayment();
 };
 
 // Process QR payment
 const processQRPayment = () => {
   // In a real implementation, this would show a QR code and wait for callback confirmation
-  message.success('Thanh toán chuyển khoản thành công');
+  message.success('Bank transfer payment successful');
   processPayment();
 };
 
@@ -645,7 +665,22 @@ const maskCardNumber = (number) => {
   return masked + lastFour;
 };
 
+// Fetch bank accounts
+const fetchBankAccounts = async () => {
+  try {
+    const response = await api.get('/api/bank', { 
+      params: { limit: 1, status: true } 
+    });
+    
+    if (response && response.data && response.data.length > 0) {
+      selectedBank.value = response.data[0];
+    }
+  } catch (error) {
+    console.error('Failed to fetch bank account:', error);
+  }
+};
+
 onMounted(async () => {
-  await Promise.all([fetchMedicines(), fetchCustomers()]);
+  await Promise.all([fetchMedicines(), fetchCustomers(), fetchBankAccounts()]);
 });
 </script> 

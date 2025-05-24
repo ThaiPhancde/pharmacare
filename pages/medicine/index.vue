@@ -1,6 +1,6 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
-import { Pencil, Trash } from "lucide-vue-next";
+import { Eye, Pencil, Trash } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast";
 const { toast } = useToast();
 
@@ -11,6 +11,7 @@ const statuses = [
 
 const showAdd = ref(false);
 const showDelete = ref(false);
+const showDetail = ref(false);
 const selectedMedicine = ref(null);
 
 const medicineTypes = ref([]);
@@ -75,6 +76,7 @@ const {
   const res = await api.get("/api/medicine", {
     params: { page, limit },
   });
+  console.log('API response data:', res.data);
   pagination.total = res.total ?? 0;
   return res.data;
 });
@@ -99,9 +101,8 @@ const formatVND = (value) => {
 onMounted(fetchData);
 
 const columns = [
+  { accessorKey: "bar_code", header: "Batch ID" },
   { accessorKey: "name", header: "Name" },
-  { accessorKey: "generic", header: "Generic Name" },
-  { accessorKey: "description", header: "Description" },
   { accessorKey: "category.name", header: "Category" },
   { accessorKey: "type.name", header: "Type" },
   { accessorKey: "unit.name", header: "Unit" },
@@ -131,6 +132,11 @@ const columns = [
     cell: ({ row }) => {
       const item = row.original;
       return h("div", { class: "flex gap-2" }, [
+        h(Eye, {
+          class:
+            "w-4 h-4 text-green-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleViewDetail(item),
+        }),
         h(Pencil, {
           class:
             "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
@@ -145,6 +151,12 @@ const columns = [
     },
   },
 ];
+
+const handleViewDetail = (item) => {
+  console.log('Medicine detail data:', item);
+  selectedMedicine.value = item;
+  showDetail.value = true;
+};
 
 const handleEdit = async (item) => {
   await preloadFormData();
@@ -248,6 +260,62 @@ const handleSubmit = async () => {
       v-model:size="pagination.limit"
       v-model:total="pagination.total"
     />
+
+    <!-- Medicine Detail Modal -->
+    <n-modal v-model:show="showDetail" preset="card" style="width: 600px" title="Medicine Details">
+      <div v-if="selectedMedicine" class="grid gap-4 py-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <h3 class="font-semibold mb-1">Batch ID:</h3>
+            <p>{{ selectedMedicine.bar_code || '-' }}</p>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-1">Name:</h3>
+            <p>{{ selectedMedicine.name || '-' }}</p>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-1">Generic Name:</h3>
+          <p>{{ selectedMedicine.generic || '-' }}</p>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-1">Description:</h3>
+          <p>{{ selectedMedicine.description || '-' }}</p>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <h3 class="font-semibold mb-1">Category:</h3>
+            <p>{{ selectedMedicine.category?.name || '-' }}</p>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-1">Type:</h3>
+            <p>{{ selectedMedicine.type?.name || '-' }}</p>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-1">Unit:</h3>
+            <p>{{ selectedMedicine.unit?.name || '-' }}</p>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-1">Price:</h3>
+          <p>{{ formatVND(selectedMedicine.price) }}</p>
+        </div>
+        
+        <div v-if="selectedMedicine.image">
+          <h3 class="font-semibold mb-1">Image:</h3>
+          <img :src="selectedMedicine.image" alt="Medicine Image" class="max-h-64 object-contain my-2" />
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <n-button @click="showDetail = false">Close</n-button>
+        </div>
+      </template>
+    </n-modal>
 
     <!-- Modal add -->
     <n-modal v-model:show="showAdd" close-on-esc>

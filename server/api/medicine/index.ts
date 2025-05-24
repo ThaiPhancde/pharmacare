@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     let medicineQuery = Medicine.find(condition)
       .skip(skip)
       .limit(limit)
-      .select('name barcode image price supplierPrice unit_id category_id type_id')
+      .select('name bar_code image price generic description unit_id category_id type_id')
       .lean();
 
     // Populate các trường chính với select tối thiểu
@@ -82,6 +82,12 @@ export default defineEventHandler(async (event) => {
         transformed.type = item.type_id;
         delete transformed.type_id;
       }
+      
+      // Đảm bảo các trường quan trọng được giữ lại
+      transformed.bar_code = item.bar_code || item.barcode || '';
+      transformed.generic = item.generic || '';
+      transformed.description = item.description || '';
+      
       return transformed;
     });
 
