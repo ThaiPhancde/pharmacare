@@ -54,7 +54,7 @@ const SupplierSchema = new Schema<ISupplier>(
     state: { type: String, default: "" },
     zip: { type: String, default: "" },
     country: { type: String, default: "" },
-    balance: { type: Number, default: 0, min: 0 },
+    balance: { type: Number, default: 0 },
     createdAt: { type: Date, default: () => new Date() },
     updatedAt: { type: Date, default: () => new Date() },
   },
