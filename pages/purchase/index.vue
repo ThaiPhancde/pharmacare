@@ -69,13 +69,7 @@ const columns = [
     accessorKey: "total_price",
     header: "Total",
     cell: ({ row }) => {
-      const items = row.original.items ?? [];
-      const total = items.reduce(
-        (sum, item) =>
-          sum + (item.supplier_price || 0) * (item.unit_quantity || 0),
-        0
-      );
-      return total.toLocaleString("vi-VN") + "₫";
+      return row.original.total.toLocaleString("vi-VN") + "₫";
     },
   },
   {
@@ -89,11 +83,11 @@ const columns = [
             "w-4 h-4 text-green-600 cursor-pointer hover:scale-110 transition",
           onClick: () => navigateTo(`/purchase/${item._id}`),
         }),
-        // h(Pencil, {
-        //   class:
-        //     "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
-        //   onClick: () => navigateTo(`/purchase/edit/${item._id}`),
-        // }),
+        h(Pencil, {
+          class:
+            "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => navigateTo(`/purchase/edit/${item._id}`),
+        }),
         h(Trash, {
           class:
             "w-4 h-4 text-red-600 cursor-pointer hover:scale-110 transition",
