@@ -11,6 +11,7 @@ const color = computed(() =>
 );
 
 const { theme, radius } = useCustomize();
+console.log("(❁´◡`❁)😒😒😒 ~ theme:", theme)
 
 useHead({
   meta: [
