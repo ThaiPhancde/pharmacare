@@ -107,6 +107,11 @@
                 <div class="text-xs text-amber-600">
                   Stock: {{ item.max_quantity }}
                 </div>
+                <!-- Display discount information if applicable -->
+                <div v-if="item.discount_percentage > 0" class="text-xs text-green-600">
+                  {{ item.discount_percentage }}% discount ({{ item.discount_reason }})
+                  <span class="line-through text-gray-500 ml-1">{{ formatCurrency(item.original_price) }}</span>
+                </div>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">{{ formatCurrency(item.price * item.quantity) }}</span>
@@ -418,6 +423,32 @@ const addToCart = (medicine) => {
   validStocks.sort((a, b) => new Date(a.expiry_date) - new Date(b.expiry_date));
   const stock = validStocks[0];
   
+  // Calculate days left until expiry
+  const today = new Date();
+  const expiryDate = new Date(stock.expiry_date);
+  const diffTime = expiryDate.getTime() - today.getTime();
+  const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Determine discount based on expiry status
+  let discountPercentage = 0;
+  let discountReason = '';
+  
+  if (daysLeft <= 7) {
+    // Critical - 50% discount
+    discountPercentage = 50;
+    discountReason = 'Critical expiry (≤ 7 days)';
+  } else if (daysLeft <= 30) {
+    // Warning - 20% discount
+    discountPercentage = 20;
+    discountReason = 'Warning expiry (≤ 30 days)';
+  }
+  
+  // Calculate discounted price
+  const originalPrice = stock.mrp || medicine.price;
+  const discountedPrice = discountPercentage > 0 
+    ? Math.round(originalPrice * (1 - discountPercentage / 100)) 
+    : originalPrice;
+  
   const existingItem = cart.value.find(item => 
     item._id === medicine._id && item.batch_id === stock.batch_id
   );
@@ -426,6 +457,11 @@ const addToCart = (medicine) => {
     if (existingItem.quantity < stock.unit_quantity) {
       existingItem.quantity += 1;
       message.success(`Added ${medicine.name} to cart`);
+      
+      // Show discount message if applicable
+      if (discountPercentage > 0) {
+        message.info(`${discountReason}: ${discountPercentage}% discount applied`);
+      }
     } else {
       message.warning(`Cannot add more. Only ${stock.unit_quantity} ${medicine.name} left in batch ${stock.batch_id}`);
     }
@@ -433,16 +469,26 @@ const addToCart = (medicine) => {
     cart.value.push({
       _id: medicine._id,
       name: medicine.name,
-      price: stock.mrp || medicine.price,
+      original_price: originalPrice,
+      price: discountedPrice,
+      discount_percentage: discountPercentage,
+      discount_reason: discountReason,
       vat: stock.vat || medicine.vat || 10,
       quantity: 1,
       batch_id: stock.batch_id,
       expiry_date: stock.expiry_date,
       max_quantity: stock.unit_quantity,
       stock_id: stock._id,
-      purchase: stock.purchase
+      purchase: stock.purchase,
+      days_left: daysLeft
     });
+    
     message.success(`Added ${medicine.name} to cart`);
+    
+    // Show discount message if applicable
+    if (discountPercentage > 0) {
+      message.info(`${discountReason}: ${discountPercentage}% discount applied`);
+    }
   }
 };
 
@@ -495,12 +541,16 @@ const processPayment = async () => {
         medicine: item._id,
         quantity: item.quantity,
         price: item.price,
+        original_price: item.original_price || item.price,
+        discount_percentage: item.discount_percentage || 0,
+        discount_reason: item.discount_reason || '',
         vat: item.vat,
         subtotal: item.price * item.quantity,
         batch_id: item.batch_id,
         expiry_date: item.expiry_date,
         purchase: item.purchase,
-        stock_id: item.stock_id
+        stock_id: item.stock_id,
+        days_left: item.days_left
       })),
       subtotal: subtotal.value,
       vat_total: vatTotal.value,
@@ -598,8 +648,15 @@ const getMedicineAvailableStock = (medicine) => {
 
 // Update cart total
 const updateCartTotal = () => {
-  // Recalculate subtotal, vatTotal, grandTotal
-  // This will automatically update due to the computed properties
+  // Make sure each item's total is correctly calculated with the discounted price
+  cart.value.forEach(item => {
+    if (item.original_price && item.discount_percentage) {
+      // Recalculate discounted price to ensure accuracy
+      item.price = item.original_price * (1 - item.discount_percentage / 100);
+    }
+  });
+  
+  // Computed properties will handle recalculation automatically
 };
 
 // Process card payment

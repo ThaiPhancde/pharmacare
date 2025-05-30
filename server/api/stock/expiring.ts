@@ -12,10 +12,17 @@ export default defineEventHandler(async (event) => {
   expiryDate.setDate(today.getDate() + days);
 
   try {
+    // Modified query to include expired medicines and show all medicines within range
     const [data, total] = await Promise.all([
       Stock.find({
-        expiry_date: { $gte: today, $lte: expiryDate },
-        $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }],
+        $or: [
+          // Include expired medicines (expiry_date < today)
+          { expiry_date: { $lt: today }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
+          // Include medicines expiring within days range
+          { expiry_date: { $gte: today, $lte: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
+          // Include good medicines beyond the range if specifically requested
+          { expiry_date: { $gt: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] }
+        ]
       })
         .populate("medicine")
         .populate({
@@ -30,8 +37,11 @@ export default defineEventHandler(async (event) => {
         .limit(limit)
         .sort({ expiry_date: 1 }),
       Stock.countDocuments({
-        expiry_date: { $gte: today, $lte: expiryDate },
-        $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }],
+        $or: [
+          { expiry_date: { $lt: today }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
+          { expiry_date: { $gte: today, $lte: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
+          { expiry_date: { $gt: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] }
+        ]
       }),
     ]);
 
