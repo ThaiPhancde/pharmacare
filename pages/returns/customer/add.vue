@@ -21,7 +21,7 @@
       
       <div class="flex gap-2">
         <n-button @click="router.back()">Cancel</n-button>
-        <n-button type="primary" :loading="loading" @click="saveReturn">Save Return</n-button>
+        <n-button :loading="loading" @click="saveReturn">Save Return</n-button>
       </div>
     </div>
     
@@ -92,7 +92,7 @@
         :columns="invoiceItemsColumns"
         :data="invoiceItems"
         :pagination="false"
-        :row-key="(row) => row.id"
+        :row-key="(row) => row._id || row.medicine?._id"
       />
     </n-card>
     
@@ -109,20 +109,20 @@
           :columns="returnItemsColumns"
           :data="returnForm.items"
           :pagination="false"
-          :row-key="(row) => row.id || row.medicineId + row.batchId"
+          :row-key="(row) => row._id || `${row.medicineId}-${row.batchId}`"
         />
       </div>
       
       <div class="flex justify-between">
         <div>
-          <n-button type="primary" @click="addSelectedItemToReturn" :disabled="!selectedInvoiceItem">
+          <n-button @click="addSelectedItemToReturn" :disabled="!selectedInvoiceItem">
             Add Selected Item
           </n-button>
         </div>
         
         <div>
           <div class="text-right text-xl">
-            Total Amount: <strong>${{ calculateTotal().toFixed(2) }}</strong>
+            Total Amount: <strong>{{ formatCurrency(calculateTotal()) }}</strong>
           </div>
         </div>
       </div>
@@ -131,21 +131,24 @@
 </template>
 
 <script setup lang="ts">
-import type { CustomerReturn, CustomerReturnItem } from '~/models/returns';
-import { DataTableColumns } from 'naive-ui';
+import type { DataTableColumns } from 'naive-ui';
+import { useMessage, NButton, NInputNumber } from 'naive-ui';
+import { h } from 'vue';
+import { api } from '@/utils/api';
 
 // Router
 const router = useRouter();
+const message = useMessage();
 
 // State variables
 const loading = ref(false);
-const invoices = ref([]);
-const invoiceItems = ref([]);
-const selectedInvoiceItem = ref(null);
+const invoices = ref<any[]>([]);
+const invoiceItems = ref<any[]>([]);
+const selectedInvoiceItem = ref<any>(null);
 const customerName = ref('');
 
 // Return form
-const returnForm = ref<CustomerReturn>({
+const returnForm = ref({
   returnNumber: generateReturnNumber(),
   invoiceId: '',
   customerId: '',
@@ -153,14 +156,14 @@ const returnForm = ref<CustomerReturn>({
   totalAmount: 0,
   reason: '',
   status: 'Pending',
-  items: []
+  items: [] as any[]
 });
 
 // Options for dropdowns
 const invoiceOptions = computed(() => {
   return invoices.value.map(invoice => ({
-    label: `${invoice.invoiceNumber} - ${new Date(invoice.date).toLocaleDateString()}`,
-    value: invoice.id
+    label: `${invoice.invoice_number || 'No ID'} - ${new Date(invoice.date).toLocaleDateString()} - ${invoice.customer?.full_name || 'Unknown'}`,
+    value: invoice._id
   }));
 });
 
@@ -179,14 +182,42 @@ const reasonOptions = [
   { label: 'Other', value: 'Other' }
 ];
 
+// Format currency
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    minimumFractionDigits: 0 
+  }).format(value || 0);
+};
+
 // Table columns for invoice items
-const invoiceItemsColumns: DataTableColumns = [
-  { title: 'Medicine', key: 'medicineName' },
-  { title: 'Batch ID', key: 'batchId' },
-  { title: 'Expiry Date', key: 'expiryDate' },
-  { title: 'Quantity', key: 'quantity' },
-  { title: 'Unit Price', key: 'unitPrice', render: (row) => `$${row.unitPrice.toFixed(2)}` },
-  { title: 'Amount', key: 'amount', render: (row) => `$${row.amount.toFixed(2)}` },
+const invoiceItemsColumns: DataTableColumns<any> = [
+  { 
+    title: 'Medicine', 
+    key: 'medicineName',
+    render: (row) => row.medicine?.name || 'Unknown'
+  },
+  { title: 'Batch ID', key: 'batch_id' },
+  { 
+    title: 'Expiry Date', 
+    key: 'expiry_date',
+    render: (row) => row.expiry_date ? new Date(row.expiry_date).toLocaleDateString() : 'N/A'
+  },
+  { 
+    title: 'Quantity', 
+    key: 'quantity'
+  },
+  { 
+    title: 'Unit Price', 
+    key: 'price', 
+    render: (row) => formatCurrency(row.price || 0)
+  },
+  { 
+    title: 'Amount', 
+    key: 'subtotal', 
+    render: (row) => formatCurrency(row.subtotal || 0)
+  },
   {
     title: 'Action',
     key: 'actions',
@@ -206,10 +237,14 @@ const invoiceItemsColumns: DataTableColumns = [
 ];
 
 // Table columns for return items
-const returnItemsColumns: DataTableColumns = [
+const returnItemsColumns: DataTableColumns<any> = [
   { title: 'Medicine', key: 'medicineName' },
   { title: 'Batch ID', key: 'batchId' },
-  { title: 'Expiry Date', key: 'expiryDate' },
+  { 
+    title: 'Expiry Date', 
+    key: 'expiryDate',
+    render: (row) => row.expiryDate ? new Date(row.expiryDate).toLocaleDateString() : 'N/A'
+  },
   { 
     title: 'Quantity', 
     key: 'quantity',
@@ -220,13 +255,25 @@ const returnItemsColumns: DataTableColumns = [
           value: row.quantity,
           min: 1,
           max: getMaxQuantity(row),
-          onUpdateValue: (value) => updateItemQuantity(row, value)
+          onUpdateValue: (value: number | null) => {
+            if (value !== null) {
+              updateItemQuantity(row, value);
+            }
+          }
         }
       );
     }
   },
-  { title: 'Unit Price', key: 'unitPrice', render: (row) => `$${row.unitPrice.toFixed(2)}` },
-  { title: 'Amount', key: 'amount', render: (row) => `$${row.amount.toFixed(2)}` },
+  { 
+    title: 'Unit Price', 
+    key: 'unitPrice', 
+    render: (row) => formatCurrency(row.unitPrice || 0)
+  },
+  { 
+    title: 'Amount', 
+    key: 'amount', 
+    render: (row) => formatCurrency(row.amount || 0)
+  },
   {
     title: 'Action',
     key: 'actions',
@@ -260,41 +307,70 @@ function generateReturnNumber() {
 // Fetch invoices
 const fetchInvoices = async () => {
   try {
-    const data = await $fetch('/api/invoice');
-    invoices.value = data;
+    loading.value = true;
+    const response = await api.get('/api/invoice', {
+      params: { limit: 100 }
+    });
+    
+    if (response.status && response.data) {
+      invoices.value = Array.isArray(response.data) ? response.data : [];
+    } else {
+      invoices.value = [];
+    }
   } catch (error) {
     console.error('Error fetching invoices:', error);
     invoices.value = [];
+    message.error('Failed to fetch invoices');
+  } finally {
+    loading.value = false;
   }
 };
 
 // Handle invoice selection
-const handleInvoiceSelect = async (invoiceId) => {
+const handleInvoiceSelect = async (invoiceId: string) => {
   if (!invoiceId) return;
   
   try {
+    loading.value = true;
     // Fetch invoice details
-    const invoice = await $fetch(`/api/invoice/${invoiceId}`);
+    const response = await api.get(`/api/invoice/${invoiceId}`);
     
-    // Set customer ID and name
-    returnForm.value.customerId = invoice.customerId;
-    const customer = await $fetch(`/api/customers/${invoice.customerId}`);
-    customerName.value = customer.name;
-    
-    // Set invoice items
-    invoiceItems.value = invoice.items || [];
-    
-    // Clear return items
-    returnForm.value.items = [];
-    selectedInvoiceItem.value = null;
+    if (response.status && response.data) {
+      const invoice: any = response.data;
+      
+      console.log('Invoice data:', invoice); // Debug log
+      
+      // Set customer ID and name
+      if (invoice.customer) {
+        returnForm.value.customerId = invoice.customer._id || '';
+        customerName.value = invoice.customer.full_name || 'Unknown';
+      } else {
+        returnForm.value.customerId = '';
+        customerName.value = 'Walk-in Customer';
+      }
+      
+      // Set invoice items
+      if (Array.isArray(invoice.items)) {
+        invoiceItems.value = invoice.items || [];
+        console.log('Invoice items:', invoiceItems.value); // Debug log
+      } else {
+        invoiceItems.value = [];
+      }
+      
+      // Clear return items
+      returnForm.value.items = [];
+      selectedInvoiceItem.value = null;
+    }
   } catch (error) {
     console.error('Error fetching invoice details:', error);
-    window.$message.error('Failed to fetch invoice details');
+    message.error('Failed to fetch invoice details');
+  } finally {
+    loading.value = false;
   }
 };
 
 // Select invoice item to add to return
-const selectInvoiceItem = (item) => {
+const selectInvoiceItem = (item: any) => {
   selectedInvoiceItem.value = item;
 };
 
@@ -304,24 +380,26 @@ const addSelectedItemToReturn = () => {
   
   // Check if item already exists in return items
   const existingItem = returnForm.value.items.find(
-    item => item.medicineId === selectedInvoiceItem.value.medicineId && 
-           item.batchId === selectedInvoiceItem.value.batchId
+    (item: any) => item.medicineId === (selectedInvoiceItem.value.medicine?._id || selectedInvoiceItem.value.medicine) && 
+           item.batchId === selectedInvoiceItem.value.batch_id
   );
   
   if (existingItem) {
-    window.$message.warning('This item is already added to the return');
+    message.warning('This item is already added to the return');
     return;
   }
   
+  console.log('Selected item:', selectedInvoiceItem.value); // Debug log
+  
   // Add item to return items
   returnForm.value.items.push({
-    medicineId: selectedInvoiceItem.value.medicineId,
-    medicineName: selectedInvoiceItem.value.medicineName,
-    batchId: selectedInvoiceItem.value.batchId,
-    expiryDate: selectedInvoiceItem.value.expiryDate,
+    medicineId: selectedInvoiceItem.value.medicine?._id || selectedInvoiceItem.value.medicine,
+    medicineName: selectedInvoiceItem.value.medicine?.name || 'Unknown',
+    batchId: selectedInvoiceItem.value.batch_id,
+    expiryDate: selectedInvoiceItem.value.expiry_date,
     quantity: 1, // Default quantity to return
-    unitPrice: selectedInvoiceItem.value.unitPrice,
-    amount: selectedInvoiceItem.value.unitPrice // Calculate initial amount
+    unitPrice: selectedInvoiceItem.value.price || 0,
+    amount: selectedInvoiceItem.value.price || 0 // Calculate initial amount
   });
   
   // Update total
@@ -331,9 +409,9 @@ const addSelectedItemToReturn = () => {
 };
 
 // Remove item from return
-const removeItemFromReturn = (item) => {
+const removeItemFromReturn = (item: any) => {
   const index = returnForm.value.items.findIndex(
-    i => i.medicineId === item.medicineId && i.batchId === item.batchId
+    (i: any) => i.medicineId === item.medicineId && i.batchId === item.batchId
   );
   
   if (index !== -1) {
@@ -343,9 +421,9 @@ const removeItemFromReturn = (item) => {
 };
 
 // Update item quantity
-const updateItemQuantity = (item, quantity) => {
+const updateItemQuantity = (item: any, quantity: number) => {
   const index = returnForm.value.items.findIndex(
-    i => i.medicineId === item.medicineId && i.batchId === item.batchId
+    (i: any) => i.medicineId === item.medicineId && i.batchId === item.batchId
   );
   
   if (index !== -1) {
@@ -356,9 +434,10 @@ const updateItemQuantity = (item, quantity) => {
 };
 
 // Get maximum quantity that can be returned
-const getMaxQuantity = (item) => {
+const getMaxQuantity = (item: any) => {
+  // Check stock availability
   const invoiceItem = invoiceItems.value.find(
-    i => i.medicineId === item.medicineId && i.batchId === item.batchId
+    (i: any) => (i.medicine?._id || i.medicine) === item.medicineId && i.batch_id === item.batchId
   );
   
   return invoiceItem ? invoiceItem.quantity : 0;
@@ -366,7 +445,7 @@ const getMaxQuantity = (item) => {
 
 // Calculate total amount
 const calculateTotal = () => {
-  return returnForm.value.items.reduce((total, item) => total + item.amount, 0);
+  return returnForm.value.items.reduce((total: number, item: any) => total + (item.amount || 0), 0);
 };
 
 // Update total amount in form
@@ -378,34 +457,44 @@ const updateTotalAmount = () => {
 const saveReturn = async () => {
   // Validate form
   if (!returnForm.value.invoiceId) {
-    window.$message.error('Please select an invoice');
+    message.error('Please select an invoice');
     return;
   }
   
   if (!returnForm.value.items.length) {
-    window.$message.error('Please add at least one item to return');
+    message.error('Please add at least one item to return');
     return;
   }
   
   if (!returnForm.value.reason) {
-    window.$message.error('Please select a reason for the return');
+    message.error('Please select a reason for the return');
     return;
   }
   
   loading.value = true;
+  console.log('Saving return with data:', returnForm.value); // Debug log
   
   try {
     // Send API request to create return
-    const data = await $fetch('/api/returns/customer', {
-      method: 'POST',
-      body: returnForm.value
-    });
+    const response = await api.post('/api/returns/customer', returnForm.value);
+    console.log('Save response:', response); // Debug log
     
-    window.$message.success('Return created successfully');
-    router.push('/returns');
-  } catch (error) {
+    if (response.status) {
+      message.success('Return created successfully');
+      // Hiển thị return number để xác nhận
+      const responseData: any = response.data;
+      if (responseData && responseData.returnNumber) {
+        message.info(`Return number: ${responseData.returnNumber}`);
+      }
+      setTimeout(() => {
+        router.push('/returns');
+      }, 1500);
+    } else {
+      message.error((response as any).error || 'Failed to create return');
+    }
+  } catch (error: any) {
     console.error('Error creating return:', error);
-    window.$message.error('Failed to create return');
+    message.error('Failed to create return: ' + (error.message || 'Unknown error'));
   } finally {
     loading.value = false;
   }

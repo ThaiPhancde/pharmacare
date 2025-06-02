@@ -21,7 +21,7 @@
       
       <div class="flex gap-2">
         <n-button @click="router.back()">Cancel</n-button>
-        <n-button type="primary" :loading="loading" @click="saveReturn">Save Return</n-button>
+        <n-button :loading="loading" @click="saveReturn">Save Return</n-button>
       </div>
     </div>
     
@@ -115,7 +115,7 @@
       
       <div class="flex justify-between">
         <div>
-          <n-button type="primary" @click="addSelectedItemToReturn" :disabled="!selectedPurchaseItem">
+          <n-button @click="addSelectedItemToReturn" :disabled="!selectedPurchaseItem">
             Add Selected Item
           </n-button>
         </div>
@@ -459,20 +459,29 @@ const saveReturn = async () => {
   }
   
   loading.value = true;
+  console.log('Saving supplier return with data:', returnForm.value); // Debug log
   
   try {
     // Send API request to create return
     const response = await api.post('/api/returns/supplier', returnForm.value);
+    console.log('Save response:', response); // Debug log
     
     if (response.status) {
       message.success('Return created successfully');
-      router.push('/returns');
+      // Hiển thị return number để xác nhận
+      const responseData: any = response.data;
+      if (responseData && responseData.returnNumber) {
+        message.info(`Return number: ${responseData.returnNumber}`);
+      }
+      setTimeout(() => {
+        router.push('/returns');
+      }, 1500);
     } else {
       message.error((response as any).error || 'Failed to create return');
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating return:', error);
-    message.error('Failed to create return');
+    message.error('Failed to create return: ' + (error.message || 'Unknown error'));
   } finally {
     loading.value = false;
   }
