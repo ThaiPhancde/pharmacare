@@ -6,7 +6,7 @@
         :data="returns"
         :loading="loading"
         :pagination="pagination"
-        :row-key="(row) => row.id"
+        :row-key="(row) => row._id"
         @update:page="handlePageChange"
       />
     </n-card>
@@ -14,12 +14,15 @@
 </template>
 
 <script setup lang="ts">
-import { DataTableColumns } from 'naive-ui';
-import type { CustomerReturn } from '~/models/returns';
+import type { DataTableColumns } from 'naive-ui';
+import { NTag, NButton, NPopconfirm, useMessage } from 'naive-ui';
+import { h } from 'vue';
+import { api } from '@/utils/api';
 
 // State variables
-const returns = ref<CustomerReturn[]>([]);
+const returns = ref<any[]>([]);
 const loading = ref(true);
+const message = useMessage();
 const pagination = ref({
   page: 1,
   pageSize: 10,
@@ -35,7 +38,7 @@ const pagination = ref({
 });
 
 // Define table columns
-const columns: DataTableColumns<CustomerReturn> = [
+const columns: DataTableColumns<any> = [
   {
     title: 'Return Number',
     key: 'returnNumber',
@@ -44,37 +47,44 @@ const columns: DataTableColumns<CustomerReturn> = [
   {
     title: 'Invoice',
     key: 'invoiceId',
-    render: (row) => row.invoice?.invoiceNumber || row.invoiceId
+    render: (row) => row.invoice?.invoice_no || 'Unknown'
   },
   {
     title: 'Customer',
     key: 'customerId',
-    render: (row) => row.customer?.name || row.customerId
+    render: (row) => row.customer?.full_name || 'Walk-in Customer'
   },
   {
     title: 'Return Date',
     key: 'returnDate',
+    render: (row) => new Date(row.returnDate).toLocaleDateString(),
     sorter: (a, b) => new Date(a.returnDate).getTime() - new Date(b.returnDate).getTime()
   },
   {
     title: 'Total Amount',
     key: 'totalAmount',
-    render: (row) => `$${row.totalAmount.toFixed(2)}`
+    render: (row) => new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      minimumFractionDigits: 0 
+    }).format(row.totalAmount || 0)
   },
   {
     title: 'Status',
     key: 'status',
     render: (row) => {
-      const statusMap = {
-        pending: 'warning',
-        completed: 'success',
-        cancelled: 'error'
+      const statusMap: Record<string, any> = {
+        'pending': 'warning',
+        'completed': 'success',
+        'cancelled': 'error'
       };
+      
+      const statusType = statusMap[row.status.toLowerCase()] || 'default';
       
       return h(
         NTag,
         {
-          type: statusMap[row.status.toLowerCase()] || 'default',
+          type: statusType,
           round: true
         },
         { default: () => row.status }
@@ -98,7 +108,7 @@ const columns: DataTableColumns<CustomerReturn> = [
           {
             size: 'small',
             onClick: () => {
-              navigateToDetails(row.id);
+              navigateToDetails(row._id);
             }
           },
           { default: () => 'View' }
@@ -106,7 +116,7 @@ const columns: DataTableColumns<CustomerReturn> = [
         h(
           NPopconfirm,
           {
-            onPositiveClick: () => handleDelete(row.id)
+            onPositiveClick: () => handleDelete(row._id)
           },
           {
             trigger: () =>
@@ -133,11 +143,22 @@ const router = useRouter();
 const fetchReturns = async () => {
   loading.value = true;
   try {
-    const data = await $fetch('/api/returns/customer');
-    returns.value = data;
+    const response = await api.get('/api/returns/customer', {
+      params: {
+        page: pagination.value.page,
+        limit: pagination.value.pageSize
+      }
+    });
+    
+    if (response.status && response.data) {
+      returns.value = Array.isArray(response.data) ? response.data : [];
+    } else {
+      returns.value = [];
+    }
   } catch (error) {
     console.error('Error fetching customer returns:', error);
     returns.value = [];
+    message.error('Failed to fetch customer returns');
   } finally {
     loading.value = false;
   }
@@ -151,20 +172,24 @@ const navigateToDetails = (id: string) => {
 // Handle delete
 const handleDelete = async (id: string) => {
   try {
-    await $fetch(`/api/returns/customer/${id}`, {
-      method: 'DELETE'
-    });
-    await fetchReturns();
-    window.$message.success('Return deleted successfully');
+    const response = await api.delete(`/api/returns/customer/${id}`);
+    
+    if (response.status) {
+      await fetchReturns();
+      message.success('Return deleted successfully');
+    } else {
+      message.error('Failed to delete return');
+    }
   } catch (error) {
     console.error('Error deleting return:', error);
-    window.$message.error('Failed to delete return');
+    message.error('Failed to delete return');
   }
 };
 
 // Handle page change
 const handlePageChange = (page: number) => {
   pagination.value.page = page;
+  fetchReturns();
 };
 
 // Fetch returns on component mount

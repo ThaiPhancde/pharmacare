@@ -163,7 +163,7 @@ watch([() => date.value.from, () => date.value.to], () => {
             class="flex flex-row items-center justify-between pb-2 space-y-0"
           >
             <CardTitle class="text-red-500 text-sm font-medium">
-              Out of Stock
+              Expired Medicine
             </CardTitle>
             <Archive class="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -175,9 +175,8 @@ watch([() => date.value.from, () => date.value.to], () => {
               <NumberFlow
                 :value="dataCard.salesDesc"
                 prefix="+"
-                :format="{ style: 'percent', minimumFractionDigits: 1 }"
               />
-              from last month
+              expired medicines
             </p>
           </CardContent>
         </Card>
@@ -186,7 +185,7 @@ watch([() => date.value.from, () => date.value.to], () => {
             class="flex flex-row items-center justify-between pb-2 space-y-0"
           >
             <CardTitle class="text-orange-500 text-sm font-medium">
-              Expired Medicine
+              Expiring Medicine
             </CardTitle>
             <TestTubeDiagonal class="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -196,7 +195,7 @@ watch([() => date.value.from, () => date.value.to], () => {
             </div>
             <p class="text-xs text-muted-foreground">
               <NumberFlow :value="dataCard.expiredMedicineDesc" prefix="-" />
-              since last week
+              within 30 days
             </p>
           </CardContent>
         </Card>

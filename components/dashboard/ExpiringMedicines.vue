@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { NSelect, NSpin, NBadge } from 'naive-ui';
 import { useToast } from "@/components/ui/toast/use-toast";
 
 interface ExpiringMedicine {
@@ -13,16 +14,14 @@ const expiringMedicines = ref<ExpiringMedicine[]>([]);
 const loading = ref(false);
 const { toast } = useToast();
 
-// Days range for filtering expiring medicines
+// Days range for filtering expiring medicines - default to 30 days
 const daysRange = ref(30);
 
-// Dropdown options
+// Dropdown options - removed options > 30 days since we only show up to 30 days
 const daysOptions = [
   { label: "7 days", value: 7 },
   { label: "15 days", value: 15 },
-  { label: "30 days", value: 30 },
-  { label: "60 days", value: 60 },
-  { label: "90 days", value: 90 }
+  { label: "30 days", value: 30 }
 ];
 
 // Fetch expiring medicines data
@@ -83,19 +82,32 @@ const getStatusText = (daysLeft: number) => {
   if (daysLeft <= 30) return 'Warning';
   return 'Good';
 };
+
+// Get badge type for Naive UI
+const getBadgeType = (daysLeft: number) => {
+  if (daysLeft <= 0) return 'error';
+  if (daysLeft <= 7) return 'warning';
+  if (daysLeft <= 30) return 'warning';
+  return 'success';
+};
 </script>
 
 <template>
   <div>
     <div class="flex justify-between items-center mb-4">
-      <Select v-model="daysRange" :options="daysOptions" />
+      <n-select 
+        v-model:value="daysRange" 
+        :options="daysOptions" 
+        size="small"
+        style="width: 120px"
+      />
     </div>
     
     <div v-if="loading" class="flex justify-center items-center py-12">
-      <Spinner size="md" />
+      <n-spin size="medium" />
     </div>
     
-    <div v-else-if="expiringMedicines.length === 0" class="text-center py-8 text-muted-foreground">
+    <div v-else-if="expiringMedicines.length === 0" class="text-center py-8 text-gray-500">
       No medicines expiring in the next {{ daysRange }} days
     </div>
     
@@ -104,20 +116,21 @@ const getStatusText = (daysLeft: number) => {
         <div v-for="medicine in expiringMedicines" :key="medicine._id" class="border rounded-lg p-4">
           <div class="flex justify-between items-start mb-2">
             <h4 class="font-medium">{{ medicine.medicineName }}</h4>
-            <Badge :class="getStatusClass(medicine.daysLeft)">
-              {{ getStatusText(medicine.daysLeft) }}
-            </Badge>
+            <n-badge 
+              :type="getBadgeType(medicine.daysLeft)"
+              :value="getStatusText(medicine.daysLeft)"
+            />
           </div>
           
           <div class="grid grid-cols-2 gap-2 text-sm">
-            <div class="text-muted-foreground">Batch ID:</div>
+            <div class="text-gray-500">Batch ID:</div>
             <div>{{ medicine.batchId }}</div>
             
-            <div class="text-muted-foreground">Expire Date:</div>
+            <div class="text-gray-500">Expire Date:</div>
             <div>{{ new Date(medicine.expiryDate).toLocaleDateString() }}</div>
             
-            <div class="text-muted-foreground">Duration:</div>
-            <div>{{ medicine.daysLeft }} days</div>
+            <div class="text-gray-500">Days Left:</div>
+            <div :class="getStatusClass(medicine.daysLeft)">{{ medicine.daysLeft }} days</div>
           </div>
         </div>
       </div>

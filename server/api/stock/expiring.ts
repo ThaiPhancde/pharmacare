@@ -2,28 +2,34 @@ import Stock from "@/server/models/Stock";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
-  const days = parseInt(query.days as string) || 30; // Default to 30 days
+  const days = parseInt(query.days as string) || 999999; // If no days specified, show all
   const page = parseInt(query.page as string) || 1;
   const limit = parseInt(query.limit as string) || 10;
   const skip = (page - 1) * limit;
 
   const today = new Date();
-  const expiryDate = new Date();
-  expiryDate.setDate(today.getDate() + days);
 
   try {
-    // Modified query to include expired medicines and show all medicines within range
+    let queryCondition;
+    
+    // If days is very large (like 999999), show all medicines with stock
+    if (days >= 999999) {
+      queryCondition = {
+        $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }]
+      };
+    } else {
+      // Otherwise, show medicines expiring within the specified days
+      const expiryDate = new Date();
+      expiryDate.setDate(today.getDate() + days);
+      
+      queryCondition = {
+        expiry_date: { $gte: today, $lte: expiryDate },
+        $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }]
+      };
+    }
+
     const [data, total] = await Promise.all([
-      Stock.find({
-        $or: [
-          // Include expired medicines (expiry_date < today)
-          { expiry_date: { $lt: today }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
-          // Include medicines expiring within days range
-          { expiry_date: { $gte: today, $lte: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
-          // Include good medicines beyond the range if specifically requested
-          { expiry_date: { $gt: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] }
-        ]
-      })
+      Stock.find(queryCondition)
         .populate("medicine")
         .populate({
           path: "purchase",
@@ -36,13 +42,7 @@ export default defineEventHandler(async (event) => {
         .skip(skip)
         .limit(limit)
         .sort({ expiry_date: 1 }),
-      Stock.countDocuments({
-        $or: [
-          { expiry_date: { $lt: today }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
-          { expiry_date: { $gte: today, $lte: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] },
-          { expiry_date: { $gt: expiryDate }, $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }] }
-        ]
-      }),
+      Stock.countDocuments(queryCondition),
     ]);
 
     // Add information about days left until expiry

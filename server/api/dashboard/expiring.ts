@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const expiryDate = new Date(today);
     expiryDate.setDate(today.getDate() + days);
 
-    // Lấy danh sách thuốc sắp hết hạn
+    // Lấy danh sách thuốc sắp hết hạn (chỉ lấy thuốc còn hạn, sắp hết trong vòng X ngày)
     const expiringMedicines = await Stock.find({
       expiry_date: { $gte: today, $lte: expiryDate },
       $or: [{ box_quantity: { $gt: 0 } }, { unit_quantity: { $gt: 0 } }]
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
       const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
       return {
-        ...item.toObject(),
+        _id: item._id,
         daysLeft,
         medicineName: item.medicine?.name || 'Unknown',
         batchId: item.batch_id,

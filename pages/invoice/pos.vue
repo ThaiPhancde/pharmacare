@@ -444,7 +444,7 @@ const addToCart = (medicine) => {
   }
   
   // Calculate discounted price
-  const originalPrice = stock.mrp || medicine.price;
+  const originalPrice = stock.mrp || medicine.price || 0;
   const discountedPrice = discountPercentage > 0 
     ? Math.round(originalPrice * (1 - discountPercentage / 100)) 
     : originalPrice;
@@ -473,7 +473,7 @@ const addToCart = (medicine) => {
       price: discountedPrice,
       discount_percentage: discountPercentage,
       discount_reason: discountReason,
-      vat: stock.vat || medicine.vat || 10,
+      vat: stock.vat || 10,
       quantity: 1,
       batch_id: stock.batch_id,
       expiry_date: stock.expiry_date,

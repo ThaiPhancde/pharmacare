@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       Purchase.find()
         .populate("items.medicine")
         .populate("supplier")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
       Purchase.countDocuments(),

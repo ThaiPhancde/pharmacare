@@ -92,7 +92,7 @@
         :columns="purchaseItemsColumns"
         :data="purchaseItems"
         :pagination="false"
-        :row-key="(row) => row.id"
+        :row-key="(row) => row._id || `${row.medicineId}-${row.batchId}`"
       />
     </n-card>
     
@@ -109,7 +109,7 @@
           :columns="returnItemsColumns"
           :data="returnForm.items"
           :pagination="false"
-          :row-key="(row) => row.id || row.medicineId + row.batchId"
+          :row-key="(row) => row._id || `${row.medicineId}-${row.batchId}`"
         />
       </div>
       
@@ -122,7 +122,7 @@
         
         <div>
           <div class="text-right text-xl">
-            Total Amount: <strong>${{ calculateTotal().toFixed(2) }}</strong>
+            Total Amount: <strong>{{ formatCurrency(calculateTotal()) }}</strong>
           </div>
         </div>
       </div>
@@ -131,21 +131,24 @@
 </template>
 
 <script setup lang="ts">
-import type { SupplierReturn, SupplierReturnItem } from '~/models/returns';
-import { DataTableColumns } from 'naive-ui';
+import type { DataTableColumns } from 'naive-ui';
+import { useMessage, NButton, NInputNumber } from 'naive-ui';
+import { h } from 'vue';
+import { api } from '@/utils/api';
 
 // Router
 const router = useRouter();
+const message = useMessage();
 
 // State variables
 const loading = ref(false);
-const purchases = ref([]);
-const purchaseItems = ref([]);
-const selectedPurchaseItem = ref(null);
+const purchases = ref<any[]>([]);
+const purchaseItems = ref<any[]>([]);
+const selectedPurchaseItem = ref<any>(null);
 const supplierName = ref('');
 
 // Return form
-const returnForm = ref<SupplierReturn>({
+const returnForm = ref({
   returnNumber: generateReturnNumber(),
   purchaseId: '',
   supplierId: '',
@@ -153,14 +156,14 @@ const returnForm = ref<SupplierReturn>({
   totalAmount: 0,
   reason: '',
   status: 'Pending',
-  items: []
+  items: [] as any[]
 });
 
 // Options for dropdowns
 const purchaseOptions = computed(() => {
   return purchases.value.map(purchase => ({
-    label: `${purchase.purchaseNumber} - ${new Date(purchase.date).toLocaleDateString()}`,
-    value: purchase.id
+    label: `${purchase.invoice_no} - ${new Date(purchase.date).toLocaleDateString()} - ${purchase.supplier?.name || 'Unknown'}`,
+    value: purchase._id
   }));
 });
 
@@ -180,13 +183,33 @@ const reasonOptions = [
 ];
 
 // Table columns for purchase items
-const purchaseItemsColumns: DataTableColumns = [
-  { title: 'Medicine', key: 'medicineName' },
-  { title: 'Batch ID', key: 'batchId' },
-  { title: 'Expiry Date', key: 'expiryDate' },
-  { title: 'Quantity', key: 'quantity' },
-  { title: 'Unit Price', key: 'unitPrice', render: (row) => `$${row.unitPrice.toFixed(2)}` },
-  { title: 'Amount', key: 'amount', render: (row) => `$${row.amount.toFixed(2)}` },
+const purchaseItemsColumns: DataTableColumns<any> = [
+  { 
+    title: 'Medicine', 
+    key: 'medicineName',
+    render: (row) => row.medicine?.name || 'Unknown'
+  },
+  { title: 'Batch ID', key: 'batch_id' },
+  { 
+    title: 'Expiry Date', 
+    key: 'expiry_date',
+    render: (row) => row.expiry_date ? new Date(row.expiry_date).toLocaleDateString() : 'N/A'
+  },
+  { 
+    title: 'Quantity', 
+    key: 'unit_quantity',
+    render: (row) => `${row.unit_quantity} units`
+  },
+  { 
+    title: 'Unit Price', 
+    key: 'supplier_price', 
+    render: (row) => formatCurrency(row.supplier_price || 0)
+  },
+  { 
+    title: 'Amount', 
+    key: 'amount', 
+    render: (row) => formatCurrency((row.supplier_price || 0) * (row.unit_quantity || 0))
+  },
   {
     title: 'Action',
     key: 'actions',
@@ -206,10 +229,14 @@ const purchaseItemsColumns: DataTableColumns = [
 ];
 
 // Table columns for return items
-const returnItemsColumns: DataTableColumns = [
+const returnItemsColumns: DataTableColumns<any> = [
   { title: 'Medicine', key: 'medicineName' },
   { title: 'Batch ID', key: 'batchId' },
-  { title: 'Expiry Date', key: 'expiryDate' },
+  { 
+    title: 'Expiry Date', 
+    key: 'expiryDate',
+    render: (row) => row.expiryDate ? new Date(row.expiryDate).toLocaleDateString() : 'N/A'
+  },
   { 
     title: 'Quantity', 
     key: 'quantity',
@@ -220,13 +247,25 @@ const returnItemsColumns: DataTableColumns = [
           value: row.quantity,
           min: 1,
           max: getMaxQuantity(row),
-          onUpdateValue: (value) => updateItemQuantity(row, value)
+          onUpdateValue: (value: number | null) => {
+            if (value !== null) {
+              updateItemQuantity(row, value);
+            }
+          }
         }
       );
     }
   },
-  { title: 'Unit Price', key: 'unitPrice', render: (row) => `$${row.unitPrice.toFixed(2)}` },
-  { title: 'Amount', key: 'amount', render: (row) => `$${row.amount.toFixed(2)}` },
+  { 
+    title: 'Unit Price', 
+    key: 'unitPrice', 
+    render: (row) => formatCurrency(row.unitPrice || 0)
+  },
+  { 
+    title: 'Amount', 
+    key: 'amount', 
+    render: (row) => formatCurrency(row.amount || 0)
+  },
   {
     title: 'Action',
     key: 'actions',
@@ -246,6 +285,15 @@ const returnItemsColumns: DataTableColumns = [
   }
 ];
 
+// Format currency
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    minimumFractionDigits: 0 
+  }).format(value || 0);
+};
+
 // Generate a return number
 function generateReturnNumber() {
   const date = new Date();
@@ -260,41 +308,58 @@ function generateReturnNumber() {
 // Fetch purchases
 const fetchPurchases = async () => {
   try {
-    const data = await $fetch('/api/purchase');
-    purchases.value = data;
+    loading.value = true;
+    const response = await api.get('/api/purchase', {
+      params: { limit: 100 }
+    });
+    
+    if (response.status && response.data) {
+      purchases.value = Array.isArray(response.data) ? response.data : [];
+    } else {
+      purchases.value = [];
+    }
   } catch (error) {
     console.error('Error fetching purchases:', error);
     purchases.value = [];
+    message.error('Failed to fetch purchases');
+  } finally {
+    loading.value = false;
   }
 };
 
 // Handle purchase selection
-const handlePurchaseSelect = async (purchaseId) => {
+const handlePurchaseSelect = async (purchaseId: string) => {
   if (!purchaseId) return;
   
   try {
+    loading.value = true;
     // Fetch purchase details
-    const purchase = await $fetch(`/api/purchase/${purchaseId}`);
+    const response = await api.get(`/api/purchase/${purchaseId}`);
     
-    // Set supplier ID and name
-    returnForm.value.supplierId = purchase.supplierId;
-    const supplier = await $fetch(`/api/suppliers/${purchase.supplierId}`);
-    supplierName.value = supplier.name;
-    
-    // Set purchase items
-    purchaseItems.value = purchase.items || [];
-    
-    // Clear return items
-    returnForm.value.items = [];
-    selectedPurchaseItem.value = null;
+    if (response.status && response.data) {
+      const purchase = response.data as any;
+      
+      // Set supplier ID and name
+      returnForm.value.supplierId = purchase.supplier?._id || '';
+      supplierName.value = purchase.supplier?.name || 'Unknown';
+      
+      // Set purchase items
+      purchaseItems.value = purchase.items || [];
+      
+      // Clear return items
+      returnForm.value.items = [];
+      selectedPurchaseItem.value = null;
+    }
   } catch (error) {
     console.error('Error fetching purchase details:', error);
-    window.$message.error('Failed to fetch purchase details');
+    message.error('Failed to fetch purchase details');
+  } finally {
+    loading.value = false;
   }
 };
 
 // Select purchase item to add to return
-const selectPurchaseItem = (item) => {
+const selectPurchaseItem = (item: any) => {
   selectedPurchaseItem.value = item;
 };
 
@@ -304,24 +369,24 @@ const addSelectedItemToReturn = () => {
   
   // Check if item already exists in return items
   const existingItem = returnForm.value.items.find(
-    item => item.medicineId === selectedPurchaseItem.value.medicineId && 
-           item.batchId === selectedPurchaseItem.value.batchId
+    item => item.medicineId === (selectedPurchaseItem.value.medicine?._id || selectedPurchaseItem.value.medicine) && 
+           item.batchId === selectedPurchaseItem.value.batch_id
   );
   
   if (existingItem) {
-    window.$message.warning('This item is already added to the return');
+    message.warning('This item is already added to the return');
     return;
   }
   
   // Add item to return items
   returnForm.value.items.push({
-    medicineId: selectedPurchaseItem.value.medicineId,
-    medicineName: selectedPurchaseItem.value.medicineName,
-    batchId: selectedPurchaseItem.value.batchId,
-    expiryDate: selectedPurchaseItem.value.expiryDate,
+    medicineId: selectedPurchaseItem.value.medicine?._id || selectedPurchaseItem.value.medicine,
+    medicineName: selectedPurchaseItem.value.medicine?.name || 'Unknown',
+    batchId: selectedPurchaseItem.value.batch_id,
+    expiryDate: selectedPurchaseItem.value.expiry_date,
     quantity: 1, // Default quantity to return
-    unitPrice: selectedPurchaseItem.value.unitPrice,
-    amount: selectedPurchaseItem.value.unitPrice // Calculate initial amount
+    unitPrice: selectedPurchaseItem.value.supplier_price || 0,
+    amount: selectedPurchaseItem.value.supplier_price || 0 // Calculate initial amount
   });
   
   // Update total
@@ -331,7 +396,7 @@ const addSelectedItemToReturn = () => {
 };
 
 // Remove item from return
-const removeItemFromReturn = (item) => {
+const removeItemFromReturn = (item: any) => {
   const index = returnForm.value.items.findIndex(
     i => i.medicineId === item.medicineId && i.batchId === item.batchId
   );
@@ -343,7 +408,7 @@ const removeItemFromReturn = (item) => {
 };
 
 // Update item quantity
-const updateItemQuantity = (item, quantity) => {
+const updateItemQuantity = (item: any, quantity: number) => {
   const index = returnForm.value.items.findIndex(
     i => i.medicineId === item.medicineId && i.batchId === item.batchId
   );
@@ -356,18 +421,18 @@ const updateItemQuantity = (item, quantity) => {
 };
 
 // Get maximum quantity that can be returned
-const getMaxQuantity = (item) => {
+const getMaxQuantity = (item: any) => {
   // Check stock availability
   const purchaseItem = purchaseItems.value.find(
-    i => i.medicineId === item.medicineId && i.batchId === item.batchId
+    i => (i.medicine?._id || i.medicine) === item.medicineId && i.batch_id === item.batchId
   );
   
-  return purchaseItem ? purchaseItem.quantity : 0;
+  return purchaseItem ? purchaseItem.unit_quantity : 0;
 };
 
 // Calculate total amount
 const calculateTotal = () => {
-  return returnForm.value.items.reduce((total, item) => total + item.amount, 0);
+  return returnForm.value.items.reduce((total, item) => total + (item.amount || 0), 0);
 };
 
 // Update total amount in form
@@ -379,17 +444,17 @@ const updateTotalAmount = () => {
 const saveReturn = async () => {
   // Validate form
   if (!returnForm.value.purchaseId) {
-    window.$message.error('Please select a purchase');
+    message.error('Please select a purchase');
     return;
   }
   
   if (!returnForm.value.items.length) {
-    window.$message.error('Please add at least one item to return');
+    message.error('Please add at least one item to return');
     return;
   }
   
   if (!returnForm.value.reason) {
-    window.$message.error('Please select a reason for the return');
+    message.error('Please select a reason for the return');
     return;
   }
   
@@ -397,16 +462,17 @@ const saveReturn = async () => {
   
   try {
     // Send API request to create return
-    const data = await $fetch('/api/returns/supplier', {
-      method: 'POST',
-      body: returnForm.value
-    });
+    const response = await api.post('/api/returns/supplier', returnForm.value);
     
-    window.$message.success('Return created successfully');
-    router.push('/returns');
+    if (response.status) {
+      message.success('Return created successfully');
+      router.push('/returns');
+    } else {
+      message.error((response as any).error || 'Failed to create return');
+    }
   } catch (error) {
     console.error('Error creating return:', error);
-    window.$message.error('Failed to create return');
+    message.error('Failed to create return');
   } finally {
     loading.value = false;
   }
