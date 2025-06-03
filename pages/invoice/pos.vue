@@ -327,14 +327,37 @@ const cardInfo = ref({
   cvv: ''
 });
 const testCardOptions = ref([
-  { label: '4242424242424242', value: '4242424242424242' },
-  { label: '4000111111111115', value: '4000111111111115' },
-  { label: '5555555555554444', value: '5555555555554444' },
-  { label: '378282246310005', value: '378282246310005' },
-  { label: '371449635398431', value: '371449635398431' }
+  { label: '4012888888881881 (Visa)', value: '4012888888881881' },
+  { label: '5555555555554444 (Mastercard)', value: '5555555555554444' },
+  { label: '371449635398431 (Amex)', value: '371449635398431' },
+  { label: '376680816376961 (Amex)', value: '376680816376961' },
+  { label: '36259600000004 (Diners)', value: '36259600000004' },
+  { label: '6304000000000000 (Maestro)', value: '6304000000000000' },
+  { label: '5063516945005047 (Maestro)', value: '5063516945005047' }
 ]);
-const monthOptions = ref(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']);
-const yearOptions = ref(['2024', '2025', '2026', '2027', '2028', '2029', '2030']);
+const monthOptions = ref([
+  { label: '01', value: '01' },
+  { label: '02', value: '02' },
+  { label: '03', value: '03' },
+  { label: '04', value: '04' },
+  { label: '05', value: '05' },
+  { label: '06', value: '06' },
+  { label: '07', value: '07' },
+  { label: '08', value: '08' },
+  { label: '09', value: '09' },
+  { label: '10', value: '10' },
+  { label: '11', value: '11' },
+  { label: '12', value: '12' }
+]);
+const yearOptions = ref([
+  { label: '2024', value: '2024' },
+  { label: '2025', value: '2025' },
+  { label: '2026', value: '2026' },
+  { label: '2027', value: '2027' },
+  { label: '2028', value: '2028' },
+  { label: '2029', value: '2029' },
+  { label: '2030', value: '2030' }
+]);
 const selectedBank = ref(null);
 
 // Format currency
@@ -683,8 +706,26 @@ const processCardPayment = () => {
     return;
   }
   
-  if (!cardInfo.value.expMonth || !cardInfo.value.expYear) {
-    message.error('Please select an expiry date');
+  if (!cardInfo.value.expMonth) {
+    message.error('Please select expiry month');
+    return;
+  }
+  
+  if (!cardInfo.value.expYear) {
+    message.error('Please select expiry year');
+    return;
+  }
+  
+  // Check if expiry date is valid
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+  
+  const expYear = parseInt(cardInfo.value.expYear);
+  const expMonth = parseInt(cardInfo.value.expMonth);
+  
+  if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+    message.error('Card has expired. Please use a valid expiry date');
     return;
   }
   
