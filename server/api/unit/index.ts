@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-      Unit.find().skip(skip).limit(limit),
+      Unit.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
       Unit.countDocuments(),
     ]);
 

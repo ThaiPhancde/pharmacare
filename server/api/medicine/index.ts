@@ -38,6 +38,7 @@ export default defineEventHandler(async (event) => {
       .skip(skip)
       .limit(limit)
       .select('name bar_code image price generic description unit_id category_id type_id')
+      .sort({ createdAt: -1 })
       .lean();
 
     // Populate các trường chính với select tối thiểu
