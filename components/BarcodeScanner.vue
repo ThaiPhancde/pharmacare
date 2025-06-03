@@ -3,7 +3,7 @@
     <div class="relative">
       <div class="mb-2 flex items-center justify-between">
         <h3 class="font-medium">{{ title }}</h3>
-        <n-button size="small" @click="toggleScanner" :type="isScanning ? 'error' : 'primary'">
+        <n-button size="small" @click="toggleScanner" :type="isScanning ? 'error' : 'default'">
           {{ isScanning ? 'Stop' : 'Start' }} Scanner
         </n-button>
       </div>
