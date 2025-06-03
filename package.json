@@ -55,15 +55,18 @@
     "@types/node": "^22.13.13",
     "@unovis/ts": "^1.5.1",
     "@unovis/vue": "^1.5.1",
+    "@zxing/library": "^0.21.3",
     "bcryptjs": "^3.0.2",
     "embla-carousel": "^8.5.2",
     "embla-carousel-vue": "^8.5.2",
+    "jsbarcode": "^3.11.6",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.0",
     "reka-ui": "^2.1.1",
     "tailwindcss-animate": "^1.0.7",
     "unplugin-auto-import": "^19.1.2",
-    "unplugin-vue-components": "^28.5.0"
+    "unplugin-vue-components": "^28.5.0",
+    "vue-barcode-reader": "^1.0.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.1",

@@ -2,6 +2,11 @@
   <div class="flex flex-col md:flex-row h-screen gap-4 p-4">
     <!-- Left section - Product selection -->
     <div class="w-full md:w-2/3 flex flex-col gap-4">
+      <!-- Barcode scanner -->
+      <n-card size="small">
+        <BarcodeScanner @decode="onBarcodeScanned" title="Scan Product Barcode" />
+      </n-card>
+      
       <!-- Search and category filters -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="relative">
@@ -294,6 +299,7 @@ import { ref, computed, onMounted, h } from 'vue';
 import { useMessage } from 'naive-ui';
 import { api } from '@/utils/api';
 import { Trash } from 'lucide-vue-next';
+import BarcodeScanner from '@/components/BarcodeScanner.vue';
 
 const message = useMessage();
 const loading = ref(false);
@@ -402,8 +408,11 @@ const setActiveCategory = (categoryId) => {
 
 // Add medicine to cart
 const addToCart = (medicine) => {
+  console.log('Adding medicine to cart:', medicine);
+  
   // Check if medicine has stock
   if (!medicine.stocks || medicine.stocks.length === 0) {
+    console.warn(`${medicine.name} has no stocks:`, medicine.stocks);
     message.error(`${medicine.name} is out of stock`);
     return;
   }
@@ -413,6 +422,8 @@ const addToCart = (medicine) => {
     stock.unit_quantity > 0 && 
     new Date(stock.expiry_date) > new Date()
   );
+  
+  console.log('Valid stocks found:', validStocks.length);
   
   if (validStocks.length === 0) {
     message.error(`${medicine.name} is out of stock or expired`);
@@ -734,6 +745,42 @@ const fetchBankAccounts = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch bank account:', error);
+  }
+};
+
+// Process barcode scan
+const onBarcodeScanned = async (barcode) => {
+  if (!barcode) return;
+  
+  // Show loading message
+  message.loading('Scanning product barcode...');
+  console.log(`Scanning barcode: ${barcode}`);
+  
+  try {
+    // Search for medicine by barcode
+    const response = await api.get('/api/medicine', { 
+      params: { 
+        bar_code: barcode,
+        populate: 'stocks',
+        limit: 1
+      } 
+    });
+    
+    console.log('Barcode search response:', response);
+    
+    if (response && response.data && response.data.length > 0) {
+      const medicine = response.data[0];
+      console.log('Found medicine:', medicine.name, 'with ID:', medicine._id);
+      
+      // Add the medicine to cart
+      addToCart(medicine);
+      message.success(`Found and added ${medicine.name} to cart`);
+    } else {
+      message.error(`Barcode ${barcode} not found in system`);
+    }
+  } catch (error) {
+    console.error('Barcode scan error:', error);
+    message.error('Failed to process barcode');
   }
 };
 

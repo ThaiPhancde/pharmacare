@@ -11,13 +11,22 @@ export default defineEventHandler(async (event) => {
     const skip = (page - 1) * limit;
     const populate = query.populate as string || '';
     const search = query.search as string || '';
+    const barcode = query.bar_code as string || '';
 
     // Xây dựng query condition
     const condition: any = {};
-    if (search) {
+    
+    // If barcode is provided, use an exact match (high priority)
+    if (barcode) {
+      condition.bar_code = barcode;
+      console.log(`Searching for medicine with barcode: ${barcode}`);
+    } 
+    // Otherwise use search term if provided
+    else if (search) {
       condition.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { barcode: { $regex: search, $options: 'i' } }
+        { bar_code: { $regex: search, $options: 'i' } },
+        { generic: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -83,13 +92,21 @@ export default defineEventHandler(async (event) => {
         delete transformed.type_id;
       }
       
-      // Đảm bảo các trường quan trọng được giữ lại
-      transformed.bar_code = item.bar_code || item.barcode || '';
+      // Đảm bảo các trường quan trọng được giữ lại và đồng bộ
+      // Ensure barcode field is synchronized with bar_code
+      transformed._id = item._id; // Make sure ID is included
+      transformed.barcode = item.bar_code || '';
+      transformed.bar_code = item.bar_code || ''; // Keep both for compatibility
       transformed.generic = item.generic || '';
       transformed.description = item.description || '';
       
       return transformed;
     });
+
+    console.log(`Found ${data.length} medicine items with the condition:`, condition);
+    if (data.length > 0) {
+      console.log('First item barcode:', data[0].bar_code);
+    }
 
     return {
       data: transformedData,
@@ -114,7 +131,7 @@ export default defineEventHandler(async (event) => {
         [
           {
             medicine: createdMedicine[0]._id,
-            batch_id: createdMedicine[0].barcode || `BATCH-${Date.now()}`,
+            batch_id: createdMedicine[0].bar_code || `BATCH-${Date.now()}`,
             expiry_date: new Date(new Date().setFullYear(new Date().getFullYear() + 2)), // Mặc định 2 năm hạn sử dụng
             box_pattern: "",
             box_quantity: 0,

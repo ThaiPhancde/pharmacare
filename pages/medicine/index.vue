@@ -2,6 +2,8 @@
 import DataTable from "@/components/base/DataTable/index.vue";
 import { Eye, Pencil, Trash } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast";
+import BarcodeScanner from "@/components/BarcodeScanner.vue";
+import BarcodeGenerator from "@/components/BarcodeGenerator.vue";
 const { toast } = useToast();
 
 const statuses = [
@@ -29,6 +31,8 @@ const formValue = reactive({
   type_id: null,
   category_id: null,
 });
+
+const showBarcodeScanner = ref(false);
 
 const fetchType = async () => {
   const resData = await api.get("/api/types", { params: { limit: 99999 } });
@@ -242,6 +246,66 @@ const handleSubmit = async () => {
     toast({ title: "Error", description: error.message, type: "error" });
   }
 };
+
+const onBarcodeScanned = (decodedText) => {
+  formValue.bar_code = decodedText;
+  showBarcodeScanner.value = false;
+};
+
+const printBarcode = (barcode, name) => {
+  // Create a new window for printing
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    message.error('Please allow pop-ups to print barcodes');
+    return;
+  }
+
+  // Create content with separate strings to avoid template literal issues
+  let content = '<!DOCTYPE html><html><head>';
+  content += `<title>Print Barcode - ${name}</title>`;
+  content += '<style>';
+  content += 'body { font-family: Arial, sans-serif; margin: 0; padding: 20px; text-align: center; }';
+  content += '.barcode-container { margin: 20px auto; max-width: 300px; }';
+  content += '.item-name { font-size: 14px; font-weight: bold; margin-bottom: 5px; }';
+  content += '.price { font-size: 12px; margin-top: 5px; }';
+  content += '@media print { @page { size: 50mm 25mm; margin: 0; } body { width: 100%; height: 100%; padding: 5px; } }';
+  content += '</style>';
+  content += '</head><body>';
+  content += '<div class="barcode-container">';
+  content += `<div class="item-name">${name}</div>`;
+  content += '<svg id="barcode"></svg>';
+  content += `<div class="price">${formatVND(selectedMedicine.value.price)}</div>`;
+  content += '</div>';
+  content += '<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>';
+  content += '<script>';
+  content += `JsBarcode("#barcode", "${barcode}", { format: "CODE128", width: 2, height: 50, displayValue: true, fontSize: 12 });`;
+  content += 'window.onload = function() { setTimeout(function() { window.print(); setTimeout(function() { window.close(); }, 500); }, 500); };';
+  content += '<\/script>';
+  content += '</body></html>';
+  
+  // Write to the new window
+  printWindow.document.open();
+  printWindow.document.write(content);
+  printWindow.document.close();
+};
+
+const generateRandomBarcode = () => {
+  // Generate EAN-13 format barcode
+  // First 2-3 digits: country code (eg. 893 for Vietnam)
+  // Next 4-5 digits: manufacturer code
+  // Next 4-5 digits: product code
+  // Last digit: check digit (we'll use 0 for simplicity)
+  
+  const countryCode = '893'; // Vietnam
+  const manufacturerCode = Math.floor(10000 + Math.random() * 90000).toString();
+  const productCode = Math.floor(10000 + Math.random() * 90000).toString();
+  
+  // Combine them (we'll skip calculating the proper check digit for simplicity)
+  const barcode = `${countryCode}${manufacturerCode}${productCode.substring(0, 4)}0`;
+  
+  formValue.bar_code = barcode;
+  showBarcodeScanner.value = false;
+};
 </script>
 
 <template>
@@ -272,6 +336,23 @@ const handleSubmit = async () => {
           <div>
             <h3 class="font-semibold mb-1">Name:</h3>
             <p>{{ selectedMedicine.name || '-' }}</p>
+          </div>
+        </div>
+        
+        <!-- Barcode display -->
+        <div v-if="selectedMedicine.bar_code" class="mt-2 p-3 border rounded-md">
+          <h3 class="font-semibold mb-2">Barcode:</h3>
+          <div class="flex flex-col items-center">
+            <BarcodeGenerator 
+              :value="selectedMedicine.bar_code" 
+              :height="80"
+              :width="2"
+              :display-value="true"
+              class="w-full max-w-xs mb-2"
+            />
+            <n-button size="small" @click="printBarcode(selectedMedicine.bar_code, selectedMedicine.name)">
+              Print Barcode
+            </n-button>
           </div>
         </div>
         
@@ -322,10 +403,40 @@ const handleSubmit = async () => {
       <div class="bg-white min-w-600px p-4 rounded-xl">
         <n-form ref="formRef" :model="formValue">
           <n-form-item label="Bar Code/QR Code" path="bar_code">
-            <n-input
-              v-model:value="formValue.bar_code"
-              placeholder="Bar Code/QR Code"
-            />
+            <div class="flex gap-2">
+              <n-input
+                v-model:value="formValue.bar_code"
+                placeholder="Scan or enter barcode"
+                class="flex-1"
+              />
+              <n-button @click="showBarcodeScanner = !showBarcodeScanner" size="small">
+                {{ showBarcodeScanner ? 'Hide Scanner' : 'Scan Barcode' }}
+              </n-button>
+              <n-button 
+                @click="generateRandomBarcode" 
+                size="small" 
+                type="info"
+                v-if="!formValue.bar_code"
+              >
+                Generate
+              </n-button>
+            </div>
+            
+            <!-- Barcode scanner component -->
+            <div v-if="showBarcodeScanner" class="mt-2">
+              <BarcodeScanner @decode="onBarcodeScanned" title="Scan Product Barcode" />
+            </div>
+            
+            <!-- Barcode preview -->
+            <div v-if="formValue.bar_code" class="mt-3 p-3 border rounded bg-gray-50">
+              <div class="text-xs text-gray-500 mb-1">Barcode Preview:</div>
+              <BarcodeGenerator 
+                :value="formValue.bar_code" 
+                :height="60" 
+                :width="1.5"
+                class="w-full"
+              />
+            </div>
           </n-form-item>
           <n-form-item label="Generic Name" path="generic">
             <n-input
