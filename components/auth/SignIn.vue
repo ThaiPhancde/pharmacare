@@ -2,11 +2,12 @@
 import { Loader2 } from "lucide-vue-next";
 import PasswordInput from "@/components/PasswordInput.vue";
 import { useToast } from "@/components/ui/toast";
-const email = ref("admin");
-const password = ref("admin");
+const email = ref("admin@pharmacare.com");
+const password = ref("admin123");
 const isLoading = ref(false);
 
-const cookie = useCookie("userAuth");
+const authCookie = useCookie("userAuth");
+const userCookie = useCookie("userInfo");
 const { toast } = useToast();
 const onSubmit = async (event: Event) => {
   event.preventDefault();
@@ -15,21 +16,24 @@ const onSubmit = async (event: Event) => {
   isLoading.value = true;
 
   try {
-    const response = await api.post<string>("/api/auth/login", {
+    const response = await api.post("/api/auth/login", {
       email: email.value,
       password: password.value,
     });
 
     if (response.data) {
-      cookie.value = response.data;
+      const data = response.data as { token: string; user: any };
+      authCookie.value = data.token;
+      userCookie.value = JSON.stringify(data.user);
       toast({
         title: "Login success",
       });
       navigateTo("/")
     }
-  } catch (error) {
+  } catch (error: any) {
     toast({
-      title: "Login failed. Try again later",
+      title: error.message || "Login failed. Try again later",
+      variant: "destructive"
     });
   } finally {
     isLoading.value = false;

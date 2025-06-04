@@ -11,6 +11,7 @@ import Stock from './Stock';
 import User from './User';
 import Bank from './Bank';
 import ChatbotQA from './ChatbotQA';
+import CustomerReturn from './CustomerReturn';
 
 // Đảm bảo rằng các model đã được import và đăng ký đúng cách
 export { 
@@ -25,7 +26,8 @@ export {
   Stock, 
   User,
   Bank,
-  ChatbotQA
+  ChatbotQA,
+  CustomerReturn
 };
 
 // Export default là một object chứa tất cả các model để sử dụng linh hoạt hơn
@@ -41,5 +43,6 @@ export default {
   Stock,
   User,
   Bank,
-  ChatbotQA
+  ChatbotQA,
+  CustomerReturn
 };

@@ -1,4 +1,4 @@
-import { ChatbotQA, Medicine, Supplier, Category, Stock, Invoice, TypeMedicine, Unit } from '~/server/models';
+import { ChatbotQA, Medicine, Supplier, Category, Stock, Invoice, TypeMedicine, Unit, Purchase, CustomerReturn } from '~/server/models';
 import mongoose from 'mongoose';
 
 // Mở rộng kiểu cho ChatbotQA model để hỗ trợ phương thức findSimilar
@@ -58,6 +58,178 @@ function extractMedicineNames(text: string): string[] {
   }
   
   return [...new Set(medicineMatches)];
+}
+
+// Hàm tìm kiếm thông tin trên web
+async function searchWeb(query: string) {
+  try {
+    // Sử dụng Tavily Search API hoặc Google Custom Search API
+    const apiKey = process.env.TAVILY_API_KEY || 'tvly-YOUR_API_KEY'; // Add to env
+    const searchUrl = `https://api.tavily.com/search`;
+    
+    const response = await $fetch(searchUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        api_key: apiKey,
+        query: query + ' thuốc dược phẩm việt nam',
+        search_depth: 'basic',
+        max_results: 3,
+        include_answer: true,
+        include_raw_content: false,
+        include_images: false,
+      })
+    });
+    
+    return response as any;
+  } catch (error) {
+    console.error('Web search error:', error);
+    return null;
+  }
+}
+
+// Hàm lấy thông tin dashboard/thống kê
+async function getDashboardStats() {
+  try {
+    const [
+      totalMedicines,
+      totalSuppliers,
+      totalInvoices,
+      totalStock,
+      totalPurchases,
+      totalReturns,
+      expiringMedicines
+    ] = await Promise.all([
+      Medicine.countDocuments({}),
+      Supplier.countDocuments({}),
+      Invoice.countDocuments({}),
+      Stock.aggregate([
+        { $group: { _id: null, total: { $sum: '$quantity' } } }
+      ]),
+      Purchase.countDocuments({}),
+      CustomerReturn.countDocuments({}),
+      Stock.countDocuments({
+        expiry_date: {
+          $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        }
+      })
+    ]);
+    
+    // Calculate revenue
+    const revenueData = await Invoice.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$total' },
+          todayRevenue: {
+            $sum: {
+              $cond: [
+                { $gte: ['$createdAt', new Date(new Date().setHours(0,0,0,0))] },
+                '$total',
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+    
+    return {
+      totalMedicines,
+      totalSuppliers,
+      totalInvoices,
+      totalStock: totalStock[0]?.total || 0,
+      totalPurchases,
+      totalReturns,
+      expiringMedicines,
+      totalRevenue: revenueData[0]?.totalRevenue || 0,
+      todayRevenue: revenueData[0]?.todayRevenue || 0
+    };
+  } catch (error) {
+    console.error('Error getting dashboard stats:', error);
+    return null;
+  }
+}
+
+// Hàm xử lý câu hỏi về thống kê mở rộng
+async function handleAdvancedStatsQuestion(message: string) {
+  try {
+    const lowerMessage = message.toLowerCase();
+    
+    // Câu hỏi về dashboard/tổng quan
+    if (lowerMessage.includes('tổng quan') || lowerMessage.includes('dashboard') || lowerMessage.includes('báo cáo')) {
+      const stats = await getDashboardStats();
+      if (stats) {
+        return {
+          success: true,
+          data: {
+            answer: `Tổng quan hệ thống PharmaCare:
+- Tổng số thuốc: ${stats.totalMedicines} loại
+- Nhà cung cấp: ${stats.totalSuppliers}
+- Hóa đơn: ${stats.totalInvoices}
+- Tồn kho: ${stats.totalStock} sản phẩm
+- Đơn nhập: ${stats.totalPurchases}
+- Đơn trả: ${stats.totalReturns}
+- Thuốc sắp hết hạn (30 ngày): ${stats.expiringMedicines}
+- Doanh thu tổng: ${stats.totalRevenue.toLocaleString('vi-VN')} đồng
+- Doanh thu hôm nay: ${stats.todayRevenue.toLocaleString('vi-VN')} đồng`,
+            source: 'database-dashboard'
+          }
+        };
+      }
+    }
+    
+    // Câu hỏi về doanh thu
+    if (lowerMessage.includes('doanh thu') || lowerMessage.includes('revenue')) {
+      const stats = await getDashboardStats();
+      if (stats) {
+        return {
+          success: true,
+          data: {
+            answer: `Thông tin doanh thu:
+- Tổng doanh thu: ${stats.totalRevenue.toLocaleString('vi-VN')} đồng
+- Doanh thu hôm nay: ${stats.todayRevenue.toLocaleString('vi-VN')} đồng
+- Số hóa đơn: ${stats.totalInvoices}`,
+            source: 'database-revenue'
+          }
+        };
+      }
+    }
+    
+    // Câu hỏi về thuốc sắp hết hạn
+    if (lowerMessage.includes('hết hạn') || lowerMessage.includes('expir')) {
+      const expiringMeds = await Stock.find({
+        expiry_date: {
+          $lte: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        }
+      }).populate('medicine_id').limit(5);
+      
+      if (expiringMeds.length > 0) {
+        let answer = `Có ${expiringMeds.length} thuốc sắp hết hạn trong 30 ngày tới:\n`;
+        for (const med of expiringMeds) {
+          if (med.medicine_id) {
+            const medicine = med.medicine_id as any;
+            answer += `- ${medicine.name}: Hết hạn ${new Date(med.expiry_date).toLocaleDateString('vi-VN')}\n`;
+          }
+        }
+        
+        return {
+          success: true,
+          data: {
+            answer,
+            source: 'database-expiring'
+          }
+        };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error handling advanced stats question:', error);
+    return null;
+  }
 }
 
 // Hàm xử lý câu hỏi về giá thuốc
@@ -237,6 +409,13 @@ export default defineEventHandler(async (event) => {
       }
     }
     
+    // 2.1 Xử lý câu hỏi thống kê nâng cao
+    const advancedStatsResponse = await handleAdvancedStatsQuestion(message);
+    if (advancedStatsResponse) {
+      console.log('Trả lời câu hỏi thống kê nâng cao từ database');
+      return advancedStatsResponse;
+    }
+    
     // 3. Xử lý câu hỏi về tồn kho
     const stockResponse = await handleStockQuestion(message);
     if (stockResponse) {
@@ -308,15 +487,47 @@ export default defineEventHandler(async (event) => {
       const apiKey = 'AIzaSyA8CSwRjVF7ZES5Blg3KOlZc0eO7UyNdmA';
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
       
+      // Try web search for general medicine info
+      let webSearchContext = '';
+      
+      // Only search web for general medicine questions, not app-specific data
+      if (!message.toLowerCase().includes('trong kho') && 
+          !message.toLowerCase().includes('trong hệ thống') && 
+          !message.toLowerCase().includes('của chúng ta') &&
+          !message.toLowerCase().includes('pharmacare')) {
+        
+        const webResults = await searchWeb(message);
+        if (webResults && webResults.answer) {
+          webSearchContext = `\n\nThông tin từ internet: ${webResults.answer}`;
+        }
+      }
+      
+      // Get database context
+      const dbStats = await getDashboardStats();
+      const dbContext = dbStats ? `
+      Thông tin từ database PharmaCare:
+      - Tổng số thuốc: ${dbStats.totalMedicines}
+      - Nhà cung cấp: ${dbStats.totalSuppliers}
+      - Tồn kho: ${dbStats.totalStock} sản phẩm
+      ` : '';
+      
       // Enhance context with medicine information
-      const context = `You are PharmaCare Assistant, a helpful chatbot specializing in medicine and pharmacy information. Provide concise, accurate responses in Vietnamese. If you don't know the answer, kindly say so rather than making up information.
-
-      When answering about medicines:
-      - Focus on being helpful, clear, and accurate
-      - When discussing dosages, always note that a doctor should be consulted
-      - Use clear, simple language
-      - For questions about prices, side effects, contraindications, etc., provide factual information if you know it
-      - Always respond in Vietnamese language
+      const context = `You are PharmaCare Assistant, a helpful chatbot specializing in medicine and pharmacy information. 
+      
+      IMPORTANT RULES:
+      1. Always prioritize data from PharmaCare database over internet information
+      2. For prices, stock quantities, and app-specific data, ONLY use database information
+      3. For general medicine knowledge (side effects, dosage guidelines), you can use internet information
+      4. Always clearly state the source of information
+      5. Respond in Vietnamese language
+      
+      ${dbContext}
+      ${webSearchContext}
+      
+      When answering:
+      - Be helpful, clear, and accurate
+      - For app-specific questions (prices, stock), say "không có thông tin" if not in database
+      - For general medicine questions, provide helpful information but note to consult professionals
       `;
       
       // Kết hợp với dữ liệu từ DB để cung cấp ngữ cảnh cho Gemini

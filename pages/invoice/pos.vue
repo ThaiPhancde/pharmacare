@@ -172,7 +172,8 @@
             :options="[
               { label: 'Cash', value: 'cash' },
               { label: 'Card', value: 'card' },
-              { label: 'Bank Transfer', value: 'bank' }
+              { label: 'Bank Transfer', value: 'bank' },
+              { label: 'MoMo', value: 'momo' }
             ]"
           />
         </div>
@@ -274,6 +275,65 @@
             Complete Payment
           </n-button>
         </template>
+        
+        <!-- MoMo payment -->
+        <template v-else-if="paymentMethod === 'momo'">
+          <div class="border border-gray-200 rounded p-4 bg-gray-50 flex flex-col items-center">
+            <h3 class="font-medium text-lg mb-1">MoMo Payment</h3>
+            <p class="text-sm text-center mb-4">Scan QR code or click button to pay with MoMo</p>
+            
+            <div v-if="momoPaymentUrl" class="bg-white p-3 rounded shadow-sm mb-4">
+              <div class="flex justify-center mb-2">
+                <img :src="momoQrCode" alt="MoMo QR Code" class="w-48 h-48" v-if="momoQrCode" />
+                <div v-else class="w-48 h-48 bg-gray-200 flex items-center justify-center">
+                  <n-spin size="large" />
+                </div>
+              </div>
+              <div class="text-center mt-2">
+                <p class="text-sm text-gray-600">Order ID: {{ currentOrderId }}</p>
+              </div>
+            </div>
+            
+            <div class="w-full">
+              <div class="flex justify-between py-2 border-b">
+                <span class="font-medium">Amount:</span>
+                <span class="font-bold text-pink-600">{{ formatCurrency(grandTotal) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="font-medium">Status:</span>
+                <span class="text-sm">{{ momoPaymentStatus }}</span>
+              </div>
+            </div>
+            
+            <div class="flex gap-2 w-full mt-4">
+              <n-button 
+                type="primary" 
+                class="flex-1"
+                @click="initiateMoMoPayment"
+                :loading="momoLoading"
+                :disabled="momoPaymentUrl"
+              >
+                <template #icon>
+                  <img src="/momo-icon.svg" class="w-5 h-5" />
+                </template>
+                {{ momoPaymentUrl ? 'Payment Initiated' : 'Pay with MoMo' }}
+              </n-button>
+              
+              <n-button 
+                v-if="momoPaymentUrl"
+                type="info" 
+                class="flex-1"
+                @click="openMoMoApp"
+              >
+                Open MoMo App
+              </n-button>
+            </div>
+            
+            <div v-if="momoPaymentUrl" class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-600">
+              Waiting for payment confirmation. This page will update automatically.
+            </div>
+          </div>
+        </template>
       </n-card>
       
       <!-- Action buttons -->
@@ -359,6 +419,11 @@ const yearOptions = ref([
   { label: '2030', value: '2030' }
 ]);
 const selectedBank = ref(null);
+const momoPaymentUrl = ref(null);
+const momoQrCode = ref(null);
+const currentOrderId = ref(null);
+const momoPaymentStatus = ref('Pending');
+const momoLoading = ref(false);
 
 // Format currency
 const formatCurrency = (value) => {
@@ -561,6 +626,12 @@ const processPayment = async () => {
     return;
   }
   
+  // For MoMo payment, initiate MoMo payment flow instead
+  if (paymentMethod.value === 'momo') {
+    await initiateMoMoPayment();
+    return;
+  }
+  
   if (paymentProcessing.value) {
     return; // Prevent multiple submissions
   }
@@ -590,7 +661,7 @@ const processPayment = async () => {
       vat_total: vatTotal.value,
       discount: discount.value,
       grand_total: grandTotal.value,
-      paid: paymentMethod.value === 'cash' ? Number(amountPaid.value) : grandTotal.value, // For card and bank transfer, paid = grand_total
+      paid: paymentMethod.value === 'cash' ? Number(amountPaid.value) : grandTotal.value,
       due: 0,
       payment_method: paymentMethod.value,
       payment_details: paymentMethod.value === 'card' ? {
@@ -823,6 +894,78 @@ const onBarcodeScanned = async (barcode) => {
     console.error('Barcode scan error:', error);
     message.error('Failed to process barcode');
   }
+};
+
+// Process MoMo payment
+const initiateMoMoPayment = async () => {
+  if (cart.value.length === 0) {
+    message.error('Cart is empty');
+    return;
+  }
+  
+  if (momoLoading.value) return; // Prevent multiple submissions
+  
+  momoLoading.value = true;
+  currentOrderId.value = `INV_${Date.now()}`;
+  
+  try {
+    const response = await api.post('/api/payment/momo', {
+      amount: grandTotal.value,
+      orderId: currentOrderId.value,
+      orderInfo: `Payment for invoice ${currentOrderId.value}`
+    });
+    
+    if (response && response.data) {
+      momoPaymentUrl.value = response.data.payUrl;
+      momoQrCode.value = response.data.qrCodeUrl;
+      message.success('MoMo payment initiated successfully');
+      
+      // Open payment URL in new tab
+      if (response.data.payUrl) {
+        window.open(response.data.payUrl, '_blank');
+      }
+      
+      // Start checking payment status
+      checkMoMoPaymentStatus();
+    } else {
+      message.error('Failed to initiate MoMo payment');
+    }
+  } catch (error) {
+    message.error(error.message || 'An unexpected error occurred');
+    console.error('MoMo payment error:', error);
+  } finally {
+    momoLoading.value = false;
+  }
+};
+
+const openMoMoApp = () => {
+  if (momoPaymentUrl.value) {
+    window.open(momoPaymentUrl.value, '_blank');
+  } else {
+    message.warning('No payment URL available');
+  }
+};
+
+// Check MoMo payment status periodically
+const checkMoMoPaymentStatus = () => {
+  const checkInterval = setInterval(async () => {
+    try {
+      // In real implementation, you would check the payment status from your backend
+      // For now, we'll simulate it
+      console.log('Checking MoMo payment status...');
+      
+      // Stop checking after 5 minutes
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        if (momoPaymentStatus.value === 'Pending') {
+          momoPaymentStatus.value = 'Timeout';
+          message.warning('Payment timeout. Please try again.');
+        }
+      }, 300000); // 5 minutes
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+    }
+  }, 5000); // Check every 5 seconds
 };
 
 onMounted(async () => {

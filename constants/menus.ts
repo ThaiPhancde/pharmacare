@@ -363,6 +363,11 @@ export const navMenu: NavMenu[] = [
 
 export const navMenuBottom: NavMenuItems = [
   {
+    title: "User Management",
+    icon: "i-lucide-users",
+    link: "/admin/users",
+  },
+  {
     title: "Chatbot Management",
     icon: "i-lucide-message-circle-question",
     link: "/admin/chatbot",

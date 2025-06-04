@@ -10,6 +10,29 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' });
   }
   
-  const token = jwt.sign({ id: user.id.toString() }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
-  return { data: token, status: true, message: "Login success" } as IResponse<string>;
+  // Check if user is active
+  if (!user.isActive) {
+    throw createError({ statusCode: 403, statusMessage: 'Account is deactivated' });
+  }
+  
+  const token = jwt.sign({ 
+    id: user.id.toString(),
+    email: user.email,
+    role: user.role,
+    name: user.name 
+  }, process.env.JWT_SECRET as string, { expiresIn: '24h' });
+  
+  return { 
+    data: {
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    }, 
+    status: true, 
+    message: "Login success" 
+  } as IResponse<any>;
 });

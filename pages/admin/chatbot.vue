@@ -1,15 +1,19 @@
 <template>
-  <div class="w-full p-6">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">PharmaCare Chatbot Management</h1>
-      <div class="flex space-x-2">
+  <div class="w-full flex flex-col items-stretch gap-4">
+    <div class="flex flex-wrap items-end justify-between gap-2">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight">PharmaCare Chatbot Management</h2>
+        <p class="text-gray-500">Manage chatbot questions and answers</p>
+      </div>
+
+      <div class="flex items-center gap-2">
         <Button @click="importFromFile" :disabled="loading" variant="outline">
           <span v-if="loading" class="mr-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 3a9 9 0 1 0 9 9"></path>
             </svg>
           </span>
-          <span>Import from Medicine.txt</span>
+          Import from Medicine.txt
         </Button>
         <Button @click="importDatabaseData" :disabled="isImporting" variant="outline">
           <span v-if="isImporting" class="mr-2">
@@ -17,7 +21,7 @@
               <path d="M12 3a9 9 0 1 0 9 9"></path>
             </svg>
           </span>
-          <span>Import from Database</span>
+          Import from Database
         </Button>
         <Button @click="showAddModal = true" variant="default">
           Add New QA
@@ -25,43 +29,47 @@
       </div>
     </div>
 
-    <!-- Status message for import statistics -->
-    <div v-if="importStats" class="mb-6 p-4 bg-muted rounded-lg">
-      <h3 class="text-lg font-medium mb-2">Import Statistics</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-background p-3 rounded-md border">
-          <div class="text-sm text-muted-foreground">From Database</div>
-          <div class="text-xl font-bold">{{ importStats.fromDb }}</div>
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <n-card class="rounded-lg shadow-sm bg-card border-l-4 border-blue-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Total QA Pairs</p>
+            <p class="text-2xl font-bold text-blue-600">{{ pagination.total }}</p>
+          </div>
+          <div class="i-lucide-file-question h-6 w-6 text-blue-500"></div>
         </div>
-        <div class="bg-background p-3 rounded-md border">
-          <div class="text-sm text-muted-foreground">From Medicine.txt</div>
-          <div class="text-xl font-bold">{{ importStats.fromText }}</div>
-        </div>
-        <div class="bg-background p-3 rounded-md border">
-          <div class="text-sm text-muted-foreground">Total QA Pairs</div>
-          <div class="text-xl font-bold">{{ importStats.total }}</div>
-        </div>
-      </div>
-    </div>
+      </n-card>
 
-    <!-- Statistics -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div class="bg-card p-4 rounded-lg border shadow-sm">
-        <h3 class="text-lg font-medium mb-1">Total QA Pairs</h3>
-        <p class="text-2xl font-bold">{{ pagination.total }}</p>
-      </div>
-      <div class="bg-card p-4 rounded-lg border shadow-sm">
-        <h3 class="text-lg font-medium mb-1">Categories</h3>
-        <p class="text-2xl font-bold">{{ Object.keys(categoryCounts).length }}</p>
-      </div>
-      <div class="bg-card p-4 rounded-lg border shadow-sm">
-        <h3 class="text-lg font-medium mb-1">Most Common Category</h3>
-        <p class="text-2xl font-bold">{{ mostCommonCategory }}</p>
-      </div>
-      <div class="bg-card p-4 rounded-lg border shadow-sm">
-        <h3 class="text-lg font-medium mb-1">Last Updated</h3>
-        <p class="text-2xl font-bold">{{ lastUpdated || 'N/A' }}</p>
-      </div>
+      <n-card class="rounded-lg shadow-sm bg-card border-l-4 border-green-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Categories</p>
+            <p class="text-2xl font-bold text-green-600">{{ Object.keys(categoryCounts).length }}</p>
+          </div>
+          <div class="i-lucide-tags h-6 w-6 text-green-500"></div>
+        </div>
+      </n-card>
+
+      <n-card class="rounded-lg shadow-sm bg-card border-l-4 border-purple-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Most Common Category</p>
+            <p class="text-2xl font-bold text-purple-600">{{ mostCommonCategory }}</p>
+          </div>
+          <div class="i-lucide-bar-chart h-6 w-6 text-purple-500"></div>
+        </div>
+      </n-card>
+
+      <n-card class="rounded-lg shadow-sm bg-card border-l-4 border-orange-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Last Updated</p>
+            <p class="text-2xl font-bold text-orange-600">{{ lastUpdated?.split(' ')[0] || 'N/A' }}</p>
+          </div>
+          <div class="i-lucide-clock h-6 w-6 text-orange-500"></div>
+        </div>
+      </n-card>
     </div>
 
     <!-- Search Bar -->
@@ -92,48 +100,43 @@
     <p v-if="lastUpdated" class="mb-4 text-sm text-gray-500">Last updated: {{ lastUpdated }}</p>
 
     <!-- Data Table -->
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse border border-gray-300">
+    <div class="border rounded-lg bg-card overflow-hidden">
+      <table class="w-full border-collapse">
         <thead>
-          <tr class="bg-gray-100">
-            <th class="p-2 border border-gray-300 text-left">Question</th>
-            <th class="p-2 border border-gray-300 text-left">Answer</th>
-            <th class="p-2 border border-gray-300 text-left w-24">Category</th>
-            <th class="p-2 border border-gray-300 text-left w-36">Actions</th>
+          <tr class="border-b bg-muted/50">
+            <th class="p-3 text-left font-medium text-muted-foreground">Question</th>
+            <th class="p-3 text-left font-medium text-muted-foreground">Answer</th>
+            <th class="p-3 text-left font-medium text-muted-foreground w-24">Category</th>
+            <th class="p-3 text-left font-medium text-muted-foreground w-36">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="4" class="p-2 border border-gray-300 text-center">Loading...</td>
+            <td colspan="4" class="p-3 text-center">Loading...</td>
           </tr>
           <tr v-else-if="qaData.length === 0">
-            <td colspan="4" class="p-2 border border-gray-300 text-center">No data available. Import or add data.</td>
+            <td colspan="4" class="p-3 text-center">No data available. Import or add data.</td>
           </tr>
-          <tr v-for="(item, index) in qaData" :key="index" class="hover:bg-gray-50">
-            <td class="p-2 border border-gray-300">{{ item.question }}</td>
-            <td class="p-2 border border-gray-300">{{ item.answer }}</td>
-            <td class="p-2 border border-gray-300">{{ item.category || 'general' }}</td>
-            <td class="p-2 border border-gray-300">
+          <tr v-for="(item, index) in qaData" :key="index" class="hover:bg-muted/50 border-b">
+            <td class="p-3">{{ item.question }}</td>
+            <td class="p-3">{{ item.answer }}</td>
+            <td class="p-3">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold" :class="{
+                'text-green-600 bg-green-100': item.category === 'general',
+                'text-blue-600 bg-blue-100': item.category === 'price',
+                'text-purple-600 bg-purple-100': item.category !== 'general' && item.category !== 'price'
+              }">
+                {{ item.category || 'general' }}
+              </span>
+            </td>
+            <td class="p-3">
               <div class="flex space-x-1">
-                <button 
-                  @click="editItem(item)" 
-                  class="p-1 rounded bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </button>
-                <button 
-                  @click="deleteItem(item)" 
-                  class="p-1 rounded bg-red-500 hover:bg-red-600 text-white"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
-                  </svg>
-                </button>
+                <Button variant="outline" size="sm" @click="editItem(item)">
+                  Edit
+                </Button>
+                <Button variant="destructive" size="sm" @click="deleteItem(item)">
+                  Delete
+                </Button>
               </div>
             </td>
           </tr>
