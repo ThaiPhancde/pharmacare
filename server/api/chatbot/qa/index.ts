@@ -2,12 +2,23 @@ import { ChatbotQA } from '~/server/models';
 
 export default defineEventHandler(async (event) => {
   try {
-    // Lấy danh sách câu hỏi và câu trả lời từ model ChatbotQA
-    const qaItems = await ChatbotQA.find({}).sort({ updatedAt: -1 }).limit(100);
+    const query = getQuery(event);
+    const page = parseInt(query.page as string) || 1;
+    const limit = parseInt(query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    // Lấy tổng số bản ghi và dữ liệu có phân trang
+    const [qaItems, total] = await Promise.all([
+      ChatbotQA.find({}).sort({ updatedAt: -1 }).skip(skip).limit(limit),
+      ChatbotQA.countDocuments({})
+    ]);
     
     return { 
       success: true, 
-      data: qaItems 
+      data: qaItems,
+      total,
+      page,
+      limit
     };
   } catch (error: any) {
     console.error('Error fetching QA data:', error);

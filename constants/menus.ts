@@ -363,13 +363,18 @@ export const navMenu: NavMenu[] = [
 
 export const navMenuBottom: NavMenuItems = [
   {
+    title: "Chatbot Management",
+    icon: "i-lucide-message-circle-question",
+    link: "/admin/chatbot",
+  },
+  {
     title: "Help & Support",
     icon: "i-lucide-circle-help",
-    link: "https://github.com/dianprata/nuxt-shadcn-dashboard",
+    link: "https://github.com/ThaiPhancde/pharmacare",
   },
   {
     title: "Feedback",
     icon: "i-lucide-send",
-    link: "https://github.com/dianprata/nuxt-shadcn-dashboard",
+    link: "https://www.facebook.com/Thai.An.249/",
   },
 ];

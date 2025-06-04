@@ -48,7 +48,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <div class="bg-card p-4 rounded-lg border shadow-sm">
         <h3 class="text-lg font-medium mb-1">Total QA Pairs</h3>
-        <p class="text-2xl font-bold">{{ qaData.length }}</p>
+        <p class="text-2xl font-bold">{{ pagination.total }}</p>
       </div>
       <div class="bg-card p-4 rounded-lg border shadow-sm">
         <h3 class="text-lg font-medium mb-1">Categories</h3>
@@ -113,20 +113,28 @@
             <td class="p-2 border border-gray-300">{{ item.question }}</td>
             <td class="p-2 border border-gray-300">{{ item.answer }}</td>
             <td class="p-2 border border-gray-300">{{ item.category || 'general' }}</td>
-            <td class="p-2 border border-gray-300 flex space-x-1">
-              <Button variant="default" size="sm" @click="editItem(item)">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-              </Button>
-              <Button variant="destructive" size="sm" @click="deleteItem(item)">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  <line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-              </Button>
+            <td class="p-2 border border-gray-300">
+              <div class="flex space-x-1">
+                <button 
+                  @click="editItem(item)" 
+                  class="p-1 rounded bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button 
+                  @click="deleteItem(item)" 
+                  class="p-1 rounded bg-red-500 hover:bg-red-600 text-white"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -216,18 +224,72 @@
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <!-- Pagination -->
+    <div class="mt-4 flex justify-between items-center border-t pt-4">
+      <div class="text-sm text-gray-500">
+        Showing {{ qaData.length }} of {{ pagination.total }} QA pairs
+      </div>
+      <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1">
+          <span class="text-sm">Items per page:</span>
+          <select
+            v-model="pagination.limit"
+            class="px-2 py-1 border rounded-md text-sm"
+            @change="handlePageSizeChange(parseInt(($event.target as HTMLSelectElement).value))"
+          >
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="30">30</option>
+            <option :value="50">50</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-1">
+          <Button
+            variant="outline"
+            size="sm"
+            @click="handlePageChange(1)"
+            :disabled="pagination.page === 1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-left"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            @click="handlePageChange(pagination.page - 1)"
+            :disabled="pagination.page === 1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+          </Button>
+          <span class="mx-2 text-sm">
+            Page {{ pagination.page }} of {{ pagination.totalPages }}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            @click="handlePageChange(pagination.page + 1)"
+            :disabled="pagination.page === pagination.totalPages"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            @click="handlePageChange(pagination.totalPages)"
+            :disabled="pagination.page === pagination.totalPages"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-right"><path d="m13 17 5-5-5-5"/><path d="m6 17 5-5-5-5"/></svg>
+          </Button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Button } from '~/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-
-// Import components from Shadcn UI
-const { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } = useComponents();
-const { Button } = useComponents();
-const { Input, Textarea, Label } = useComponents();
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // State
 const qaData = ref<any[]>([]);
@@ -240,6 +302,16 @@ const formLoading = ref(false);
 const lastUpdated = ref<string | null>(null);
 const statusMessage = ref<string>('');
 const statusSuccess = ref<boolean>(true);
+
+// Pagination state
+const pagination = ref({
+  page: 1,
+  limit: 10,
+  total: 0,
+  get totalPages() {
+    return Math.ceil(this.total / this.limit);
+  }
+});
 
 // Form data for add/edit
 const formData = ref({
@@ -298,16 +370,19 @@ const mostCommonCategory = computed(() => {
   return maxCategory;
 });
 
-// Fetch QA data
+// Fetch QA data with pagination
 const fetchQAData = async () => {
   loading.value = true;
   try {
-    const response = await fetch('/api/chatbot/qa');
-    if (response.success) {
-      qaData.value = response.data;
+    const response = await fetch(`/api/chatbot/qa?page=${pagination.value.page}&limit=${pagination.value.limit}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      qaData.value = result.data;
+      pagination.value.total = result.total;
       lastUpdated.value = new Date().toLocaleString();
     } else {
-      console.error('Failed to fetch data:', response.message);
+      console.error('Failed to fetch data:', result.message);
     }
   } catch (error) {
     console.error('Error fetching chatbot data:', error);
@@ -325,11 +400,15 @@ const searchQA = async () => {
   
   loading.value = true;
   try {
-    const response = await fetch(`/api/chatbot/qa/search?q=${searchQuery.value}`);
-    if (response.success) {
-      qaData.value = response.data;
+    const response = await fetch(`/api/chatbot/qa/search?q=${encodeURIComponent(searchQuery.value)}&page=${pagination.value.page}&limit=${pagination.value.limit}`);
+    const result = await response.json();
+    
+    if (result.success) {
+      qaData.value = result.data;
+      pagination.value.total = result.total;
+      pagination.value.page = result.page;
     } else {
-      console.error('Search failed:', response.message);
+      console.error('Search failed:', result.message);
     }
   } catch (error) {
     console.error('Error searching:', error);
@@ -356,14 +435,16 @@ const importFromFile = async () => {
       method: 'POST'
     });
     
-    if (response.success) {
-      statusMessage.value = `Successfully imported ${response.count} QA pairs from Medicine.txt`;
-      importStats.value = response.data;
+    const result = await response.json();
+    
+    if (result.success) {
+      statusMessage.value = `Successfully imported ${result.count} QA pairs from Medicine.txt`;
+      importStats.value = result.data;
       fetchQAData();
     } else {
-      console.error('Failed to import data:', response.message);
+      console.error('Failed to import data:', result.message);
       statusSuccess.value = false;
-      statusMessage.value = response.message || 'Import failed';
+      statusMessage.value = result.message || 'Import failed';
     }
   } catch (error) {
     console.error('Error importing chatbot data:', error);
@@ -402,14 +483,16 @@ const confirmDelete = async () => {
       method: 'DELETE'
     });
     
-    if (response.success) {
+    const result = await response.json();
+    
+    if (result.success) {
       qaData.value = qaData.value.filter(item => item._id !== deletingItem.value._id);
       statusSuccess.value = true;
       statusMessage.value = 'Item deleted successfully';
     } else {
-      console.error('Failed to delete:', response.message);
+      console.error('Failed to delete:', result.message);
       statusSuccess.value = false;
-      statusMessage.value = response.message || 'Delete failed';
+      statusMessage.value = result.message || 'Delete failed';
     }
   } catch (error) {
     console.error('Error deleting item:', error);
@@ -442,14 +525,16 @@ const saveItem = async () => {
       body: JSON.stringify(formData.value)
     });
     
-    if (response.success) {
+    const result = await response.json();
+    
+    if (result.success) {
       if (editingItem.value) {
         const index = qaData.value.findIndex(item => item._id === editingItem.value._id);
         if (index !== -1) {
-          qaData.value[index] = response.data;
+          qaData.value[index] = result.data;
         }
       } else {
-        qaData.value.unshift(response.data);
+        qaData.value.unshift(result.data);
       }
       
       showAddModal.value = false;
@@ -458,9 +543,9 @@ const saveItem = async () => {
       editingItem.value = null;
       resetForm();
     } else {
-      console.error('Failed to save QA pair:', response.message);
+      console.error('Failed to save QA pair:', result.message);
       statusSuccess.value = false;
-      statusMessage.value = response.message || 'Save failed';
+      statusMessage.value = result.message || 'Save failed';
     }
   } catch (error) {
     console.error('Error saving QA pair:', error);
@@ -513,6 +598,21 @@ const importDatabaseData = async () => {
   } finally {
     isImporting.value = false;
   }
+};
+
+// Handle page change
+const handlePageChange = (newPage: number) => {
+  if (newPage >= 1 && newPage <= pagination.value.totalPages) {
+    pagination.value.page = newPage;
+    fetchQAData();
+  }
+};
+
+// Handle page size change
+const handlePageSizeChange = (newSize: number) => {
+  pagination.value.limit = newSize;
+  pagination.value.page = 1; // Reset to first page when changing page size
+  fetchQAData();
 };
 
 // Fetch data on component mount
