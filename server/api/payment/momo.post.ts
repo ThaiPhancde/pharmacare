@@ -6,8 +6,8 @@ const momoConfig = {
   accessKey: process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85',
   secretKey: process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz',
   partnerCode: process.env.MOMO_PARTNER_CODE || 'MOMO',
-  redirectUrl: process.env.MOMO_REDIRECT_URL || 'http://localhost:3000/payment/callback',
-  ipnUrl: process.env.MOMO_IPN_URL || 'http://localhost:3000/api/payment/momo/ipn',
+  redirectUrl: process.env.MOMO_REDIRECT_URL || 'http://localhost:3000/payment/callback' || 'https://pharmacare-sigma.vercel.app/payment/callback',
+  ipnUrl: process.env.MOMO_IPN_URL || 'http://localhost:3000/api/payment/momo/ipn' || 'https://pharmacare-sigma.vercel.app/api/payment/momo/ipn',
   requestType: 'payWithMethod',
   orderInfo: 'PharmaCare Payment',
   lang: 'vi'
