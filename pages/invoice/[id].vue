@@ -4,7 +4,9 @@ import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const invoiceId = route.params.id;
+// Normalize invoice ID - replace spaces with dashes and convert to uppercase
+const rawInvoiceId = route.params.id;
+const invoiceId = ref(decodeURIComponent(rawInvoiceId).replace(/\s+/g, '-').toUpperCase());
 
 const invoice = ref(null);
 const loading = ref(true);
@@ -35,7 +37,8 @@ const fetchInvoiceDetails = async () => {
   error.value = null;
   
   try {
-    const response = await fetch(`/api/invoice/${invoiceId}`);
+    console.log(`Fetching invoice with normalized ID: ${invoiceId.value}`);
+    const response = await fetch(`/api/invoice/${invoiceId.value}`);
     
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);

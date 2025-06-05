@@ -15,7 +15,7 @@ const momoConfig = {
 
 interface MoMoPaymentRequest {
   amount: number;
-  orderId: string;
+  orderId?: string;
   orderInfo?: string;
   extraData?: string;
 }
@@ -25,16 +25,17 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<MoMoPaymentRequest>(event);
     
     // Validate request
-    if (!body.amount || !body.orderId) {
+    if (!body.amount) {
       throw createError({ 
         statusCode: 400, 
-        statusMessage: 'Amount and orderId are required' 
+        statusMessage: 'Amount is required' 
       });
     }
     
     // Generate request parameters
     const requestId = `${momoConfig.partnerCode}_${Date.now()}`;
-    const orderId = body.orderId;
+    // Create a standard invoice ID format INV-CUS-{timestamp} as requested
+    const orderId = body.orderId || `INV-CUS-${Date.now()}`;
     const amount = body.amount.toString();
     const orderInfo = body.orderInfo || momoConfig.orderInfo;
     const extraData = body.extraData || '';

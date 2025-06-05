@@ -51,6 +51,11 @@ export default defineEventHandler(async (event) => {
       });
   
       // 2. Tạo invoice 
+      // Đảm bảo có _id nếu thanh toán MoMo
+      if (body.payment_method === 'momo' && !body._id) {
+        body._id = `INV-CUS-${Date.now()}`;
+      }
+      
       const created = await Invoice.create([body], { session });
   
       // 3. Cập nhật stock (giảm số lượng)

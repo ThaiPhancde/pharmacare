@@ -52,9 +52,11 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router';
+import { useMessage } from 'naive-ui';
 
 const route = useRoute();
 const router = useRouter();
+const message = useMessage();
 
 const paymentStatus = ref('processing');
 const orderId = ref('');
@@ -84,12 +86,21 @@ onMounted(() => {
   
   if (query.resultCode === '0') {
     paymentStatus.value = 'success';
-    orderId.value = query.orderId || '';
+    // Decode and normalize the orderId from MoMo
+    let rawOrderId = query.orderId || '';
+    // Handle URL encoded spaces and normalize the ID format
+    orderId.value = decodeURIComponent(rawOrderId).replace(/\s+/g, '-').toUpperCase();
     amount.value = parseInt(query.amount) || 0;
     transId.value = query.transId || '';
+    
+    // Show success message
+    message.success('Payment successful! Your order has been processed.');
   } else {
     paymentStatus.value = 'error';
     errorMessage.value = query.message || 'Payment failed';
+    
+    // Show error message
+    message.error(errorMessage.value);
   }
 });
 </script> 

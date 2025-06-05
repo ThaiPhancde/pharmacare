@@ -626,7 +626,7 @@ const processPayment = async () => {
     return;
   }
   
-  // For MoMo payment, initiate MoMo payment flow instead
+  // For MoMo payment, we use a different flow - handled by initiateMoMoPayment
   if (paymentMethod.value === 'momo') {
     await initiateMoMoPayment();
     return;
@@ -664,11 +664,15 @@ const processPayment = async () => {
       paid: paymentMethod.value === 'cash' ? Number(amountPaid.value) : grandTotal.value,
       due: 0,
       payment_method: paymentMethod.value,
-      payment_details: paymentMethod.value === 'card' ? {
-        card_type: getCardType(cardInfo.value.number),
-        card_number: maskCardNumber(cardInfo.value.number),
-        card_holder: cardInfo.value.name
-      } : null
+      payment_status: 'paid',
+      payment_details: paymentMethod.value === 'card' 
+        ? {
+            card_type: getCardType(cardInfo.value.number),
+            card_number: maskCardNumber(cardInfo.value.number),
+            card_holder: cardInfo.value.name
+          } 
+        : null,
+      is_pos: true
     };
     
     // Submit invoice to POS API endpoint
@@ -678,11 +682,11 @@ const processPayment = async () => {
       message.success('Transaction completed successfully');
       clearCart();
     } else {
-      message.error(response.error || 'Failed to create invoice');
+      message.error(response.message || 'Failed to create invoice');
     }
   } catch (error) {
-    message.error(error.message || 'An unexpected error occurred');
-    console.error('POS Invoice error:', error);
+    console.error('Payment error:', error);
+    message.error(error.message || 'Failed to process payment');
   } finally {
     paymentProcessing.value = false;
   }
@@ -906,9 +910,56 @@ const initiateMoMoPayment = async () => {
   if (momoLoading.value) return; // Prevent multiple submissions
   
   momoLoading.value = true;
-  currentOrderId.value = `INV_${Date.now()}`;
   
   try {
+    // Tạo invoice ID
+    currentOrderId.value = `INV-CUS-${Date.now()}`;
+    
+    // Tạo invoice trước với trạng thái 'pending'
+    const invoiceData = {
+      _id: currentOrderId.value,
+      date: Date.now(),
+      customer: selectedCustomer.value,
+      items: cart.value.map(item => ({
+        medicine: item._id,
+        quantity: item.quantity,
+        price: item.price,
+        original_price: item.original_price || item.price,
+        discount_percentage: item.discount_percentage || 0,
+        discount_reason: item.discount_reason || '',
+        vat: item.vat,
+        subtotal: item.price * item.quantity,
+        batch_id: item.batch_id,
+        expiry_date: item.expiry_date,
+        purchase: item.purchase,
+        stock_id: item.stock_id,
+        days_left: item.days_left
+      })),
+      subtotal: subtotal.value,
+      vat_total: vatTotal.value,
+      discount: discount.value,
+      grand_total: grandTotal.value,
+      paid: grandTotal.value, // Đã thanh toán đầy đủ
+      due: 0, // Không còn nợ
+      payment_method: 'momo',
+      payment_status: 'paid', // Đánh dấu đã thanh toán
+      payment_details: {
+        order_id: currentOrderId.value
+      },
+      is_pos: true
+    };
+    
+    // Tạo invoice trước
+    console.log("Creating invoice before MoMo payment:", invoiceData);
+    const invoiceResponse = await api.post('/api/invoice/pos', invoiceData);
+    
+    if (!invoiceResponse || !invoiceResponse.status) {
+      throw new Error(invoiceResponse?.message || 'Failed to create invoice');
+    }
+    
+    console.log("Invoice created successfully:", invoiceResponse);
+    
+    // Sau đó gửi yêu cầu thanh toán đến MoMo
     const response = await api.post('/api/payment/momo', {
       amount: grandTotal.value,
       orderId: currentOrderId.value,
@@ -948,22 +999,51 @@ const openMoMoApp = () => {
 
 // Check MoMo payment status periodically
 const checkMoMoPaymentStatus = () => {
+  if (!currentOrderId.value) {
+    console.error('No order ID available for status check');
+    return;
+  }
+
+  momoPaymentStatus.value = 'Checking...';
+  let attempts = 0;
+  const maxAttempts = 60; // Check for 5 minutes max
+  
   const checkInterval = setInterval(async () => {
     try {
-      // In real implementation, you would check the payment status from your backend
-      // For now, we'll simulate it
-      console.log('Checking MoMo payment status...');
+      attempts++;
+      console.log(`Checking MoMo payment status... Attempt ${attempts} for ${currentOrderId.value}`);
       
-      // Stop checking after 5 minutes
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        if (momoPaymentStatus.value === 'Pending') {
-          momoPaymentStatus.value = 'Timeout';
-          message.warning('Payment timeout. Please try again.');
+      // Call the status check API
+      const response = await api.get('/api/payment/momo/status', {
+        params: { orderId: currentOrderId.value }
+      });
+      
+      console.log('Status check response:', response);
+      
+      if (response && response.data) {
+        if (response.data.status === 'paid') {
+          // Payment successful
+          momoPaymentStatus.value = 'Paid';
+          clearInterval(checkInterval);
+          message.success('Payment successful!');
+          
+          // Invoice already marked as paid, just clear cart
+          clearCart();
+        } else if (response.data.status === 'not_found') {
+          momoPaymentStatus.value = 'Checking...'; // Continue checking
+          console.log('Invoice not found yet, continuing to check...');
         }
-      }, 300000); // 5 minutes
+      }
+      
+      // Stop checking after max attempts
+      if (attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        momoPaymentStatus.value = 'Timeout';
+        message.warning('Payment verification timeout. Please check manually.');
+      }
     } catch (error) {
       console.error('Error checking payment status:', error);
+      momoPaymentStatus.value = 'Error checking status';
     }
   }, 5000); // Check every 5 seconds
 };

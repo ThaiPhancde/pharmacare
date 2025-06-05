@@ -1,11 +1,4 @@
-Góc phải trên cùng lấy info với thông báo bỏ qua cái bên trái ngoài cùng
-Menu lấy từ dashboard đến stock
-Customer lấy 1 2
-Bỏ supplier
-medi lấy hết trừ leaf
-purchase lâys cả
-Invoice lấy 1 3
-Return lấy 1 2
-Stock lấy 1 3
-Search lấy 1 2
-Bank làm kiểu 1 cái save thông tin là được k cần list ra
+Thanh toán thêm paypal nếu có thể
+Thêm các trường menu như report, human resource( nhân sự), tax, services( dịch vụ ngoài)
+Thêm phần quản lí voucher nếu có
+Thêm dịch vụ vận chuyển sandbox

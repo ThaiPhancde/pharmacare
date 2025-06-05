@@ -72,9 +72,23 @@ const deleteInvoice = async (id) => {
 
 const columns = [
   {
+    accessorKey: "_id",
+    header: "Invoice ID",
+    cell: ({ row }) => row.original._id || "N/A",
+  },
+  {
     accessorKey: "date",
     header: "Date",
     cell: ({ row }) => formatDate(row.original.date),
+  },
+  {
+    accessorKey: "updatedAt",
+    header: "Last Updated",
+    cell: ({ row }) => {
+      if (!row.original.updatedAt) return "-";
+      const date = new Date(row.original.updatedAt);
+      return date.toLocaleString();
+    },
   },
   {
     accessorKey: "customer",
@@ -86,28 +100,21 @@ const columns = [
     },
   },
   {
+    accessorKey: "payment_method",
+    header: "Payment Method",
+    cell: ({ row }) => {
+      const method = row.original.payment_method || '-';
+      return method.charAt(0).toUpperCase() + method.slice(1);
+    },
+  },
+  {
     accessorKey: "items",
     header: "Items",
     cell: ({ row }) => row.original.items?.length || 0,
   },
   {
-    accessorKey: "subtotal",
-    header: "Subtotal",
-    cell: ({ row }) => formatCurrency(row.original.subtotal),
-  },
-  {
-    accessorKey: "vat_total",
-    header: "VAT",
-    cell: ({ row }) => formatCurrency(row.original.vat_total),
-  },
-  {
-    accessorKey: "discount",
-    header: "Discount",
-    cell: ({ row }) => formatCurrency(row.original.discount),
-  },
-  {
     accessorKey: "grand_total",
-    header: "Grand Total",
+    header: "Total",
     cell: ({ row }) => formatCurrency(row.original.grand_total),
   },
   {

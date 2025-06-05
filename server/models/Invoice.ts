@@ -11,6 +11,8 @@ export interface IInvoiceItem {
 }
 
 export interface IInvoice extends Document {
+  _id: string | mongoose.Types.ObjectId;
+  invoice_no?: string;
   date: Date;
   customer?: mongoose.Types.ObjectId; // Optional reference to customer
   items: IInvoiceItem[];
@@ -21,6 +23,8 @@ export interface IInvoice extends Document {
   paid: number;
   due: number;
   payment_method: string;
+  payment_status?: string;
+  payment_details?: any;
   is_pos: boolean;
 }
 
@@ -38,6 +42,8 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>(
 
 const InvoiceSchema = new Schema<IInvoice>(
   {
+    _id: { type: Schema.Types.Mixed, required: true, auto: false },
+    invoice_no: { type: String },
     date: { type: Date, default: Date.now },
     customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
     items: { type: [InvoiceItemSchema], required: true },
@@ -48,6 +54,8 @@ const InvoiceSchema = new Schema<IInvoice>(
     paid: { type: Number, required: true },
     due: { type: Number, default: 0 },
     payment_method: { type: String, default: 'cash' },
+    payment_status: { type: String, default: 'pending' },
+    payment_details: { type: Schema.Types.Mixed },
     is_pos: { type: Boolean, default: false }
   },
   { timestamps: true }

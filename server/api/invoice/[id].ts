@@ -4,22 +4,27 @@ import mongoose from 'mongoose';
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
-  const { id } = event.context.params || {};
+  const { id: rawId } = event.context.params || {};
 
-  if (!id) {
+  if (!rawId) {
     return {
       status: false,
       message: "Invoice ID is required",
     };
   }
 
+  // Normalize the ID - replace spaces with dashes and convert to uppercase
+  const id = decodeURIComponent(rawId).replace(/\s+/g, '-').toUpperCase();
+  console.log(`Processing normalized invoice ID: ${id} (original: ${rawId})`);
+
   if (method === "GET") {
     try {
-      const invoice = await Invoice.findById(id)
+      const invoice = await Invoice.findOne({ _id: id })
         .populate("items.medicine")
         .populate("customer");
 
       if (!invoice) {
+        console.log(`Invoice not found with ID: ${id}`);
         return {
           status: false,
           message: "Invoice not found",
@@ -46,7 +51,7 @@ export default defineEventHandler(async (event) => {
 
     try {
       // 1. Find the invoice
-      const invoice = await Invoice.findById(id).session(session);
+      const invoice = await Invoice.findOne({ _id: id }).session(session);
       
       if (!invoice) {
         await session.abortTransaction();
@@ -91,7 +96,7 @@ export default defineEventHandler(async (event) => {
       }
 
       // 3. Delete the invoice
-      await Invoice.findByIdAndDelete(id).session(session);
+      await Invoice.deleteOne({ _id: id }).session(session);
 
       await session.commitTransaction();
       session.endSession();

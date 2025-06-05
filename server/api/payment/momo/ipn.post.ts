@@ -28,22 +28,71 @@ export default defineEventHandler(async (event) => {
     // Process payment result
     if (body.resultCode === 0) {
       // Payment successful
-      const invoice = await Invoice.findById(body.orderId);
+      // Normalize the orderId by replacing spaces with dashes and converting to uppercase
+      const normalizedOrderId = body.orderId.replace(/\s+/g, '-').toUpperCase();
+      console.log(`[IPN] Processing successful payment for order ${normalizedOrderId}`);
+      
+      // Use findOne with _id field instead of findById to handle string IDs properly
+      const invoice = await Invoice.findOne({ _id: normalizedOrderId });
       if (invoice) {
+        console.log(`[IPN] Found invoice ${normalizedOrderId}, updating payment status`);
+        
+        // Update invoice payment status
         invoice.payment_status = 'paid';
+        invoice.paid = invoice.grand_total;
+        invoice.due = 0;
         invoice.payment_details = {
-          ...invoice.payment_details,
+          ...invoice.payment_details || {},
           momo_transaction_id: body.transId,
           momo_request_id: body.requestId,
           payment_time: new Date(body.responseTime)
         };
         await invoice.save();
         
-        console.log(`MoMo payment successful for invoice ${body.orderId}`);
+        console.log(`[IPN] MoMo payment successful for invoice ${normalizedOrderId}`);
+      } else {
+        console.log(`[IPN] Invoice ${normalizedOrderId} not found, creating placeholder`);
+        
+        // If invoice doesn't exist yet (which shouldn't happen with new flow), create a placeholder
+        await Invoice.create({
+          _id: normalizedOrderId,
+          date: new Date(),
+          items: [],
+          subtotal: 0,
+          grand_total: parseInt(body.amount),
+          paid: parseInt(body.amount),
+          due: 0,
+          payment_method: 'momo',
+          payment_status: 'paid',
+          payment_details: {
+            momo_transaction_id: body.transId,
+            momo_request_id: body.requestId,
+            payment_time: new Date(body.responseTime),
+            is_placeholder: true // Mark this as a placeholder to be filled later
+          },
+          is_pos: true
+        });
+        
+        console.log(`[IPN] Created placeholder invoice for ${normalizedOrderId}`);
       }
     } else {
       // Payment failed
-      console.log(`MoMo payment failed for order ${body.orderId}: ${body.message}`);
+      const normalizedOrderId = body.orderId.replace(/\s+/g, '-').toUpperCase();
+      console.log(`[IPN] MoMo payment failed for order ${normalizedOrderId}: ${body.message}`);
+      
+      // Update invoice to mark payment as failed
+      const invoice = await Invoice.findOne({ _id: normalizedOrderId });
+      if (invoice) {
+        invoice.payment_status = 'failed';
+        invoice.payment_details = {
+          ...invoice.payment_details || {},
+          error_message: body.message,
+          error_code: body.resultCode
+        };
+        await invoice.save();
+        
+        console.log(`[IPN] Updated invoice ${normalizedOrderId} to failed status`);
+      }
     }
     
     // Always return 204 to MoMo

@@ -1,6 +1,7 @@
 import Invoice from "@/server/models/Invoice";
 import Stock from "@/server/models/Stock";
 import Medicine from "@/server/models/Medicine";
+import { SortOrder } from "mongoose";
 
 export default defineEventHandler(async (event) => {
   const method = event.method;
@@ -11,8 +12,16 @@ export default defineEventHandler(async (event) => {
     const limit = parseInt(query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    // Sort by updatedAt field in descending order (newest first)
+    const sortOptions: { [key: string]: SortOrder } = { updatedAt: -1 };
+    
     const [data, total] = await Promise.all([
-      Invoice.find().populate('items.medicine').populate('customer').skip(skip).limit(limit),
+      Invoice.find()
+        .populate('items.medicine')
+        .populate('customer')
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit),
       Invoice.countDocuments(),
     ]);
 
