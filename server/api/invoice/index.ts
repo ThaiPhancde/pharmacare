@@ -55,6 +55,26 @@ export default defineEventHandler(async (event) => {
           throw new Error(`Insufficient stock for medicine: ${item.medicine}. Available: ${stock.unit_quantity}, Requested: ${item.quantity}`);
         }
       }
+      
+      // Handle cash payment with change calculation
+      if (body.payment_method === 'cash' && body.paid > body.grand_total) {
+        // Calculate change amount
+        const change = body.paid - body.grand_total;
+        
+        // Store change amount in payment_details
+        if (!body.payment_details) {
+          body.payment_details = {};
+        }
+        body.payment_details.change = change;
+        
+        // For accounting purposes, we set paid to the actual amount received
+        // and due to 0 since the customer has paid in full
+        body.due = 0;
+      } else if (body.payment_method === 'cash' && body.paid < body.grand_total) {
+        // If paid less than total, calculate due amount
+        body.due = body.grand_total - body.paid;
+        body.payment_status = body.due > 0 ? 'partial' : 'paid';
+      }
   
       // 2. Tạo invoice
       const created = await Invoice.create([body], { session });

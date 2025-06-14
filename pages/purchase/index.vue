@@ -1,6 +1,9 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
 import { Eye, Pencil, Trash } from "lucide-vue-next";
+import { useToast } from "@/components/ui/toast";
+
+const { toast } = useToast();
 
 const statuses = [
   { value: true, label: "🟢 Active" },
@@ -106,6 +109,9 @@ const confirmDelete = (item) => {
 
 const deletePurchase = async (id) => {
   try {
+    // Show loading indicator
+    loading.value = true;
+    
     const response = await fetch(`/api/purchase/${id}`, {
       method: 'DELETE',
     });
@@ -113,14 +119,17 @@ const deletePurchase = async (id) => {
     const result = await response.json();
     
     if (result.status) {
-      fetchData(); // Refresh data after delete
+      toast.success("Xóa đơn hàng thành công");
+      // Fetch data again to update the list
+      await fetchData();
     } else {
-      console.error('Delete failed:', result.message);
-      alert('Failed to delete purchase');
+      toast.error(result.message || "Xóa đơn hàng thất bại");
     }
   } catch (error) {
+    toast.error("Xóa đơn hàng thất bại");
     console.error('Error deleting purchase:', error);
-    alert('Error deleting purchase');
+  } finally {
+    loading.value = false;
   }
 };
 

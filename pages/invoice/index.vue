@@ -32,10 +32,34 @@ const formatDate = (date) => {
 };
 
 const formatCurrency = (value) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(value);
+  if (value === undefined || value === null) return '-';
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+};
+
+// Function to get payment details display
+const getPaymentDetails = (invoice) => {
+  if (!invoice) return '';
+  
+  let details = '';
+  
+  // Add payment method
+  details += invoice.payment_method ? invoice.payment_method.toUpperCase() : '';
+  
+  // Add change amount if available for cash payments
+  if (invoice.payment_method === 'cash' && 
+      invoice.payment_details && 
+      invoice.payment_details.change > 0) {
+    details += ` (Change: ${formatCurrency(invoice.payment_details.change)})`;
+  }
+  
+  // Add card details for card payments
+  if (invoice.payment_method === 'card' && invoice.payment_details) {
+    if (invoice.payment_details.card_number) {
+      details += ` (${invoice.payment_details.card_number})`;
+    }
+  }
+  
+  return details;
 };
 
 const viewInvoice = (id) => {
@@ -51,6 +75,9 @@ const editInvoice = (id) => {
 const deleteInvoice = async (id) => {
   if (confirm("Bạn có chắc chắn muốn xóa hóa đơn này không?")) {
     try {
+      // Show loading indicator
+      loading.value = true;
+      
       const res = await fetch(`/api/invoice/${id}`, {
         method: 'DELETE',
       });
@@ -59,13 +86,16 @@ const deleteInvoice = async (id) => {
       
       if (data.status) {
         toast.success("Xóa hóa đơn thành công");
-        fetchData();
+        // Fetch data again to update the list
+        await fetchData();
       } else {
         toast.error(data.message || "Xóa hóa đơn thất bại");
       }
     } catch (error) {
       toast.error("Xóa hóa đơn thất bại");
       console.error("Failed to delete invoice:", error);
+    } finally {
+      loading.value = false;
     }
   }
 };
@@ -103,8 +133,7 @@ const columns = [
     accessorKey: "payment_method",
     header: "Payment Method",
     cell: ({ row }) => {
-      const method = row.original.payment_method || '-';
-      return method.charAt(0).toUpperCase() + method.slice(1);
+      return getPaymentDetails(row.original);
     },
   },
   {
@@ -125,7 +154,17 @@ const columns = [
   {
     accessorKey: "due",
     header: "Due",
-    cell: ({ row }) => formatCurrency(row.original.due),
+    cell: ({ row }) => {
+      // If payment_details has change, it means customer paid more than total
+      if (row.original.payment_method === 'cash' && 
+          row.original.payment_details && 
+          row.original.payment_details.change > 0) {
+        return `0 (Change: ${formatCurrency(row.original.payment_details.change)})`;
+      }
+      
+      // Otherwise show the due amount
+      return formatCurrency(row.original.due);
+    },
   },
   {
     id: "actions",

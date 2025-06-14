@@ -111,9 +111,11 @@ const columns = [
       return h(
         NButton,
         {
-          text: true,
           type: 'primary',
-          onClick: () => router.push(`/shipping/track?code=${row.shipping_code}`)
+          strong: true,
+          size: 'small',
+          onClick: () => router.push(`/shipping/track?code=${row.shipping_code}`),
+          style: 'background-color: #2080f0 !important; color: white !important'
         },
         { default: () => row.shipping_code }
       );
@@ -127,9 +129,11 @@ const columns = [
       return h(
         NButton,
         {
-          text: true,
           type: 'info',
-          onClick: () => router.push(`/invoice/${row.invoice?._id || row.invoice}`)
+          strong: true,
+          size: 'small',
+          onClick: () => router.push(`/invoice/${row.invoice?._id || row.invoice}`),
+          style: 'background-color: #61affe !important; color: white !important'
         },
         { default: () => invoiceNo }
       );
@@ -161,8 +165,7 @@ const columns = [
             NTag,
             { 
               type: row.is_cod ? 'warning' : 'success',
-              round: true,
-              size: 'small'
+              style: row.is_cod ? 'background-color: #faad14 !important; color: white !important' : 'background-color: #52c41a !important; color: white !important'
             },
             { default: () => row.is_cod ? 'COD' : 'Prepaid' }
           ),
@@ -182,21 +185,21 @@ const columns = [
     title: 'Status',
     key: 'status',
     render: (row: ShippingOrder) => {
-      const statusMap: Record<string, { color: string, text: string }> = {
-        'pending': { color: 'default', text: 'Pending' },
-        'confirmed': { color: 'info', text: 'Confirmed' },
-        'shipping': { color: 'warning', text: 'Shipping' },
-        'delivered': { color: 'success', text: 'Delivered' },
-        'cancelled': { color: 'error', text: 'Cancelled' }
+      const statusMap: Record<string, { color: string, text: string, type: 'default' | 'info' | 'success' | 'warning' | 'error' }> = {
+        'pending': { color: '#d9d9d9', text: 'Pending', type: 'default' },
+        'confirmed': { color: '#1890ff', text: 'Confirmed', type: 'info' },
+        'shipping': { color: '#faad14', text: 'Shipping', type: 'warning' },
+        'delivered': { color: '#52c41a', text: 'Delivered', type: 'success' },
+        'cancelled': { color: '#f5222d', text: 'Cancelled', type: 'error' }
       };
       
-      const status = statusMap[row.status] || { color: 'default', text: row.status };
+      const status = statusMap[row.status] || { color: '#d9d9d9', text: row.status, type: 'default' };
       
       return h(
         NTag,
         { 
-          type: status.color as any,
-          round: true
+          type: status.type,
+          style: `background-color: ${status.color} !important; color: white !important`
         },
         { default: () => status.text }
       );
@@ -229,17 +232,20 @@ const columns = [
           h(
             NButton,
             {
+              type: 'info',
               size: 'small',
-              onClick: () => router.push(`/shipping/track?code=${row.shipping_code}`)
+              onClick: () => router.push(`/shipping/track?code=${row.shipping_code}`),
+              style: 'background-color: #61affe !important; color: white !important'
             },
             { default: () => 'Track' }
           ),
           h(
             NButton,
             {
-              size: 'small',
               type: 'primary',
-              onClick: () => router.push(`/invoice/${row.invoice?._id || row.invoice}`)
+              size: 'small',
+              onClick: () => router.push(`/invoice/${row.invoice?._id || row.invoice}`),
+              style: 'background-color: #2080f0 !important; color: white !important'
             },
             { default: () => 'View Invoice' }
           )
@@ -256,24 +262,62 @@ const loadShippingOrders = async () => {
   
   try {
     const response = await api.get('/api/shipping');
+    
     if (response.status && response.data) {
-      shippingOrders.value = response.data as ShippingOrder[];
+      shippingOrders.value = Array.isArray(response.data) ? response.data : [];
     } else {
       error.value = response.message || 'Failed to load shipping orders';
     }
-  } catch (err: unknown) {
+  } catch (err: any) {
     console.error('Error loading shipping orders:', err);
-    if (err instanceof Error) {
-      error.value = err.message;
-    } else {
-      error.value = 'An error occurred while loading shipping orders';
-    }
+    error.value = err.message || 'An unexpected error occurred';
   } finally {
     loading.value = false;
   }
 };
 
-onMounted(() => {
-  loadShippingOrders();
-});
-</script> 
+onMounted(loadShippingOrders);
+</script>
+
+<style scoped>
+/* Override Naive UI components to ensure colors always show (not just on hover) */
+:deep(.n-button.n-button--primary-type) {
+  background-color: #2080f0 !important;
+  color: white !important;
+}
+
+:deep(.n-button.n-button--info-type) {
+  background-color: #61affe !important; 
+  color: white !important;
+}
+
+:deep(.n-tag.n-tag--primary-type) {
+  background-color: #2080f0 !important;
+  color: white !important;
+}
+
+:deep(.n-tag.n-tag--info-type) {
+  background-color: #1890ff !important;
+  color: white !important;
+}
+
+:deep(.n-tag.n-tag--success-type) {
+  background-color: #52c41a !important;
+  color: white !important;
+}
+
+:deep(.n-tag.n-tag--warning-type) {
+  background-color: #faad14 !important;
+  color: white !important;
+}
+
+:deep(.n-tag.n-tag--error-type) {
+  background-color: #f5222d !important;
+  color: white !important;
+}
+
+:deep(.n-tag.n-tag--default-type) {
+  background-color: #d9d9d9 !important;
+  color: white !important;
+}
+</style> 

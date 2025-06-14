@@ -31,6 +31,29 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
+// Get payment details including change amount
+const getPaymentDetails = computed(() => {
+  if (!invoice.value) return '';
+  
+  let details = invoice.value.payment_method ? invoice.value.payment_method.toUpperCase() : '';
+  
+  // Add change amount if available for cash payments
+  if (invoice.value.payment_method === 'cash' && 
+      invoice.value.payment_details && 
+      invoice.value.payment_details.change > 0) {
+    details += ` (Change: ${formatVND(invoice.value.payment_details.change)})`;
+  }
+  
+  // Add card details for card payments
+  if (invoice.value.payment_method === 'card' && invoice.value.payment_details) {
+    if (invoice.value.payment_details.card_number) {
+      details += ` (${invoice.value.payment_details.card_number})`;
+    }
+  }
+  
+  return details;
+});
+
 // Fetch invoice details
 const fetchInvoiceDetails = async () => {
   loading.value = true;
@@ -122,7 +145,7 @@ onMounted(fetchInvoiceDetails);
           </div>
           <div>
             <div class="text-muted-foreground text-sm">Payment Method</div>
-            <div class="font-medium capitalize">{{ invoice.payment_method }}</div>
+            <div class="font-medium capitalize">{{ getPaymentDetails }}</div>
           </div>
         </div>
         

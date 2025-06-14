@@ -553,8 +553,12 @@ const addToCart = (medicine) => {
   );
   
   if (existingItem) {
-    if (existingItem.quantity < stock.unit_quantity) {
+    if (existingItem.quantity < existingItem.max_quantity) {
       existingItem.quantity += 1;
+      
+      // Update the stock quantity in the UI immediately
+      stock.unit_quantity -= 1;
+      
       message.success(`Added ${medicine.name} to cart`);
       
       // Show discount message if applicable
@@ -562,9 +566,15 @@ const addToCart = (medicine) => {
         message.info(`${discountReason}: ${discountPercentage}% discount applied`);
       }
     } else {
-      message.warning(`Cannot add more. Only ${stock.unit_quantity} ${medicine.name} left in batch ${stock.batch_id}`);
+      message.warning(`Cannot add more. Only ${existingItem.max_quantity} ${medicine.name} available in batch ${stock.batch_id}`);
     }
   } else {
+    // Store the original stock quantity before decreasing
+    const originalQuantity = stock.unit_quantity;
+    
+    // Update the stock quantity in the UI immediately
+    stock.unit_quantity -= 1;
+    
     cart.value.push({
       _id: medicine._id,
       name: medicine.name,
@@ -576,7 +586,7 @@ const addToCart = (medicine) => {
       quantity: 1,
       batch_id: stock.batch_id,
       expiry_date: stock.expiry_date,
-      max_quantity: stock.unit_quantity,
+      max_quantity: originalQuantity, // Store original quantity for reference
       stock_id: stock._id,
       purchase: stock.purchase,
       days_left: daysLeft
@@ -593,11 +603,42 @@ const addToCart = (medicine) => {
 
 // Remove item from cart
 const removeItem = (index) => {
+  const item = cart.value[index];
+  if (item) {
+    // Find the medicine to restore its stock
+    const medicine = medicines.value.find(med => med._id === item._id);
+    if (medicine) {
+      // Find the specific stock batch
+      const stock = medicine.stocks.find(s => s._id === item.stock_id);
+      if (stock) {
+        // Restore the stock quantity
+        stock.unit_quantity += item.quantity;
+        console.log(`Restored ${item.quantity} units to stock of ${item.name}`);
+      }
+    }
+  }
+  // Remove from cart
   cart.value.splice(index, 1);
 };
 
 // Clear cart
 const clearCart = () => {
+  // Restore stock quantities for all items in the cart
+  cart.value.forEach(item => {
+    // Find the medicine to restore its stock
+    const medicine = medicines.value.find(med => med._id === item._id);
+    if (medicine) {
+      // Find the specific stock batch
+      const stock = medicine.stocks.find(s => s._id === item.stock_id);
+      if (stock) {
+        // Restore the stock quantity
+        stock.unit_quantity += item.quantity;
+        console.log(`Restored ${item.quantity} units to stock of ${item.name}`);
+      }
+    }
+  });
+  
+  // Clear the cart and reset other values
   cart.value = [];
   discount.value = 0;
   amountPaid.value = 0;
@@ -668,7 +709,11 @@ const processPayment = async () => {
       discount: discount.value,
       grand_total: grandTotal.value,
       paid: paymentMethod.value === 'cash' ? Number(amountPaid.value) : grandTotal.value,
-      due: 0,
+      due: paymentMethod.value === 'cash' 
+        ? Number(amountPaid.value) > grandTotal.value 
+          ? 0 // No due amount if paid more than total
+          : grandTotal.value - Number(amountPaid.value) // Calculate due if paid less than total
+        : 0, // No due for other payment methods
       payment_method: paymentMethod.value,
       payment_status: 'paid',
       payment_details: paymentMethod.value === 'card' 
@@ -689,6 +734,9 @@ const processPayment = async () => {
     if (response && response.status) {
       message.success('Transaction completed successfully');
       clearCart();
+      
+      // Reload medicine data to reflect updated stock quantities in the database
+      await fetchMedicines();
     } else {
       message.error(response.message || 'Failed to create invoice');
     }
@@ -705,10 +753,13 @@ const fetchMedicines = async () => {
   loading.value = true;
   try {
     // Get medicines and populate stock information
+    // Add timestamp to prevent caching issues
+    const timestamp = Date.now();
     const response = await api.get('/api/medicine', { 
       params: { 
         limit: 100,
         populate: 'stocks',
+        _t: timestamp // Add timestamp to force fresh data
       } 
     });
     
@@ -753,14 +804,13 @@ const getMedicineAvailableStock = (medicine) => {
     return 0;
   }
   
-  // Filter valid stocks (not expired and quantity > 0)
+  // Filter valid stocks (not expired), including those with zero quantity
   const validStocks = medicine.stocks.filter(stock => 
-    stock.unit_quantity > 0 && 
     new Date(stock.expiry_date) > new Date()
   );
   
   // Sum up available quantities
-  return validStocks.reduce((total, stock) => total + stock.unit_quantity, 0);
+  return validStocks.reduce((total, stock) => total + (stock.unit_quantity || 0), 0);
 };
 
 // Update cart total
@@ -770,6 +820,18 @@ const updateCartTotal = () => {
     if (item.original_price && item.discount_percentage) {
       // Recalculate discounted price to ensure accuracy
       item.price = item.original_price * (1 - item.discount_percentage / 100);
+    }
+    
+    // Find the medicine to update its stock
+    const medicine = medicines.value.find(med => med._id === item._id);
+    if (medicine) {
+      // Find the specific stock batch
+      const stock = medicine.stocks.find(s => s._id === item.stock_id);
+      if (stock) {
+        // Calculate the new stock quantity based on the max_quantity (original) and current item quantity
+        const originalQuantity = item.max_quantity;
+        stock.unit_quantity = originalQuantity - item.quantity;
+      }
     }
   });
   
@@ -882,11 +944,14 @@ const onBarcodeScanned = async (barcode) => {
   
   try {
     // Search for medicine by barcode
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
     const response = await api.get('/api/medicine', { 
       params: { 
         bar_code: barcode,
         populate: 'stocks',
-        limit: 1
+        limit: 1,
+        _t: timestamp // Add timestamp to force fresh data
       } 
     });
     
@@ -1036,8 +1101,10 @@ const checkMoMoPaymentStatus = () => {
           clearInterval(checkInterval);
           message.success('Payment successful!');
           
-          // Invoice already marked as paid, just clear cart
+          // Invoice already marked as paid, clear cart and refresh medicine data
           clearCart();
+          // Reload medicine data to reflect updated stock quantities
+          fetchMedicines();
         } else if (response.data.status === 'not_found') {
           momoPaymentStatus.value = 'Checking...'; // Continue checking
           console.log('Invoice not found yet, continuing to check...');

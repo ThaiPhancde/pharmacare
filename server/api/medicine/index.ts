@@ -59,13 +59,12 @@ export default defineEventHandler(async (event) => {
 
     // Populate stocks nếu được yêu cầu và tối ưu bằng cách:
     // 1. Chỉ lấy các trường cần thiết
-    // 2. Chỉ lấy stock có số lượng > 0
+    // 2. Xóa bỏ match để lấy TẤT CẢ stocks, không chỉ là unit_quantity > 0
     // 3. Sử dụng lean()
     if (populate.includes('stocks')) {
       medicineQuery = medicineQuery.populate({
         path: 'stocks',
-        match: { unit_quantity: { $gt: 0 } },
-        select: 'unit_quantity batch_id expiry_date purchase_price mrp -_id',
+        select: '_id unit_quantity batch_id expiry_date purchase_price mrp vat',
         options: { lean: true }
       });
     }

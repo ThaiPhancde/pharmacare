@@ -69,6 +69,37 @@ export default defineEventHandler(async (event) => {
         body.payment_status = 'paid';
       }
       
+      // Handle cash payment with change calculation
+      if (body.payment_method === 'cash') {
+        const amountPaid = Number(body.paid);
+        const grandTotal = Number(body.grand_total);
+        
+        if (amountPaid > grandTotal) {
+          // Calculate change amount
+          const change = amountPaid - grandTotal;
+          
+          // Store change amount in payment_details
+          if (!body.payment_details) {
+            body.payment_details = {};
+          }
+          body.payment_details.change = change;
+          
+          // For accounting purposes, we keep paid as the actual amount received
+          // and due as 0 since the customer has paid in full
+          body.due = 0;
+          console.log(`Cash payment with change: Paid ${amountPaid}, Total ${grandTotal}, Change ${change}`);
+        } else if (amountPaid < grandTotal) {
+          // If paid less than total, calculate due amount
+          body.due = grandTotal - amountPaid;
+          body.payment_status = 'partial';
+          console.log(`Partial payment: Paid ${amountPaid}, Total ${grandTotal}, Due ${body.due}`);
+        } else {
+          // Exact payment
+          body.due = 0;
+          console.log(`Exact payment: Paid ${amountPaid}, Total ${grandTotal}`);
+        }
+      }
+      
       console.log('Creating invoice with data:', JSON.stringify(body, null, 2));
       const created = await Invoice.create([body], { session });
       console.log('Invoice created with ID:', created[0]._id);
@@ -78,7 +109,7 @@ export default defineEventHandler(async (event) => {
         const stock = stockItem.stock;
         const quantity = stockItem.quantity;
         
-        // Cập nhật số lượng
+        // Cập nhật số lượng trong database
         stock.unit_quantity -= quantity;
         
         // Cập nhật box_quantity nếu cần
@@ -92,9 +123,12 @@ export default defineEventHandler(async (event) => {
           }
         }
         
+        // Lưu thay đổi vào database
         await stock.save({ session });
+        console.log(`Stock updated: Medicine ID ${stock.medicine}, New quantity: ${stock.unit_quantity}`);
       }
   
+      // Đảm bảo transaction được commit
       await session.commitTransaction();
       session.endSession();
   
