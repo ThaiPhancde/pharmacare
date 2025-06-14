@@ -639,7 +639,12 @@ const processPayment = async () => {
   paymentProcessing.value = true;
   
   try {
+    // Generate an invoice ID for all payment methods
+    const invoiceId = `INV-CUS-${Date.now()}`;
+    console.log("Generated invoice ID for payment:", invoiceId);
+    
     const invoiceData = {
+      _id: invoiceId, // Set the _id explicitly
       date: Date.now(),
       customer: selectedCustomer.value,
       items: cart.value.map(item => ({
@@ -674,6 +679,8 @@ const processPayment = async () => {
         : null,
       is_pos: true
     };
+    
+    console.log("Creating POS invoice with data:", invoiceData);
     
     // Submit invoice to POS API endpoint
     const response = await api.post('/api/invoice/pos', invoiceData);

@@ -18,10 +18,27 @@ export default defineEventHandler(async (event) => {
       }
       
       const shipping = await Shipping.find(filter)
-        .populate('invoice')
+        .populate({
+          path: 'invoice',
+          select: '_id invoice_no date customer items grand_total'
+        })
         .sort({ created_at: -1 });
         
-      return { status: true, data: shipping };
+      // Process the shipping data to ensure invoice_no is accessible
+      const processedShipping = shipping.map(item => {
+        const doc = item.toObject();
+        // Check if invoice is populated and fix the reference
+        if (doc.invoice && typeof doc.invoice === 'object') {
+          // Use invoice_no if available, otherwise use _id
+          doc.invoice_display = doc.invoice.invoice_no || doc.invoice._id;
+        } else {
+          // If invoice is just an ID
+          doc.invoice_display = doc.invoice;
+        }
+        return doc;
+      });
+        
+      return { status: true, data: processedShipping };
     } catch (err: any) {
       console.error('Lỗi khi lấy danh sách shipping:', err);
       return {
@@ -90,11 +107,71 @@ export default defineEventHandler(async (event) => {
       // Tạo shipping record trong DB
       const shippingData = {
         ...body,
+        invoice: invoice._id, // Ensure we store the invoice ID, not the whole object
         shipping_code: ghnResponse.data.order_code,
-        expected_delivery_date: ghnResponse.data.expected_delivery_time,
         shipping_fee: ghnResponse.data.total_fee,
         status: 'confirmed'
       };
+      
+      // Process expected delivery time
+      if (ghnResponse.data.expected_delivery_time) {
+        try {
+          // Check if it's a timestamp (number) or a date string
+          let deliveryDate;
+          
+          // HCM city districts are in range 1442-1480
+          const isHCMCity = body.district_id >= 1442 && body.district_id <= 1480;
+          
+          if (isHCMCity) {
+            // For HCM city: set delivery date to today + 5 hours
+            deliveryDate = new Date();
+            deliveryDate.setHours(deliveryDate.getHours() + 5);
+            shippingData.expected_delivery_date = deliveryDate;
+            console.log('HCM city order, setting delivery time to today + 5 hours:', deliveryDate);
+          } else if (typeof ghnResponse.data.expected_delivery_time === 'number') {
+            // Convert from Unix timestamp (seconds) to milliseconds
+            deliveryDate = new Date(ghnResponse.data.expected_delivery_time * 1000);
+            
+            // Validate date
+            if (!isNaN(deliveryDate.getTime())) {
+              shippingData.expected_delivery_date = deliveryDate;
+              console.log('Parsed delivery date from timestamp:', deliveryDate);
+            } else {
+              console.error('Invalid delivery date format from timestamp:', ghnResponse.data.expected_delivery_time);
+              // Set a default delivery date (today + 2 days)
+              deliveryDate = new Date();
+              deliveryDate.setDate(deliveryDate.getDate() + 2);
+              shippingData.expected_delivery_date = deliveryDate;
+            }
+          } else {
+            // Try to parse as date string
+            deliveryDate = new Date(ghnResponse.data.expected_delivery_time);
+            
+            // Validate date
+            if (!isNaN(deliveryDate.getTime())) {
+              shippingData.expected_delivery_date = deliveryDate;
+              console.log('Parsed delivery date from string:', deliveryDate);
+            } else {
+              console.error('Invalid delivery date format from string:', ghnResponse.data.expected_delivery_time);
+              // Set a default delivery date (today + 2 days)
+              deliveryDate = new Date();
+              deliveryDate.setDate(deliveryDate.getDate() + 2);
+              shippingData.expected_delivery_date = deliveryDate;
+            }
+          }
+        } catch (dateErr) {
+          console.error('Error parsing delivery date:', dateErr);
+          // Set a default delivery date (today + 2 days)
+          const defaultDate = new Date();
+          defaultDate.setDate(defaultDate.getDate() + 2);
+          shippingData.expected_delivery_date = defaultDate;
+        }
+      } else {
+        // No expected delivery time provided, set a default (today + 2 days)
+        const defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 2);
+        shippingData.expected_delivery_date = defaultDate;
+      }
       
       console.log('Dữ liệu shipping trước khi lưu:', JSON.stringify(shippingData));
       

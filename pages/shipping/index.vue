@@ -52,12 +52,28 @@ import { useRouter } from 'vue-router';
 import { useApi } from '@/composables/useApi';
 import { NButton, NTag, NTooltip } from 'naive-ui';
 
+// Define shipping order type
+interface ShippingOrder {
+  _id: string;
+  shipping_code: string;
+  invoice: any;
+  invoice_display?: string;
+  recipient_name: string;
+  recipient_phone: string;
+  recipient_address: string;
+  district_id: number;
+  ward_code: string;
+  status: string;
+  expected_delivery_date?: string | Date;
+  shipping_fee: number;
+}
+
 const router = useRouter();
 const api = useApi();
 
 const loading = ref(true);
 const error = ref('');
-const shippingOrders = ref([]);
+const shippingOrders = ref<ShippingOrder[]>([]);
 
 // Pagination
 const pagination = {
@@ -69,7 +85,7 @@ const columns = [
   {
     title: 'Shipping Code',
     key: 'shipping_code',
-    render: (row) => {
+    render: (row: ShippingOrder) => {
       return h(
         NButton,
         {
@@ -84,8 +100,8 @@ const columns = [
   {
     title: 'Invoice',
     key: 'invoice',
-    render: (row) => {
-      const invoiceNo = row.invoice?.invoice_no || row.invoice;
+    render: (row: ShippingOrder) => {
+      const invoiceNo = row.invoice_display || (row.invoice?.invoice_no || row.invoice);
       return h(
         NButton,
         {
@@ -100,7 +116,7 @@ const columns = [
   {
     title: 'Recipient',
     key: 'recipient_name',
-    render: (row) => {
+    render: (row: ShippingOrder) => {
       return h(
         'div',
         {},
@@ -114,7 +130,7 @@ const columns = [
   {
     title: 'Address',
     key: 'recipient_address',
-    render: (row) => {
+    render: (row: ShippingOrder) => {
       return h(
         NTooltip,
         { trigger: 'hover' },
@@ -128,8 +144,8 @@ const columns = [
   {
     title: 'Status',
     key: 'status',
-    render: (row) => {
-      const statusColors = {
+    render: (row: ShippingOrder) => {
+      const statusColors: Record<string, string> = {
         'pending': 'warning',
         'confirmed': 'success',
         'shipping': 'info',
@@ -150,22 +166,50 @@ const columns = [
   {
     title: 'Expected Delivery',
     key: 'expected_delivery_date',
-    render: (row) => {
-      if (!row.expected_delivery_date) return 'N/A';
-      return new Date(row.expected_delivery_date).toLocaleDateString();
+    render: (row: ShippingOrder) => {
+      if (!row.expected_delivery_date) return 'Chưa xác định';
+      
+      // Check if delivery is in HCM (districts 1442-1480)
+      const isHCMCity = row.district_id >= 1442 && row.district_id <= 1480;
+      
+      if (isHCMCity) {
+        return 'Trong ngày (3-5 tiếng)';
+      }
+      
+      // Format date
+      const date = new Date(row.expected_delivery_date);
+      if (isNaN(date.getTime())) return 'Chưa xác định';
+      
+      // Calculate if it's today, tomorrow, or later
+      const today = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
+      
+      if (date.toDateString() === today.toDateString()) {
+        return 'Hôm nay';
+      } else if (date.toDateString() === tomorrow.toDateString()) {
+        return 'Ngày mai';
+      } else {
+        // Format as date
+        return new Intl.DateTimeFormat('vi-VN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(date);
+      }
     }
   },
   {
     title: 'Fee',
     key: 'shipping_fee',
-    render: (row) => {
+    render: (row: ShippingOrder) => {
       return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.shipping_fee);
     }
   },
   {
     title: 'Actions',
     key: 'actions',
-    render: (row) => {
+    render: (row: ShippingOrder) => {
       return h(
         'div',
         { class: 'flex gap-2' },

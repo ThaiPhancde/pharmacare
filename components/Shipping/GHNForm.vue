@@ -83,9 +83,9 @@
               <span>Phí vận chuyển:</span>
               <span class="font-medium">{{ loading ? 'Đang tính...' : (shippingFee ? formatCurrency(shippingFee) : 'Chưa xác định') }}</span>
             </div>
-            <div v-if="shippingFee" class="flex justify-between items-center mt-1">
+            <div class="flex justify-between items-center mt-1">
               <span>Thời gian giao hàng dự kiến:</span>
-              <span class="font-medium">{{ expectedDeliveryTime || 'Chưa xác định' }}</span>
+              <span class="font-medium">{{ loading ? 'Đang tính...' : (expectedDeliveryTime || 'Chưa xác định') }}</span>
             </div>
           </div>
           
@@ -247,6 +247,20 @@ const calculateShippingFee = async () => {
   if (formData.value.ward_code && formData.value.district_id) {
     loading.value = true;
     error.value = false;
+    errorMessage.value = '';
+    
+    // Set default value for expected delivery time
+    // HCM city districts are in range 1442-1480
+    const isHCMCity = formData.value.district_id >= 1442 && formData.value.district_id <= 1480;
+    if (isHCMCity) {
+      expectedDeliveryTime.value = 'Trong ngày (3-5 tiếng)';
+      // Set a default shipping fee for HCM city in case API fails
+      shippingFee.value = 20500; // Default fee for HCM
+    } else {
+      expectedDeliveryTime.value = '1-3 ngày';
+      // Default fee for other locations
+      shippingFee.value = 30000; // Default fee for other locations
+    }
     
     try {
       const payload = {
@@ -260,18 +274,34 @@ const calculateShippingFee = async () => {
       };
       
       const response = await api.post('/api/shipping/calculate-fee', payload);
-      if (response.status && response.data) {
-        shippingFee.value = response.data.total || 0;
-        expectedDeliveryTime.value = response.data.expected_delivery_time || '';
-      } else {
-        showError('Lỗi khi tính phí vận chuyển');
+      if (response.status && response.data && response.data.total) {
+        shippingFee.value = response.data.total;
+        if (response.data.expected_delivery_time) {
+          expectedDeliveryTime.value = response.data.expected_delivery_time;
+        }
+        console.log('Expected delivery time:', response.data.expected_delivery_time);
+        console.log('Raw leadtime:', response.data.raw_leadtime);
+      } else if (response.status === false) {
+        // If calculation failed but we have data with expected_delivery_time
+        if (response.data && response.data.expected_delivery_time) {
+          expectedDeliveryTime.value = response.data.expected_delivery_time;
+        }
+        // Use the default fee we set earlier
+        console.log('Using default shipping fee:', shippingFee.value);
+        // Show a warning but don't treat it as an error since we have a default fee
+        console.warn('Lỗi khi tính phí vận chuyển từ GHN, sử dụng phí mặc định:', response.message);
       }
     } catch (err) {
       console.error('Lỗi khi tính phí vận chuyển:', err);
-      showError('Không thể tính phí vận chuyển');
+      // Don't show error to user since we're using default values
+      console.warn('Sử dụng phí vận chuyển mặc định:', shippingFee.value);
     } finally {
       loading.value = false;
     }
+  } else {
+    // If district or ward is not selected, reset values
+    shippingFee.value = 0;
+    expectedDeliveryTime.value = '';
   }
 };
 

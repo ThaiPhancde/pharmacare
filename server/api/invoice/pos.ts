@@ -16,6 +16,8 @@ export default defineEventHandler(async (event) => {
     session.startTransaction();
   
     try {
+      console.log('Creating POS invoice with payment method:', body.payment_method);
+      
       // Tạo danh sách stocks để lưu dữ liệu tạm thời
       const stockItems = [];
       
@@ -47,16 +49,29 @@ export default defineEventHandler(async (event) => {
       // Xóa các trường không cần thiết trước khi lưu invoice
       body.items.forEach((item: any) => {
         delete item.stock_id;
+        delete item.days_left;
+        delete item.original_price;
+        delete item.discount_percentage;
+        delete item.discount_reason;
+        delete item.purchase;
         // Các trường khác có thể cần xóa
       });
   
       // 2. Tạo invoice 
-      // Đảm bảo có _id nếu thanh toán MoMo
-      if (body.payment_method === 'momo' && !body._id) {
+      // Đảm bảo có _id cho tất cả các phương thức thanh toán
+      if (!body._id) {
         body._id = `INV-CUS-${Date.now()}`;
+        console.log('Generated invoice ID:', body._id);
       }
       
+      // Đảm bảo payment_status được đặt đúng
+      if (!body.payment_status) {
+        body.payment_status = 'paid';
+      }
+      
+      console.log('Creating invoice with data:', JSON.stringify(body, null, 2));
       const created = await Invoice.create([body], { session });
+      console.log('Invoice created with ID:', created[0]._id);
   
       // 3. Cập nhật stock (giảm số lượng)
       for (const stockItem of stockItems) {
