@@ -18,6 +18,9 @@ export interface IShipping extends Document {
   note?: string;
   expected_delivery_date?: Date;
   shipping_fee: number;
+  is_cod: boolean;
+  payment_method: string;
+  cod_amount: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -45,6 +48,9 @@ const ShippingSchema = new Schema<IShipping>(
     note: { type: String, default: 'Thuốc - Xử lý cẩn thận' },
     expected_delivery_date: { type: Date },
     shipping_fee: { type: Number, default: 0 },
+    is_cod: { type: Boolean, default: false },
+    payment_method: { type: String, enum: ['prepaid', 'cod'], default: 'prepaid' },
+    cod_amount: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },

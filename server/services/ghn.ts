@@ -162,15 +162,22 @@ export const createShippingOrder = async (orderData: any) => {
     }
 
     // Chuẩn bị danh sách items cho GHN
-    const items = orderData.items.map((item: any) => ({
-      name: item.name || 'Sản phẩm',
-      quantity: item.quantity || 1,
-      weight: item.weight || 500 / orderData.items.length
-    }));
+    const items = orderData.items || [];
+    if (!items.length) {
+      items.push({
+        name: 'Sản phẩm',
+        quantity: 1,
+        weight: orderData.weight || 500
+      });
+    }
+
+    // Determine payment type and COD amount
+    const paymentTypeId = orderData.payment_type_id || 1; // 1: Sender pays shipping fee, 2: Receiver pays shipping fee
+    const codAmount = orderData.cod_amount || 0;
 
     const payload = {
       shop_id: GHN_SHOP_ID,
-      payment_type_id: 2,
+      payment_type_id: paymentTypeId,
       required_note: orderData.required_note || 'KHONGCHOXEMHANG',
       to_name: orderData.recipient_name,
       to_phone: orderData.recipient_phone,
@@ -192,6 +199,7 @@ export const createShippingOrder = async (orderData: any) => {
       height: orderData.height || 10,
       service_id: chosenServiceId,
       service_type_id: 2,
+      cod_amount: codAmount,
       content: 'Đơn hàng PharmaCare',
       items
     };
@@ -249,45 +257,53 @@ export const testConnection = async () => {
 
   if (!token || !shopId) {
     return {
-      error: 'GHN_TOKEN or GHN_SHOP_ID is not defined in .env file.'
+      status: false,
+      message: 'GHN token or shop ID not configured',
+      config: {
+        token: token ? 'configured' : 'missing',
+        shopId: shopId ? 'configured' : 'missing'
+      }
     };
   }
 
-  for (const item of urlsToTest) {
+  for (const endpoint of urlsToTest) {
     try {
-      // For path testing, we don't need a full valid request, just to see if the path exists
-      const isPathTest = item.name.includes('Path');
-      const requestMethod = isPathTest ? axios.head : axios.get;
-      
-      const response = await requestMethod(item.url, {
+      const startTime = Date.now();
+      const response = await axios.get(endpoint.url, {
         headers: {
           'Token': token,
           'Content-Type': 'application/json'
         },
-        timeout: 10000 // 10 seconds timeout
+        timeout: 5000 // 5 seconds timeout
       });
+      const endTime = Date.now();
+      
       results.push({
-        name: item.name,
-        url: item.url,
-        status: response.status,
-        statusText: response.statusText,
-        data: response.data?.message || 'Success'
+        name: endpoint.name,
+        status: 'success',
+        code: response.status,
+        time: `${endTime - startTime}ms`
       });
     } catch (error: any) {
       results.push({
-        name: item.name,
-        url: item.url,
-        status: error.response?.status || 'Error',
-        statusText: error.response?.statusText || error.message,
-        data: error.response?.data || 'No response data'
+        name: endpoint.name,
+        status: 'error',
+        message: error.message,
+        code: error.response?.status || 'unknown'
       });
     }
   }
-
+  
+  // Check if at least one endpoint is reachable
+  const success = results.some(r => r.status === 'success');
+  
   return {
-    message: 'Test completed.',
-    tokenUsed: `...${token.substring(token.length - 6)}`,
-    shopIdUsed: shopId,
-    results
+    status: success,
+    message: success ? 'GHN API is reachable' : 'Cannot connect to GHN API',
+    results,
+    config: {
+      token: token ? token.substring(0, 5) + '...' : 'missing',
+      shopId
+    }
   };
 };

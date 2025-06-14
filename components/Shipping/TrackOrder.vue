@@ -130,25 +130,25 @@ const formatDateTime = (dateString) => {
   }).format(date);
 };
 
-// Lấy text trạng thái
+// Get status text
 const getStatusText = (status) => {
   const statusMap = {
-    'ready_to_pick': 'Sẵn sàng lấy hàng',
-    'picking': 'Đang lấy hàng',
-    'picked': 'Đã lấy hàng',
-    'delivering': 'Đang giao hàng',
-    'delivered': 'Đã giao hàng',
-    'delivery_failed': 'Giao hàng thất bại',
-    'waiting_to_return': 'Chờ trả hàng',
-    'return': 'Đang trả hàng',
-    'returned': 'Đã trả hàng',
-    'cancelled': 'Đã hủy'
+    'ready_to_pick': 'Ready for pickup',
+    'picking': 'Picking up',
+    'picked': 'Picked up',
+    'delivering': 'Delivering',
+    'delivered': 'Delivered',
+    'delivery_failed': 'Delivery failed',
+    'waiting_to_return': 'Waiting for return',
+    'return': 'Returning',
+    'returned': 'Returned',
+    'cancelled': 'Cancelled'
   };
   
   return statusMap[status] || status;
 };
 
-// Lấy loại trạng thái (màu sắc)
+// Get status type (color)
 const getStatusType = (status) => {
   const typeMap = {
     'ready_to_pick': 'info',

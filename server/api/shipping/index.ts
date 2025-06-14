@@ -72,6 +72,37 @@ export default defineEventHandler(async (event) => {
         };
       }
       
+      // Prepare item details for the shipping order
+      const itemDetails = invoice.items.map((item: any) => {
+        // Try to get medicine name from different possible sources
+        let medicineName = 'Thuốc';
+        
+        if (item.medicine) {
+          if (typeof item.medicine === 'object' && item.medicine.name) {
+            medicineName = item.medicine.name;
+          } else if (typeof item.medicine === 'string') {
+            medicineName = item.medicine_name || 'Thuốc';
+          }
+        } else if (item.medicine_name) {
+          medicineName = item.medicine_name;
+        }
+        
+        const quantity = item.quantity || 1;
+        const batchInfo = item.batch_id ? ` - Batch: ${item.batch_id}` : '';
+        
+        console.log(`Creating shipping item: ${medicineName} x ${quantity}${batchInfo}`);
+        
+        return {
+          name: `${medicineName} x ${quantity}${batchInfo}`,
+          quantity: item.quantity || 1,
+          weight: Math.round(body.weight / invoice.items.length) // Distribute weight among items
+        };
+      });
+      
+      // Determine if this is a COD order
+      const isCOD = body.payment_method === 'cod';
+      const codAmount = isCOD ? (body.cod_amount || 0) : 0;
+      
       // Gọi API GHN để tạo đơn hàng
       const orderData = {
         recipient_name: body.recipient_name,
@@ -84,10 +115,9 @@ export default defineEventHandler(async (event) => {
         width: body.width || 10,
         height: body.height || 10,
         service_id: body.service_id || 53320,
-        items: invoice.items.map((item: any) => ({
-          name: 'Thuốc',
-          quantity: item.quantity || 1
-        }))
+        payment_type_id: isCOD ? 2 : 1, // 1: Sender pays shipping fee, 2: Receiver pays shipping fee
+        cod_amount: codAmount,
+        items: itemDetails
       };
       
       // Tạo đơn hàng trên GHN
@@ -110,6 +140,9 @@ export default defineEventHandler(async (event) => {
         invoice: invoice._id, // Ensure we store the invoice ID, not the whole object
         shipping_code: ghnResponse.data.order_code,
         shipping_fee: ghnResponse.data.total_fee,
+        is_cod: isCOD,
+        payment_method: body.payment_method || 'prepaid',
+        cod_amount: codAmount,
         status: 'confirmed'
       };
       

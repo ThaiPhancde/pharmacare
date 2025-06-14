@@ -649,6 +649,7 @@ const processPayment = async () => {
       customer: selectedCustomer.value,
       items: cart.value.map(item => ({
         medicine: item._id,
+        medicine_name: item.name, // Store medicine name directly
         quantity: item.quantity,
         price: item.price,
         original_price: item.original_price || item.price,
@@ -929,6 +930,7 @@ const initiateMoMoPayment = async () => {
       customer: selectedCustomer.value,
       items: cart.value.map(item => ({
         medicine: item._id,
+        medicine_name: item.name, // Store medicine name directly
         quantity: item.quantity,
         price: item.price,
         original_price: item.original_price || item.price,

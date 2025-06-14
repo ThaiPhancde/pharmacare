@@ -3,19 +3,19 @@
     <div class="mb-4">
       <n-breadcrumb>
         <n-breadcrumb-item @click="router.push('/')">
-          Trang chủ
+          Home
         </n-breadcrumb-item>
         <n-breadcrumb-item>
-          Theo dõi đơn hàng
+          Track Order
         </n-breadcrumb-item>
       </n-breadcrumb>
     </div>
     
     <div class="flex justify-between items-center mb-4">
       <div>
-        <h1 class="text-2xl font-bold">Theo dõi đơn hàng</h1>
+        <h1 class="text-2xl font-bold">Track Order</h1>
         <p class="text-gray-500 dark:text-gray-400">
-          Kiểm tra trạng thái đơn hàng của bạn qua GHN
+          Check the status of your order through GHN
         </p>
       </div>
     </div>
@@ -26,20 +26,20 @@
       </div>
       
       <div>
-        <n-card title="Đơn hàng gần đây" size="small">
+        <n-card title="Recent Orders" size="small">
           <n-spin v-if="loading" />
           
           <template v-else>
             <div v-if="shippings.length === 0" class="text-center py-8">
-              <p class="text-gray-500">Không có đơn hàng gần đây</p>
+              <p class="text-gray-500">No recent orders</p>
             </div>
             
             <div v-else class="space-y-4">
               <div v-for="(shipping, index) in shippings" :key="index" class="border-b pb-3 last:border-0">
                 <div class="flex justify-between items-center">
                   <div>
-                    <h3 class="font-medium">Mã vận đơn: {{ shipping.shipping_code }}</h3>
-                    <p class="text-sm text-gray-500">Ngày tạo: {{ formatDate(shipping.created_at) }}</p>
+                    <h3 class="font-medium">Tracking Code: {{ shipping.shipping_code }}</h3>
+                    <p class="text-sm text-gray-500">Created: {{ formatDate(shipping.created_at) }}</p>
                   </div>
                   <n-tag :type="getStatusType(shipping.status)">
                     {{ getStatusText(shipping.status) }}
@@ -48,11 +48,11 @@
                 
                 <div class="mt-2 flex justify-between items-center">
                   <div class="text-sm">
-                    <div>Người nhận: {{ shipping.recipient_name }}</div>
+                    <div>Recipient: {{ shipping.recipient_name }}</div>
                     <div class="text-gray-500">{{ formatCurrency(shipping.shipping_fee) }}</div>
                   </div>
                   <n-button size="small" @click="copyToClipboard(shipping.shipping_code)">
-                    Sao chép mã
+                    Copy code
                   </n-button>
                 </div>
               </div>
@@ -78,7 +78,7 @@ const message = useMessage();
 const shippings = ref([]);
 const loading = ref(true);
 
-// Format tiền tệ
+// Format currency
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
 };
@@ -94,20 +94,20 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
-// Lấy text trạng thái
+// Get status text
 const getStatusText = (status) => {
   const statusMap = {
-    'pending': 'Chờ xử lý',
-    'confirmed': 'Đã xác nhận',
-    'shipping': 'Đang vận chuyển',
-    'delivered': 'Đã giao hàng',
-    'cancelled': 'Đã hủy'
+    'pending': 'Pending',
+    'confirmed': 'Confirmed',
+    'shipping': 'Shipping',
+    'delivered': 'Delivered',
+    'cancelled': 'Cancelled'
   };
   
   return statusMap[status] || status;
 };
 
-// Lấy loại trạng thái (màu sắc)
+// Get status type (color)
 const getStatusType = (status) => {
   const typeMap = {
     'pending': 'info',
@@ -120,18 +120,18 @@ const getStatusType = (status) => {
   return typeMap[status] || 'default';
 };
 
-// Sao chép mã vận đơn vào clipboard
+// Copy tracking code to clipboard
 const copyToClipboard = async (code) => {
   try {
     await navigator.clipboard.writeText(code);
-    message.success('Đã sao chép mã vận đơn');
+    message.success('Tracking code copied');
   } catch (err) {
-    console.error('Lỗi khi sao chép:', err);
-    message.error('Không thể sao chép mã vận đơn');
+    console.error('Error copying:', err);
+    message.error('Could not copy tracking code');
   }
 };
 
-// Lấy danh sách vận chuyển gần đây
+// Fetch recent shipments
 const fetchRecentShippings = async () => {
   try {
     const response = await api.get('/api/shipping?limit=5');
@@ -140,7 +140,7 @@ const fetchRecentShippings = async () => {
       shippings.value = response.data;
     }
   } catch (err) {
-    console.error('Lỗi khi lấy danh sách vận chuyển:', err);
+    console.error('Error fetching shipping list:', err);
   } finally {
     loading.value = false;
   }

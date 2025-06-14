@@ -15,7 +15,7 @@
     <!-- Error state -->
     <div v-else-if="error" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded mb-4">
       <p>{{ error }}</p>
-      <n-button class="mt-2" @click="fetchShippingOrders">Retry</n-button>
+      <n-button class="mt-2" @click="loadShippingOrders">Retry</n-button>
     </div>
 
     <!-- Empty state -->
@@ -66,6 +66,9 @@ interface ShippingOrder {
   status: string;
   expected_delivery_date?: string | Date;
   shipping_fee: number;
+  is_cod: boolean;
+  payment_method: string;
+  cod_amount: number;
 }
 
 const router = useRouter();
@@ -78,6 +81,25 @@ const shippingOrders = ref<ShippingOrder[]>([]);
 // Pagination
 const pagination = {
   pageSize: 10
+};
+
+// Format currency
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+};
+
+// Format date
+const formatDate = (date: string | Date) => {
+  if (!date) return 'N/A';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return 'Invalid date';
+  return d.toLocaleDateString('vi-VN', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
 // Table columns
@@ -128,38 +150,55 @@ const columns = [
     }
   },
   {
-    title: 'Address',
-    key: 'recipient_address',
+    title: 'Payment',
+    key: 'payment',
     render: (row: ShippingOrder) => {
       return h(
-        NTooltip,
-        { trigger: 'hover' },
-        {
-          trigger: () => h('span', { class: 'truncate block max-w-xs' }, row.recipient_address),
-          default: () => row.recipient_address
-        }
+        'div',
+        {},
+        [
+          h(
+            NTag,
+            { 
+              type: row.is_cod ? 'warning' : 'success',
+              round: true,
+              size: 'small'
+            },
+            { default: () => row.is_cod ? 'COD' : 'Prepaid' }
+          ),
+          row.is_cod ? h('div', { class: 'text-xs mt-1' }, `Amount: ${formatCurrency(row.cod_amount)}`) : null
+        ]
       );
+    }
+  },
+  {
+    title: 'Fee',
+    key: 'shipping_fee',
+    render: (row: ShippingOrder) => {
+      return formatCurrency(row.shipping_fee);
     }
   },
   {
     title: 'Status',
     key: 'status',
     render: (row: ShippingOrder) => {
-      const statusColors: Record<string, string> = {
-        'pending': 'warning',
-        'confirmed': 'success',
-        'shipping': 'info',
-        'delivered': 'success',
-        'cancelled': 'error'
+      const statusMap: Record<string, { color: string, text: string }> = {
+        'pending': { color: 'default', text: 'Pending' },
+        'confirmed': { color: 'info', text: 'Confirmed' },
+        'shipping': { color: 'warning', text: 'Shipping' },
+        'delivered': { color: 'success', text: 'Delivered' },
+        'cancelled': { color: 'error', text: 'Cancelled' }
       };
+      
+      const status = statusMap[row.status] || { color: 'default', text: row.status };
       
       return h(
         NTag,
-        {
-          type: statusColors[row.status] || 'default',
+        { 
+          type: status.color as any,
           round: true
         },
-        { default: () => row.status.charAt(0).toUpperCase() + row.status.slice(1) }
+        { default: () => status.text }
       );
     }
   },
@@ -167,43 +206,16 @@ const columns = [
     title: 'Expected Delivery',
     key: 'expected_delivery_date',
     render: (row: ShippingOrder) => {
-      if (!row.expected_delivery_date) return 'Chưa xác định';
+      if (!row.expected_delivery_date) return 'N/A';
       
-      // Check if delivery is in HCM (districts 1442-1480)
-      const isHCMCity = row.district_id >= 1442 && row.district_id <= 1480;
-      
-      if (isHCMCity) {
-        return 'Trong ngày (3-5 tiếng)';
-      }
-      
-      // Format date
-      const date = new Date(row.expected_delivery_date);
-      if (isNaN(date.getTime())) return 'Chưa xác định';
-      
-      // Calculate if it's today, tomorrow, or later
-      const today = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(today.getDate() + 1);
-      
-      if (date.toDateString() === today.toDateString()) {
-        return 'Hôm nay';
-      } else if (date.toDateString() === tomorrow.toDateString()) {
-        return 'Ngày mai';
-      } else {
-        // Format as date
-        return new Intl.DateTimeFormat('vi-VN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        }).format(date);
-      }
-    }
-  },
-  {
-    title: 'Fee',
-    key: 'shipping_fee',
-    render: (row: ShippingOrder) => {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.shipping_fee);
+      return h(
+        NTooltip,
+        {},
+        {
+          trigger: () => h('span', {}, formatDate(row.expected_delivery_date as string)),
+          default: () => 'Estimated delivery time'
+        }
+      );
     }
   },
   {
@@ -221,6 +233,15 @@ const columns = [
               onClick: () => router.push(`/shipping/track?code=${row.shipping_code}`)
             },
             { default: () => 'Track' }
+          ),
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              onClick: () => router.push(`/invoice/${row.invoice?._id || row.invoice}`)
+            },
+            { default: () => 'View Invoice' }
           )
         ]
       );
@@ -228,28 +249,31 @@ const columns = [
   }
 ];
 
-// Fetch shipping orders
-const fetchShippingOrders = async () => {
+// Load shipping orders
+const loadShippingOrders = async () => {
   loading.value = true;
   error.value = '';
   
   try {
     const response = await api.get('/api/shipping');
-    
     if (response.status && response.data) {
-      shippingOrders.value = response.data;
+      shippingOrders.value = response.data as ShippingOrder[];
     } else {
-      error.value = response.message || 'Failed to fetch shipping orders';
+      error.value = response.message || 'Failed to load shipping orders';
     }
-  } catch (err) {
-    console.error('Error fetching shipping orders:', err);
-    error.value = err.message || 'An error occurred while fetching shipping orders';
+  } catch (err: unknown) {
+    console.error('Error loading shipping orders:', err);
+    if (err instanceof Error) {
+      error.value = err.message;
+    } else {
+      error.value = 'An error occurred while loading shipping orders';
+    }
   } finally {
     loading.value = false;
   }
 };
 
 onMounted(() => {
-  fetchShippingOrders();
+  loadShippingOrders();
 });
 </script> 

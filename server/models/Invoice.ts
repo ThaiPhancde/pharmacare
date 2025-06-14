@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IInvoiceItem {
   medicine: mongoose.Types.ObjectId;
+  medicine_name?: string;
   batch_id: string;
   expiry_date: Date;
   quantity: number;
@@ -31,6 +32,7 @@ export interface IInvoice extends Document {
 const InvoiceItemSchema = new Schema<IInvoiceItem>(
   {
     medicine: { type: Schema.Types.ObjectId, ref: 'Medicine', required: true },
+    medicine_name: { type: String }, // Store medicine name directly
     batch_id: { type: String, required: true },
     expiry_date: { type: Date, required: true },
     quantity: { type: Number, required: true },

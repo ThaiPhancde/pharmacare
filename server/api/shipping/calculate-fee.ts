@@ -9,17 +9,17 @@ export default defineEventHandler(async (event) => {
       if (!body.district_id || !body.ward_code) {
         return {
           status: false,
-          message: 'Thiếu thông tin quận/huyện hoặc phường/xã',
+          message: 'Missing district or ward information',
           data: {
             total: 0,
-            expected_delivery_time: '1-3 ngày'
+            expected_delivery_time: '1-3 days'
           }
         };
       }
       
       // Determine if it's HCM city first for fallback
       const isHCMCity = body.district_id >= 1442 && body.district_id <= 1480;
-      let formattedLeadTime = isHCMCity ? 'Trong ngày (3-5 tiếng)' : '1-3 ngày';
+      let formattedLeadTime = isHCMCity ? 'Same day (3-5 hours)' : '1-3 days';
       
       // Default shipping fees
       let shippingFee = isHCMCity ? 20500 : 30000;
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
         // Custom delivery time calculation
         if (isHCMCity) {
           // For HCM city: same day delivery (3-5 hours)
-          formattedLeadTime = `Trong ngày (3-5 tiếng)`;
+          formattedLeadTime = `Same day (3-5 hours)`;
           console.log('HCM city detected, using same day delivery time');
         } else if (leadtime) {
           try {
@@ -64,9 +64,9 @@ export default defineEventHandler(async (event) => {
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
               
               if (diffDays <= 1) {
-                formattedLeadTime = `1-2 ngày`;
+                formattedLeadTime = `1-2 days`;
               } else {
-                formattedLeadTime = `${diffDays}-${diffDays+1} ngày`;
+                formattedLeadTime = `${diffDays}-${diffDays+1} days`;
               }
               
               console.log('Calculated delivery time:', formattedLeadTime);
@@ -91,7 +91,7 @@ export default defineEventHandler(async (event) => {
         // Even if GHN calculation fails, return a reasonable estimate with default values
         return {
           status: true, // Return success status to avoid UI errors
-          message: 'Sử dụng phí vận chuyển mặc định',
+          message: 'Using default shipping fee',
           data: {
             total: shippingFee,
             expected_delivery_time: formattedLeadTime
@@ -102,21 +102,21 @@ export default defineEventHandler(async (event) => {
       console.error('Lỗi khi xử lý yêu cầu tính phí vận chuyển:', err);
       
       // Determine if it's HCM city for fallback
-      let formattedLeadTime = '1-3 ngày';
+      let formattedLeadTime = '1-3 days';
       let shippingFee = 30000;
       
       try {
         const body = await readBody(event);
         const isHCMCity = body.district_id >= 1442 && body.district_id <= 1480;
         if (isHCMCity) {
-          formattedLeadTime = 'Trong ngày (3-5 tiếng)';
+          formattedLeadTime = 'Same day (3-5 hours)';
           shippingFee = 20500;
         }
       } catch {}
       
       return {
         status: true, // Return success to avoid UI errors
-        message: 'Sử dụng phí vận chuyển mặc định',
+        message: 'Using default shipping fee',
         data: {
           total: shippingFee,
           expected_delivery_time: formattedLeadTime
@@ -130,7 +130,7 @@ export default defineEventHandler(async (event) => {
     message: 'Method not allowed',
     data: {
       total: 0,
-      expected_delivery_time: '1-3 ngày'
+      expected_delivery_time: '1-3 days'
     }
   };
 }); 

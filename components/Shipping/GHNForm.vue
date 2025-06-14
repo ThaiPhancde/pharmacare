@@ -47,45 +47,63 @@
             />
           </n-form-item>
           
-          <n-form-item label="Địa chỉ chi tiết">
-            <n-input v-model:value="formData.recipient_address" placeholder="Số nhà, tên đường..." />
+          <n-form-item label="Address Details">
+            <n-input v-model:value="formData.recipient_address" placeholder="House number, street name..." />
           </n-form-item>
         </div>
         
         <!-- Thông tin sản phẩm -->
         <div class="space-y-2">
-          <h3 class="font-medium">Thông tin sản phẩm</h3>
+          <h3 class="font-medium">Product Information</h3>
           
-          <n-form-item label="Trọng lượng (gram)">
+          <n-form-item label="Weight (grams)">
             <n-input-number v-model:value="formData.weight" :min="100" @update:value="calculateShippingFee" />
           </n-form-item>
           
-          <n-form-item label="Dịch vụ vận chuyển">
+          <n-form-item label="Shipping Service">
             <n-select
               v-model:value="formData.service_id"
               :options="[
                 { label: 'GHN Express', value: 53320 },
-                { label: 'GHN Nhanh', value: 53321 }
+                { label: 'GHN Fast', value: 53321 }
               ]"
-              placeholder="Chọn dịch vụ vận chuyển"
+              placeholder="Select shipping service"
               @update:value="calculateShippingFee"
             />
           </n-form-item>
           
+          <!-- Payment Method -->
+          <n-form-item label="Payment Method">
+            <n-radio-group v-model:value="formData.payment_method" @update:value="handlePaymentMethodChange">
+              <n-space>
+                <n-radio value="prepaid">Prepaid (Only shipping fee)</n-radio>
+                <n-radio value="cod">COD (Cash on Delivery)</n-radio>
+              </n-space>
+            </n-radio-group>
+          </n-form-item>
+          
           <div class="mb-2">
             <n-button size="small" @click="testGHNConnection" :loading="testingConnection">
-              Kiểm tra kết nối GHN
+              Test GHN Connection
             </n-button>
           </div>
           
           <div class="shipping-fee p-3 bg-gray-100 dark:bg-gray-800 rounded">
             <div class="flex justify-between items-center">
-              <span>Phí vận chuyển:</span>
-              <span class="font-medium">{{ loading ? 'Đang tính...' : (shippingFee ? formatCurrency(shippingFee) : 'Chưa xác định') }}</span>
+              <span>Shipping Fee:</span>
+              <span class="font-medium">{{ loading ? 'Calculating...' : (shippingFee ? formatCurrency(shippingFee) : 'Not determined') }}</span>
+            </div>
+            <div v-if="formData.payment_method === 'cod'" class="flex justify-between items-center mt-1">
+              <span>Product Amount:</span>
+              <span class="font-medium">{{ formatCurrency(invoiceAmount) }}</span>
+            </div>
+            <div v-if="formData.payment_method === 'cod'" class="flex justify-between items-center mt-1">
+              <span>Total COD Amount:</span>
+              <span class="font-medium">{{ formatCurrency(codAmount) }}</span>
             </div>
             <div class="flex justify-between items-center mt-1">
-              <span>Thời gian giao hàng dự kiến:</span>
-              <span class="font-medium">{{ loading ? 'Đang tính...' : (expectedDeliveryTime || 'Chưa xác định') }}</span>
+              <span>Expected Delivery Time:</span>
+              <span class="font-medium">{{ loading ? 'Calculating...' : (expectedDeliveryTime || 'Not determined') }}</span>
             </div>
           </div>
           
@@ -103,7 +121,7 @@
             :loading="submitting"
             :disabled="!isFormValid || submitting"
             @click="createShippingOrder">
-            Tạo đơn vận chuyển
+            Create Shipping Order
           </n-button>
         </div>
       </div>
@@ -144,7 +162,10 @@ const formData = ref({
   length: 10,
   width: 10,
   height: 10,
-  service_id: 53320
+  service_id: 53320,
+  payment_method: 'prepaid',
+  is_cod: false,
+  cod_amount: 0
 });
 
 // Options for select dropdowns
@@ -155,6 +176,10 @@ const wards = ref([]);
 // Shipping information
 const shippingFee = ref(0);
 const expectedDeliveryTime = ref('');
+const invoiceAmount = ref(0);
+const codAmount = computed(() => {
+  return shippingFee.value + (formData.value.is_cod ? invoiceAmount.value : 0);
+});
 
 // UI states
 const loading = ref(false);
@@ -191,6 +216,12 @@ onMounted(async () => {
         label: province.ProvinceName,
         value: province.ProvinceID
       }));
+    }
+    
+    // Get invoice details to calculate total amount
+    const invoiceResponse = await api.get(`/api/invoice/${props.invoiceId}`);
+    if (invoiceResponse.status && invoiceResponse.data) {
+      invoiceAmount.value = invoiceResponse.data.grand_total || 0;
     }
   } catch (err) {
     console.error('Lỗi khi lấy danh sách tỉnh/thành phố:', err);
@@ -240,6 +271,12 @@ const handleDistrictChange = async (value) => {
       showError('Không thể lấy danh sách phường/xã');
     }
   }
+};
+
+// Handle payment method change
+const handlePaymentMethodChange = (value) => {
+  formData.value.is_cod = value === 'cod';
+  formData.value.cod_amount = value === 'cod' ? invoiceAmount.value : 0;
 };
 
 // Calculate shipping fee
@@ -309,7 +346,7 @@ const calculateShippingFee = async () => {
 const createShippingOrder = async () => {
   if (!isFormValid.value) {
     if (!phoneRegex.test(formData.value.recipient_phone)) {
-      showError('Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0');
+      showError('Phone number must be 10 digits and start with 0');
     }
     return;
   }
@@ -318,15 +355,21 @@ const createShippingOrder = async () => {
   error.value = false;
   
   try {
-    const response = await api.post('/api/shipping', formData.value);
+    // Add COD amount if payment method is COD
+    const requestData = { ...formData.value };
+    if (requestData.payment_method === 'cod') {
+      requestData.cod_amount = invoiceAmount.value;
+    }
+    
+    const response = await api.post('/api/shipping', requestData);
     if (response.status) {
       emit('created', response.data);
     } else {
-      throw new Error(response.message || 'Lỗi khi tạo đơn vận chuyển');
+      throw new Error(response.message || 'Error creating shipping order');
     }
   } catch (err) {
-    console.error('Lỗi khi tạo đơn vận chuyển:', err);
-    showError('Không thể tạo đơn vận chuyển: ' + (err.message || ''));
+    console.error('Error creating shipping order:', err);
+    showError('Cannot create shipping order: ' + (err.message || ''));
     emit('error', err);
   } finally {
     submitting.value = false;
@@ -347,13 +390,13 @@ const testGHNConnection = async () => {
   try {
     const response = await api.get('/api/shipping/test-connection');
     if (response.status) {
-      showSuccess('Kết nối GHN thành công');
+      showSuccess('GHN connection successful');
     } else {
-      throw new Error(response.message || 'Lỗi khi kiểm tra kết nối GHN');
+      throw new Error(response.message || 'Error checking GHN connection');
     }
   } catch (err) {
-    console.error('Lỗi khi kiểm tra kết nối GHN:', err);
-    showError('Không thể kiểm tra kết nối GHN');
+    console.error('Error checking GHN connection:', err);
+    showError('Cannot check GHN connection');
   } finally {
     testingConnection.value = false;
   }
