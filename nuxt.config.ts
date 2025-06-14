@@ -16,6 +16,14 @@ export default defineNuxtConfig({
     mongoUri: "",
     // @ts-ignore
     jwtSecret: "",
+    // Các khóa bí mật chỉ có trên server-side
+    mongodbUri: process.env.MONGODB_URI,
+    ghnToken: process.env.GHN_TOKEN,
+    ghnShopId: process.env.GHN_SHOP_ID,
+    // Các khóa trong public sẽ được hiển thị cả ở client-side
+    public: {
+      //
+    }
   },
 
   modules: [
@@ -82,4 +90,8 @@ export default defineNuxtConfig({
   ssr: false,
 
   compatibilityDate: "2024-12-14",
+
+  build: {
+    transpile: ['@vuepic/vue-datepicker']
+  },
 });

@@ -64,6 +64,11 @@ const goBack = () => {
   router.push('/invoice');
 };
 
+// Setup shipping
+const setupShipping = () => {
+  router.push(`/invoice/shipping/${invoiceId.value}`);
+};
+
 onMounted(fetchInvoiceDetails);
 </script>
 
@@ -119,6 +124,16 @@ onMounted(fetchInvoiceDetails);
             <div class="text-muted-foreground text-sm">Payment Method</div>
             <div class="font-medium capitalize">{{ invoice.payment_method }}</div>
           </div>
+        </div>
+        
+        <!-- Add shipping button -->
+        <div class="mt-4 flex justify-end">
+          <button 
+            @click="setupShipping" 
+            class="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+          >
+            Ship Order (GHN)
+          </button>
         </div>
       </div>
 

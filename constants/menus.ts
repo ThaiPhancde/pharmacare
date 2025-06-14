@@ -90,6 +90,21 @@ export const navMenu: NavMenu[] = [
         ],
       },
       {
+        title: "Shipping",
+        icon: "i-lucide-truck",
+        children: [
+          {
+            title: "Create Shipping",
+            link: "/shipping",
+          },
+          {
+            title: "Track Order",
+            link: "/shipping/track",
+          },
+        ],
+        new: true,
+      },
+      {
         title: "Returns",
         icon: "i-lucide-rotate-ccw",
         link: "/returns",
