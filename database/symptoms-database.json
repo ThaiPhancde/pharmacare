@@ -1,0 +1,199 @@
+{
+  "symptoms": [
+    {
+      "id": "fever",
+      "name": "Sốt",
+      "keywords": ["sốt", "nóng", "cao", "fever", "hot"],
+      "severity_questions": [
+        "Nhiệt độ cơ thể bao nhiêu độ?",
+        "Sốt bao lâu rồi?",
+        "Sốt liên tục hay từng đợt?",
+        "Có rét run không?"
+      ],
+      "associated_conditions": ["flu", "infection", "dengue", "covid19"],
+      "red_flags": ["Sốt > 39°C kéo dài > 3 ngày", "Sốt kèm xuất huyết", "Sốt kèm co giật"],
+      "common_medicines": ["paracetamol", "ibuprofen"],
+      "home_remedies": ["Uống nhiều nước", "Chườm mát", "Nghỉ ngơi"]
+    },
+    {
+      "id": "headache",
+      "name": "Đau đầu",
+      "keywords": ["đau đầu", "nhức đầu", "headache", "migraine"],
+      "severity_questions": [
+        "Đau ở vị trí nào? (trán/thái dương/chẩm/toàn bộ)",
+        "Mức độ đau 1-10?",
+        "Đau đầu xuất hiện khi nào?",
+        "Có buồn nôn, chóng mặt không?"
+      ],
+      "associated_conditions": ["migraine", "tension_headache", "cluster_headache", "sinusitis"],
+      "red_flags": ["Đau đầu đột ngột dữ dội", "Đau đầu kèm sốt cao + gáy cứng", "Đau đầu sau chấn thương"],
+      "common_medicines": ["paracetamol", "aspirin", "ibuprofen"],
+      "home_remedies": ["Nghỉ ngơi trong phòng tối", "Massage thái dương", "Uống đủ nước"]
+    },
+    {
+      "id": "cough",
+      "name": "Ho",
+      "keywords": ["ho", "cough", "khạc đờm"],
+      "severity_questions": [
+        "Ho khan hay có đờm?",
+        "Màu đờm thế nào? (trong/vàng/xanh/có máu)",
+        "Ho nhiều vào lúc nào? (ban đêm/sáng sớm)",
+        "Ho bao lâu rồi?"
+      ],
+      "associated_conditions": ["common_cold", "bronchitis", "pneumonia", "asthma", "tuberculosis"],
+      "red_flags": ["Ho ra máu", "Thở khó", "Ho kéo dài > 3 tuần", "Sốt cao kèm đau ngực"],
+      "common_medicines": ["bromhexine", "ambroxol", "codeine"],
+      "home_remedies": ["Uống nước ấm", "Hút hơi nước muối", "Mật ong + chanh"]
+    },
+    {
+      "id": "runny_nose",
+      "name": "Sổ mũi",
+      "keywords": ["sổ mũi", "chảy nước mũi", "runny nose", "nasal congestion"],
+      "severity_questions": [
+        "Nước mũi trong hay đục?",
+        "Có nghẹt mũi không?",
+        "Có hắt hơi nhiều không?",
+        "Có ngứa mũi/mắt không?"
+      ],
+      "associated_conditions": ["common_cold", "allergic_rhinitis", "sinusitis"],
+      "red_flags": ["Nước mũi vàng xanh + đau xoang", "Nước mũi kéo dài > 10 ngày"],
+      "common_medicines": ["pseudoephedrine", "loratadine", "cetirizine"],
+      "home_remedies": ["Xông hơi", "Xịt nước muối sinh lý", "Uống nhiều nước"]
+    },
+    {
+      "id": "sore_throat",
+      "name": "Đau họng",
+      "keywords": ["đau họng", "sore throat", "viêm họng"],
+      "severity_questions": [
+        "Nuốt có đau không?",
+        "Có sưng hạch cổ không?",
+        "Có sốt kèm theo không?",
+        "Họng đỏ hay có mủ trắng?"
+      ],
+      "associated_conditions": ["pharyngitis", "tonsillitis", "strep_throat"],
+      "red_flags": ["Khó thở", "Không nuốt được nước", "Sưng họng dữ dội"],
+      "common_medicines": ["amoxicillin", "paracetamol", "throat_lozenges"],
+      "home_remedies": ["Súc họng nước muối ấm", "Uống nước ấm", "Ăn mềm"]
+    },
+    {
+      "id": "stomachache",
+      "name": "Đau bụng",
+      "keywords": ["đau bụng", "đau dạ dày", "stomach pain", "abdominal pain"],
+      "severity_questions": [
+        "Đau ở vị trí nào? (thượng vị/rốn/hạ vị)",
+        "Đau âm ỉ hay đau quặn?",
+        "Có buồn nôn/nôn không?",
+        "Có tiêu chảy/táo bón không?"
+      ],
+      "associated_conditions": ["gastritis", "food_poisoning", "appendicitis", "peptic_ulcer"],
+      "red_flags": ["Đau dữ dội đột ngột", "Nôn ra máu", "Bụng cứng như ván", "Đau kèm sốt cao"],
+      "common_medicines": ["omeprazole", "domperidone", "antacids"],
+      "home_remedies": ["Ăn nhẹ", "Tránh cay nóng", "Uống nước gừng"]
+    },
+    {
+      "id": "diarrhea",
+      "name": "Tiêu chảy",
+      "keywords": ["tiêu chảy", "ỉa chảy", "diarrhea", "loose stool"],
+      "severity_questions": [
+        "Đi ngoài mấy lần trong ngày?",
+        "Phân có máu/nhầy không?",
+        "Có đau bụng quặn không?",
+        "Có sốt kèm theo không?"
+      ],
+      "associated_conditions": ["food_poisoning", "gastroenteritis", "ibs", "dysentery"],
+      "red_flags": ["Phân có máu", "Tiêu chảy kéo dài > 3 ngày", "Dấu hiệu mất nước"],
+      "common_medicines": ["loperamide", "oresol", "zinc_sulfate"],
+      "home_remedies": ["Uống oresol", "Ăn cháo loãng", "Tránh sữa"]
+    },
+    {
+      "id": "constipation",
+      "name": "Táo bón",
+      "keywords": ["táo bón", "khó đi ngoài", "constipation"],
+      "severity_questions": [
+        "Bao lâu chưa đi ngoài?",
+        "Có đau khi đi ngoài không?",
+        "Phân khô hay mềm?",
+        "Có đầy bụng khó chịu không?"
+      ],
+      "associated_conditions": ["chronic_constipation", "ibs", "hemorrhoids"],
+      "red_flags": ["Táo bón > 1 tuần", "Đau bụng dữ dội", "Nôn ra phân"],
+      "common_medicines": ["lactulose", "bisacodyl", "fiber_supplements"],
+      "home_remedies": ["Ăn nhiều rau củ", "Uống đủ nước", "Tập thể dục"]
+    },
+    {
+      "id": "rash",
+      "name": "Phát ban",
+      "keywords": ["phát ban", "nổi mẩn", "rash", "hives"],
+      "severity_questions": [
+        "Vị trí nào có ban?",
+        "Ban có ngứa không?",
+        "Có phồng rộp không?",
+        "Có tiền sử dị ứng gì không?"
+      ],
+      "associated_conditions": ["allergic_reaction", "eczema", "measles", "dengue"],
+      "red_flags": ["Ban xuất huyết", "Phù mặt/lưỡi", "Khó thở kèm theo"],
+      "common_medicines": ["cetirizine", "hydrocortisone_cream", "calamine_lotion"],
+      "home_remedies": ["Chườm mát", "Tránh gãi", "Tắm nước mát"]
+    },
+    {
+      "id": "insomnia",
+      "name": "Mất ngủ",
+      "keywords": ["mất ngủ", "khó ngủ", "insomnia", "sleeplessness"],
+      "severity_questions": [
+        "Khó ngủ hay hay tỉnh giấc giữa đêm?",
+        "Ngủ được mấy tiếng/đêm?",
+        "Có căng thẳng gì không?",
+        "Có uống caffeine/rượu không?"
+      ],
+      "associated_conditions": ["anxiety", "depression", "sleep_apnea"],
+      "red_flags": ["Mất ngủ kéo dài > 1 tháng", "Kèm theo trầm cảm"],
+      "common_medicines": ["melatonin", "zopiclone", "diazepam"],
+      "home_remedies": ["Tắm nước ấm trước ngủ", "Tránh màn hình", "Nghe nhạc thư giãn"]
+    }
+  ],
+  "conditions": [
+    {
+      "id": "common_cold",
+      "name": "Cảm lạnh thông thường",
+      "symptoms": ["runny_nose", "cough", "sore_throat", "fever"],
+      "duration": "7-10 ngày",
+      "treatment_approach": "Điều trị triệu chứng",
+      "first_line_medicines": ["paracetamol", "pseudoephedrine", "bromhexine"],
+      "when_to_see_doctor": ["Sốt cao > 3 ngày", "Khó thở", "Đau ngực"]
+    },
+    {
+      "id": "flu",
+      "name": "Cúm",
+      "symptoms": ["fever", "headache", "muscle_pain", "fatigue", "cough"],
+      "duration": "1-2 tuần",
+      "treatment_approach": "Nghỉ ngơi + điều trị triệu chứng",
+      "first_line_medicines": ["oseltamivir", "paracetamol", "ibuprofen"],
+      "when_to_see_doctor": ["Khó thở", "Đau ngực", "Sốt cao kéo dài"]
+    },
+    {
+      "id": "gastritis",
+      "name": "Viêm dạ dày",
+      "symptoms": ["stomachache", "nausea", "bloating", "loss_of_appetite"],
+      "duration": "Vài ngày đến vài tuần",
+      "treatment_approach": "Thuốc giảm acid + ăn uống hợp lý",
+      "first_line_medicines": ["omeprazole", "esomeprazole", "domperidone"],
+      "when_to_see_doctor": ["Nôn ra máu", "Phân đen", "Giảm cân nhanh"]
+    }
+  ],
+  "drug_interactions": [
+    {
+      "medicine1": "warfarin",
+      "medicine2": "aspirin",
+      "severity": "severe",
+      "description": "Tăng nguy cơ chảy máu nghiêm trọng",
+      "recommendation": "TRÁNH dùng chung. Nếu cần thiết phải giám sát chặt chẽ"
+    },
+    {
+      "medicine1": "metronidazole",
+      "medicine2": "alcohol",
+      "severity": "moderate",
+      "description": "Gây phản ứng disulfiram (buồn nôn, đỏ mặt, nhịp tim nhanh)",
+      "recommendation": "Tránh rượu trong và sau 3 ngày dùng thuốc"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 import { Sonner } from "@/components/ui/sonner";
 import { ConfigProvider } from "radix-vue";
 import { NConfigProvider, NMessageProvider } from "naive-ui";
-import PharmaCareBot from '~/components/chatbot/PharmaCareBot.vue';
+import PharmaCareAdvancedBot from "~/components/chatbot/PharmaCareAdvancedBot.vue";
 
 const colorMode = useColorMode();
 
@@ -61,7 +61,7 @@ const dir = computed(() => (textDirection.value === "rtl" ? "rtl" : "ltr"));
             <NuxtPage />
           </NuxtLayout>
           <AppSettings />
-          <PharmaCareBot />
+          <PharmaCareAdvancedBot />
         </div>
         <Toaster />
         <Sonner class="pointer-events-auto" />

@@ -20,12 +20,17 @@ export interface IInvoice extends Document {
   subtotal: number;
   vat_total: number;
   discount: number;
+  voucher_code?: string;
+  voucher_discount?: number;
+  voucher?: mongoose.Types.ObjectId;
   grand_total: number;
   paid: number;
   due: number;
   payment_method: string;
   payment_status?: string;
   payment_details?: any;
+  paypal_order_id?: string;
+  paypal_payer_id?: string;
   is_pos: boolean;
 }
 
@@ -52,12 +57,17 @@ const InvoiceSchema = new Schema<IInvoice>(
     subtotal: { type: Number, required: true },
     vat_total: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
+    voucher_code: { type: String },
+    voucher_discount: { type: Number, default: 0 },
+    voucher: { type: Schema.Types.ObjectId, ref: 'Voucher' },
     grand_total: { type: Number, required: true },
     paid: { type: Number, required: true },
     due: { type: Number, default: 0 },
     payment_method: { type: String, default: 'cash' },
     payment_status: { type: String, default: 'pending' },
     payment_details: { type: Schema.Types.Mixed },
+    paypal_order_id: { type: String },
+    paypal_payer_id: { type: String },
     is_pos: { type: Boolean, default: false }
   },
   { timestamps: true }

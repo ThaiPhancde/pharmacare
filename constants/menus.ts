@@ -110,6 +110,89 @@ export const navMenu: NavMenu[] = [
         link: "/returns",
         new: true,
       },
+      {
+        title: "Voucher",
+        icon: "i-lucide-ticket",
+        link: "/voucher",
+        new: true,
+      },
+      {
+        title: "Report",
+        icon: "i-lucide-bar-chart-3",
+        children: [
+          {
+            title: "Sales Report",
+            link: "/report/sales",
+          },
+          {
+            title: "Purchase Report",
+            link: "/report/purchase",
+          },
+          {
+            title: "Product Wise Sales",
+            link: "/report/product-sales",
+          },
+          {
+            title: "Category Wise Sales",
+            link: "/report/category-sales",
+          },
+          {
+            title: "User Wise Sales",
+            link: "/report/user-sales",
+          },
+          {
+            title: "Closing List",
+            link: "/report/closing",
+          },
+        ],
+        new: true,
+      },
+      {
+        title: "Human Resource",
+        icon: "i-lucide-users-round",
+        children: [
+          {
+            title: "Employee",
+            link: "/hr/employee",
+          },
+          {
+            title: "Attendance",
+            link: "/hr/attendance",
+          },
+          {
+            title: "Payroll",
+            link: "/hr/payroll",
+          },
+          {
+            title: "Expense",
+            link: "/hr/expense",
+          },
+          {
+            title: "Loan",
+            link: "/hr/loan",
+          },
+        ],
+        new: true,
+      },
+      {
+        title: "Service",
+        icon: "i-lucide-stethoscope",
+        children: [
+          {
+            title: "Service List",
+            link: "/service",
+          },
+          {
+            title: "Appointments",
+            link: "/service/appointments",
+          },
+          {
+            title: "Consultation",
+            link: "/service/consultation",
+          },
+        ],
+        new: true,
+      },
     ],
   },
   // {

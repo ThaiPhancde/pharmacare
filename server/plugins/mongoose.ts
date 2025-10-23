@@ -6,18 +6,29 @@ let isConnected = false; // Cờ kiểm tra trạng thái kết nối
 
 export default defineNitroPlugin((nitroApp) => {
   const config = useRuntimeConfig();
-  const mongoUri = config.mongoUri || process.env.MONGO_URI;
+  // Đọc từ nhiều nguồn để đảm bảo backward compatibility
+  const mongoUri = config.mongodbUri || 
+                   config.mongoUri || 
+                   process.env.MONGODB_URI || 
+                   process.env.MONGO_URI;
 
   if (!mongoUri) {
-    console.error('MongoDB URI is not defined in environment variables or runtime config');
+    console.error('❌ MongoDB URI is not defined in environment variables or runtime config');
+    console.error('Checked: config.mongodbUri, config.mongoUri, MONGODB_URI, MONGO_URI');
     return;
   }
 
+  console.log('✅ MongoDB URI found, attempting to connect...');
+
   // Nếu đã kết nối rồi, không cần kết nối lại
-  if (isConnected) return;
+  if (isConnected) {
+    console.log('ℹ️  MongoDB already connected, skipping...');
+    return;
+  }
 
   mongoose.connect(mongoUri as string, {})
     .then(() => {
+      console.log('🎉 MongoDB connected successfully!');
       mongoose.model('Unit', Unit.schema)
       mongoose.model('Category', Category.schema)
       mongoose.model('TypeMedicine', TypeMedicine.schema)
@@ -29,9 +40,10 @@ export default defineNitroPlugin((nitroApp) => {
       mongoose.model('Stock', Stock.schema)
       mongoose.model('User', User.schema)
       isConnected = true; // Đánh dấu đã kết nối thành công
+      console.log('✅ All models registered');
     })
     .catch(err => {
-      console.error('❌ Failed to connect to MongoDB', err);
+      console.error('❌ Failed to connect to MongoDB:', err.message);
     });
   
   // Đăng ký middleware để xử lý các lỗi MongoDB

@@ -12,6 +12,19 @@ import User from './User';
 import Bank from './Bank';
 import ChatbotQA from './ChatbotQA';
 import CustomerReturn from './CustomerReturn';
+import MedicalConsultation from './MedicalConsultation';
+import Symptom from './Symptom';
+import MedicalCondition from './MedicalCondition';
+import DrugInteraction from './DrugInteraction';
+// New HR & Service modules
+import Employee from './Employee';
+import Attendance from './Attendance';
+import Payroll from './Payroll';
+import Expense from './Expense';
+import Loan from './Loan';
+import Service from './Service';
+import Appointment from './Appointment';
+import Voucher from './Voucher';
 
 // Đảm bảo rằng các model đã được import và đăng ký đúng cách
 export { 
@@ -27,7 +40,19 @@ export {
   User,
   Bank,
   ChatbotQA,
-  CustomerReturn
+  CustomerReturn,
+  MedicalConsultation,
+  Symptom,
+  MedicalCondition,
+  DrugInteraction,
+  Employee,
+  Attendance,
+  Payroll,
+  Expense,
+  Loan,
+  Service,
+  Appointment,
+  Voucher
 };
 
 // Export default là một object chứa tất cả các model để sử dụng linh hoạt hơn
@@ -44,5 +69,17 @@ export default {
   User,
   Bank,
   ChatbotQA,
-  CustomerReturn
+  CustomerReturn,
+  MedicalConsultation,
+  Symptom,
+  MedicalCondition,
+  DrugInteraction,
+  Employee,
+  Attendance,
+  Payroll,
+  Expense,
+  Loan,
+  Service,
+  Appointment,
+  Voucher
 };

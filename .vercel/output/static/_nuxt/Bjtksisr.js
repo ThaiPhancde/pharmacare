@@ -1,0 +1,1 @@
+const a={get:async(e,t)=>await $fetch(e,{method:"GET",query:t==null?void 0:t.params}),post:async(e,t)=>await $fetch(e,{method:"POST",body:t}),put:async(e,t)=>await $fetch(e,{method:"PUT",body:t}),delete:async e=>await $fetch(e,{method:"DELETE"})};export{a};

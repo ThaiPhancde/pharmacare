@@ -1,0 +1,619 @@
+<template>
+  <div class="pharmacy-advanced-chatbot">
+    <!-- Floating button -->
+    <button
+      v-if="!isOpen"
+      @click="toggleChat"
+      class="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center transition-transform hover:scale-110 chat-button-pulse"
+      :class="{ 'chat-button-pulse': unreadCount > 0 }"
+    >
+      <Icon name="lucide:message-circle" class="w-6 h-6" />
+      <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+        {{ unreadCount }}
+      </span>
+    </button>
+
+    <!-- Chat window -->
+    <div
+      v-if="isOpen"
+      class="fixed bottom-6 right-6 w-80 sm:w-96 bg-background border rounded-lg shadow-xl flex flex-col z-50 transition-all duration-300"
+      style="height: 650px"
+    >
+      <!-- Header -->
+      <div class="flex items-center justify-between bg-primary text-primary-foreground p-3 rounded-t-lg">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <Icon name="lucide:bot" class="w-6 h-6" />
+          </div>
+          <div>
+            <h3 class="font-bold text-sm">PharmaCare AI</h3>
+            <p class="text-xs opacity-75">Trợ lý thông minh 24/7</p>
+          </div>
+        </div>
+        <button @click="toggleChat" class="hover:opacity-80">
+          <Icon name="lucide:x" class="w-5 h-5" />
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-gray-100 border-b border-gray-200 flex">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          class="flex-1 py-2 text-sm font-medium transition-colors"
+          :class="activeTab === tab.id ? 'text-primary border-b-2 border-primary bg-white' : 'text-gray-600 hover:text-primary'"
+        >
+          <Icon :name="tab.icon" class="w-4 h-4 inline mr-1" />
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Chat Tab -->
+        <div v-show="activeTab === 'chat'" class="flex-1 flex flex-col overflow-hidden">
+          <!-- Messages -->
+          <div ref="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 chatbot-messages">
+            <!-- Grouped by date -->
+            <template v-for="(dateGroup, date) in groupedMessages" :key="date">
+              <div class="text-center my-3">
+                <span class="px-2 py-1 text-xs text-gray-600 bg-gray-200 rounded-full">
+                  {{ formatDate(date) }}
+                </span>
+              </div>
+
+              <template v-for="msg in dateGroup" :key="msg.id">
+                <!-- User message -->
+                <div v-if="msg.sender === 'user'" class="flex justify-end">
+                  <div class="bg-primary text-primary-foreground p-3 rounded-lg max-w-[80%]">
+                    <p class="text-sm">{{ msg.content }}</p>
+                    <span class="text-xs opacity-70 mt-1 block">{{ formatTime(msg.timestamp) }}</span>
+                  </div>
+                </div>
+
+                <!-- Bot message -->
+                <div v-else class="flex justify-start">
+                  <div class="bg-muted p-3 rounded-lg max-w-[80%]">
+                    <div class="flex items-center mb-1">
+                      <Icon name="lucide:bot" class="w-4 h-4 mr-1" />
+                      <span class="text-xs font-medium">Trợ lý AI</span>
+                    </div>
+                    <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
+
+                    <!-- Medicine Cards Display -->
+                    <div v-if="msg.data && msg.data.medicines && msg.data.medicines.length > 0" class="mt-3">
+                      <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium flex items-center">
+                          <Icon name="lucide:pill" class="w-4 h-4 mr-1" />
+                          Tìm thấy {{ msg.data.medicines.length }} thuốc
+                        </span>
+                        <button
+                          v-if="msg.data.medicines.length > 1"
+                          @click="toggleViewMode"
+                          class="text-xs px-2 py-1 bg-gray-700 text-white rounded-full hover:bg-gray-600"
+                        >
+                          <Icon :name="viewMode === 'carousel' ? 'lucide:list' : 'lucide:images'" class="w-3 h-3 inline mr-1" />
+                          {{ viewMode === 'carousel' ? 'Danh sách' : 'Xem từng thuốc' }}
+                        </button>
+                      </div>
+
+                      <!-- Carousel Mode -->
+                      <div v-if="viewMode === 'carousel'" class="relative bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-4">
+                          <MedicineCard
+                            v-if="msg.data.medicines[activeCardIndex]"
+                            :medicine="msg.data.medicines[activeCardIndex]"
+                          />
+
+                          <!-- Navigation -->
+                          <div v-if="msg.data.medicines.length > 1">
+                            <div class="flex justify-center gap-2 mt-3 mb-2">
+                              <button
+                                v-for="(_, idx) in msg.data.medicines"
+                                :key="idx"
+                                @click="activeCardIndex = idx"
+                                class="rounded-full transition-all"
+                                :class="idx === activeCardIndex ? 'bg-primary w-3 h-3' : 'bg-gray-300 w-3 h-3 opacity-60 hover:opacity-100'"
+                              />
+                            </div>
+                            <div class="flex justify-between items-center">
+                              <button
+                                @click="prevCard(msg.data.medicines.length)"
+                                class="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                              >
+                                <Icon name="lucide:chevron-left" class="w-4 h-4" />
+                              </button>
+                              <button
+                                @click="nextCard(msg.data.medicines.length)"
+                                class="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                              >
+                                <Icon name="lucide:chevron-right" class="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- List Mode -->
+                      <div v-else class="space-y-2">
+                        <MedicineCard
+                          v-for="medicine in msg.data.medicines"
+                          :key="medicine.id"
+                          :medicine="medicine"
+                          compact
+                        />
+                      </div>
+                    </div>
+
+                    <span class="text-xs opacity-70 mt-2 block">{{ formatTime(msg.timestamp) }}</span>
+                  </div>
+                </div>
+              </template>
+            </template>
+
+            <!-- Loading -->
+            <div v-if="loading" class="flex justify-start">
+              <div class="bg-muted p-3 rounded-lg flex space-x-1">
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s" />
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s" />
+              </div>
+            </div>
+
+            <div ref="messagesEnd" />
+          </div>
+
+          <!-- Input -->
+          <form @submit.prevent="sendMessage" class="p-3 border-t flex space-x-2">
+            <input
+              v-model="userInput"
+              type="text"
+              placeholder="Nhập câu hỏi..."
+              class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              :disabled="loading"
+            />
+            <button
+              type="submit"
+              :disabled="loading || !userInput.trim()"
+              class="bg-primary text-white px-4 py-2 rounded-lg disabled:opacity-50 hover:opacity-90"
+            >
+              <Icon name="lucide:send" class="w-4 h-4" />
+            </button>
+          </form>
+
+          <!-- Footer -->
+          <div class="px-3 py-2 border-t bg-gray-50 flex items-center justify-between text-xs">
+            <div class="flex items-center text-gray-600">
+              <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+              AI mode: Gemini
+            </div>
+            <button @click="clearHistory" class="text-gray-500 hover:text-primary">
+              <Icon name="lucide:history" class="w-4 h-4 inline mr-1" />
+              Xóa lịch sử
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Tab -->
+        <div v-show="activeTab === 'search'" class="flex-1 overflow-y-auto p-4">
+          <h3 class="font-medium text-gray-800 mb-4">Tìm thuốc nhanh</h3>
+
+          <div class="p-4 mb-4 rounded-lg bg-blue-50 text-sm text-gray-700">
+            <Icon name="lucide:info" class="w-4 h-4 inline mr-2 text-blue-600" />
+            Chat với AI để tìm thuốc phù hợp theo triệu chứng, giá cả, loại thuốc...
+          </div>
+
+          <!-- Quick Search Buttons -->
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            <button
+              v-for="filter in quickFilters"
+              :key="filter.label"
+              @click="askQuestion(filter.question)"
+              class="flex flex-col items-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div class="p-2 rounded-full mb-2" :class="filter.colorClass">
+                <Icon :name="filter.icon" class="w-5 h-5" />
+              </div>
+              <span class="text-sm font-medium text-center">{{ filter.label }}</span>
+            </button>
+          </div>
+
+          <div class="text-center mb-6">
+            <button
+              @click="activeTab = 'chat'"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:opacity-90"
+            >
+              <Icon name="lucide:message-circle" class="w-4 h-4 inline mr-2" />
+              Bắt đầu chat
+            </button>
+          </div>
+
+          <!-- Suggested Questions -->
+          <div class="border-t pt-4">
+            <h4 class="font-medium text-gray-700 mb-3 text-sm">Câu hỏi gợi ý:</h4>
+            <div class="space-y-2">
+              <div
+                v-for="(question, idx) in suggestedQuestions"
+                :key="idx"
+                @click="askQuestion(question)"
+                class="flex items-start p-2 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+              >
+                <Icon name="lucide:message-square" class="w-4 h-4 mr-2 mt-0.5 text-primary flex-shrink-0" />
+                <p class="text-sm text-gray-700">"{{ question }}"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Tab -->
+        <div v-show="activeTab === 'help'" class="flex-1 overflow-y-auto p-4">
+          <h3 class="font-medium text-gray-800 mb-4">Trợ giúp & FAQ</h3>
+
+          <!-- Search FAQs -->
+          <div class="relative mb-4">
+            <Icon name="lucide:search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+            <input
+              v-model="faqSearch"
+              type="text"
+              placeholder="Tìm kiếm câu hỏi..."
+              class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+            />
+            <button
+              v-if="faqSearch"
+              @click="faqSearch = ''"
+              class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+            >
+              <Icon name="lucide:x" class="w-4 h-4" />
+            </button>
+          </div>
+
+          <!-- FAQs List -->
+          <div class="space-y-3 mb-6">
+            <div
+              v-for="(faq, idx) in filteredFaqs"
+              :key="idx"
+              class="border rounded-lg overflow-hidden"
+            >
+              <div class="p-3 bg-white hover:bg-gray-50 cursor-pointer">
+                <h4 class="font-medium text-primary text-sm mb-2">{{ faq.question }}</h4>
+                <p class="text-gray-600 text-sm">{{ faq.answer }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="border-t pt-4">
+            <h4 class="font-medium text-gray-800 mb-3 text-sm">Cần hỗ trợ thêm?</h4>
+            <p class="text-gray-600 text-sm mb-3">Liên hệ với chúng tôi:</p>
+            <div class="space-y-2 text-sm">
+              <a href="mailto:support@pharmacare.com" class="flex items-center text-primary hover:underline">
+                <Icon name="lucide:mail" class="w-4 h-4 mr-2" />
+                support@pharmacare.com
+              </a>
+              <a href="tel:+84123456789" class="flex items-center text-primary hover:underline">
+                <Icon name="lucide:phone" class="w-4 h-4 mr-2" />
+                +84 123 456 789
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+
+// Types
+interface Message {
+  id: number
+  sender: 'user' | 'bot'
+  content: string
+  timestamp: Date
+  data?: any
+}
+
+// Constants
+const CHAT_HISTORY_KEY = 'pharmacare_chatHistory'
+const CHAT_TIMESTAMP_KEY = 'pharmacare_chatTimestamp'
+const CHAT_HISTORY_MAX_AGE = 7 * 24 * 60 * 60 * 1000 // 7 days
+
+// State
+const isOpen = ref(false)
+const activeTab = ref('search')
+const messages = ref<Message[]>([])
+const userInput = ref('')
+const loading = ref(false)
+const unreadCount = ref(0)
+const viewMode = ref<'carousel' | 'list'>('carousel')
+const activeCardIndex = ref(0)
+const faqSearch = ref('')
+
+// Refs
+const chatMessages = ref<HTMLElement | null>(null)
+const messagesEnd = ref<HTMLElement | null>(null)
+
+// Data
+const tabs = [
+  { id: 'search', label: 'Tìm thuốc', icon: 'lucide:search' },
+  { id: 'chat', label: 'Chat', icon: 'lucide:message-circle' },
+  { id: 'help', label: 'Trợ giúp', icon: 'lucide:help-circle' }
+]
+
+const quickFilters = [
+  { label: 'Giảm đau', question: 'Tôi cần thuốc giảm đau', icon: 'lucide:pill', colorClass: 'bg-red-100 text-red-600' },
+  { label: 'Hạ sốt', question: 'Tôi cần thuốc hạ sốt', icon: 'lucide:thermometer', colorClass: 'bg-orange-100 text-orange-600' },
+  { label: 'Kháng sinh', question: 'Tôi cần kháng sinh', icon: 'lucide:shield', colorClass: 'bg-green-100 text-green-600' },
+  { label: 'Tiêu hóa', question: 'Thuốc hỗ trợ tiêu hóa', icon: 'lucide:heart', colorClass: 'bg-blue-100 text-blue-600' },
+  { label: 'Vitamin', question: 'Tôi cần vitamin tổng hợp', icon: 'lucide:sparkles', colorClass: 'bg-purple-100 text-purple-600' },
+  { label: 'Dị ứng', question: 'Thuốc chống dị ứng', icon: 'lucide:wind', colorClass: 'bg-pink-100 text-pink-600' }
+]
+
+const suggestedQuestions = [
+  'Thuốc paracetamol giá bao nhiêu?',
+  'Tôi bị đau đầu nên dùng thuốc gì?',
+  'Có thuốc nào giảm ho không?',
+  'Thuốc vitamin C còn hàng không?',
+  'Cho tôi xem các loại thuốc hạ sốt',
+  'Thuốc nào phù hợp cho trẻ em?'
+]
+
+const faqs = [
+  {
+    question: 'Làm sao để tìm thuốc?',
+    answer: 'Bạn có thể chat với AI hoặc sử dụng các bộ lọc nhanh để tìm thuốc phù hợp với triệu chứng của mình.'
+  },
+  {
+    question: 'Kiểm tra tồn kho như thế nào?',
+    answer: 'Hỏi AI về tình trạng tồn kho của thuốc cụ thể, ví dụ: "Thuốc paracetamol còn hàng không?"'
+  },
+  {
+    question: 'Xem giá thuốc ở đâu?',
+    answer: 'Hỏi AI về giá của thuốc, ví dụ: "Thuốc aspirin giá bao nhiêu?". AI sẽ tra cứu từ database và trả lời chính xác.'
+  },
+  {
+    question: 'Thuốc hết hàng thì sao?',
+    answer: 'AI sẽ tự động gợi ý các thuốc thay thế có cùng công dụng và còn hàng trong kho.'
+  }
+]
+
+// Computed
+const groupedMessages = computed(() => {
+  const groups: Record<string, Message[]> = {}
+  messages.value.forEach((msg) => {
+    const date = new Date(msg.timestamp).toLocaleDateString('vi-VN')
+    if (!groups[date]) groups[date] = []
+    groups[date].push(msg)
+  })
+  return groups
+})
+
+const filteredFaqs = computed(() => {
+  if (!faqSearch.value) return faqs
+  const query = faqSearch.value.toLowerCase()
+  return faqs.filter(
+    faq =>
+      faq.question.toLowerCase().includes(query) ||
+      faq.answer.toLowerCase().includes(query)
+  )
+})
+
+// Methods
+function toggleChat() {
+  isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    unreadCount.value = 0
+    if (activeTab.value === 'chat') {
+      nextTick(() => scrollToBottom())
+    }
+  }
+}
+
+function toggleViewMode() {
+  viewMode.value = viewMode.value === 'carousel' ? 'list' : 'carousel'
+}
+
+function nextCard(total: number) {
+  activeCardIndex.value = (activeCardIndex.value + 1) % total
+}
+
+function prevCard(total: number) {
+  activeCardIndex.value = (activeCardIndex.value - 1 + total) % total
+}
+
+function formatDate(date: string) {
+  const today = new Date().toLocaleDateString('vi-VN')
+  return date === today ? 'Hôm nay' : date
+}
+
+function formatTime(timestamp: Date) {
+  return new Date(timestamp).toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (messagesEnd.value) {
+      messagesEnd.value.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  })
+}
+
+async function sendMessage() {
+  if (!userInput.value.trim() || loading.value) return
+
+  const text = userInput.value.trim()
+  userInput.value = ''
+
+  // Add user message
+  const userMessage: Message = {
+    id: Date.now(),
+    sender: 'user',
+    content: text,
+    timestamp: new Date()
+  }
+  messages.value.push(userMessage)
+  scrollToBottom()
+
+  loading.value = true
+
+  try {
+    // Call new API endpoint
+    const response = await $fetch('/api/chatbot/message-v2', {
+      method: 'POST',
+      body: {
+        message: text,
+        sessionData: {
+          chatHistory: messages.value.slice(-5).map(m => ({
+            sender: m.sender,
+            text: m.content
+          }))
+        }
+      }
+    })
+
+    if (response && (response as any).success) {
+      const data = response as any
+      const botMessage: Message = {
+        id: Date.now(),
+        sender: 'bot',
+        content: data.message || 'Xin lỗi, tôi không hiểu câu hỏi này.',
+        timestamp: new Date(),
+        data: data.data
+      }
+      messages.value.push(botMessage)
+      
+      if (!isOpen.value) {
+        unreadCount.value++
+      }
+    } else {
+      throw new Error('Invalid response')
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    const errorMessage: Message = {
+      id: Date.now(),
+      sender: 'bot',
+      content: 'Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.',
+      timestamp: new Date()
+    }
+    messages.value.push(errorMessage)
+  } finally {
+    loading.value = false
+    scrollToBottom()
+  }
+}
+
+function askQuestion(question: string) {
+  activeTab.value = 'chat'
+  nextTick(() => {
+    userInput.value = question
+    sendMessage()
+  })
+}
+
+function clearHistory() {
+  if (confirm('Bạn có chắc muốn xóa lịch sử chat?')) {
+    messages.value = []
+    localStorage.removeItem(CHAT_HISTORY_KEY)
+    localStorage.removeItem(CHAT_TIMESTAMP_KEY)
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  // Load chat history from localStorage
+  try {
+    const saved = localStorage.getItem(CHAT_HISTORY_KEY)
+    const timestamp = localStorage.getItem(CHAT_TIMESTAMP_KEY)
+
+    if (saved && timestamp) {
+      const age = Date.now() - parseInt(timestamp)
+      if (age <= CHAT_HISTORY_MAX_AGE) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          messages.value = parsed.map(m => ({
+            ...m,
+            timestamp: new Date(m.timestamp)
+          }))
+        }
+      } else {
+        localStorage.removeItem(CHAT_HISTORY_KEY)
+        localStorage.removeItem(CHAT_TIMESTAMP_KEY)
+      }
+    }
+  } catch (error) {
+    console.error('Error loading chat history:', error)
+  }
+
+  // Escape key to close
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen.value) {
+      toggleChat()
+    }
+  })
+})
+
+// Watch messages to save to localStorage
+watch(messages, (newMessages) => {
+  if (newMessages.length > 0) {
+    try {
+      localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(newMessages))
+      localStorage.setItem(CHAT_TIMESTAMP_KEY, Date.now().toString())
+    } catch (error) {
+      console.error('Error saving chat history:', error)
+    }
+  }
+}, { deep: true })
+
+// Watch isOpen to reset activeCardIndex
+watch(isOpen, (newVal) => {
+  if (newVal && activeTab.value === 'chat') {
+    nextTick(() => scrollToBottom())
+  }
+})
+</script>
+
+<style scoped>
+.chat-button-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+  }
+}
+
+.chatbot-messages {
+  scroll-behavior: smooth;
+}
+
+.chatbot-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatbot-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+</style>

@@ -12,17 +12,18 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // @ts-ignore
-    mongoUri: "",
-    // @ts-ignore
-    jwtSecret: "",
     // Các khóa bí mật chỉ có trên server-side
-    mongodbUri: process.env.MONGODB_URI,
-    ghnToken: process.env.GHN_TOKEN,
-    ghnShopId: process.env.GHN_SHOP_ID,
+    mongodbUri: process.env.MONGODB_URI || process.env.MONGO_URI || "",
+    jwtSecret: process.env.JWT_SECRET || "",
+    ghnToken: process.env.GHN_TOKEN || "",
+    ghnShopId: process.env.GHN_SHOP_ID || "",
+    geminiApiKey: process.env.GEMINI_API_KEY || "",
+    paypalClientId: process.env.PAYPAL_CLIENT_ID || "",
+    paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || "",
     // Các khóa trong public sẽ được hiển thị cả ở client-side
     public: {
-      //
+      appUrl: process.env.APP_URL || "http://localhost:3000",
+      paypalMode: process.env.PAYPAL_MODE || "sandbox", // 'sandbox' or 'live'
     }
   },
 
