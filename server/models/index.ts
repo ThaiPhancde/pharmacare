@@ -24,7 +24,7 @@ import Expense from './Expense';
 import Loan from './Loan';
 import Service from './Service';
 import Appointment from './Appointment';
-import Voucher from './Voucher';
+import Voucher, { VoucherUsageModel } from './Voucher';
 
 // Đảm bảo rằng các model đã được import và đăng ký đúng cách
 export { 
@@ -52,7 +52,8 @@ export {
   Loan,
   Service,
   Appointment,
-  Voucher
+  Voucher,
+  VoucherUsageModel
 };
 
 // Export default là một object chứa tất cả các model để sử dụng linh hoạt hơn
@@ -81,5 +82,6 @@ export default {
   Loan,
   Service,
   Appointment,
-  Voucher
+  Voucher,
+  VoucherUsageModel
 };
