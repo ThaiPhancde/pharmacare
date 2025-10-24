@@ -58,41 +58,41 @@ function formatDate(date: string) {
 // Columns
 const columns: DataTableColumns<any> = [
   {
-    title: 'Số HĐ',
+    title: 'Invoice No',
     key: 'invoice_no',
     width: 120,
   },
   {
-    title: 'Ngày',
+    title: 'Date',
     key: 'date',
     width: 120,
     render: row => formatDate(row.date),
   },
   {
-    title: 'Khách hàng',
+    title: 'Customer',
     key: 'customer',
-    render: row => row.customer?.name || 'Khách vãng lai',
+    render: row => row.customer?.name || 'Walk-in Customer',
   },
   {
-    title: 'Tổng tiền',
+    title: 'Grand Total',
     key: 'grand_total',
     width: 150,
     render: row => formatCurrency(row.grand_total),
   },
   {
-    title: 'Đã trả',
+    title: 'Paid',
     key: 'paid',
     width: 150,
     render: row => formatCurrency(row.paid),
   },
   {
-    title: 'Còn nợ',
+    title: 'Due',
     key: 'due',
     width: 150,
     render: row => h('span', { class: row.due > 0 ? 'text-red-600 font-semibold' : '' }, formatCurrency(row.due)),
   },
   {
-    title: 'PT Thanh toán',
+    title: 'Payment Method',
     key: 'payment_method',
     width: 130,
     render: row => h(NTag, { type: 'info', size: 'small' }, { default: () => row.payment_method }),
