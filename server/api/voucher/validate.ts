@@ -1,5 +1,4 @@
 import { Voucher, VoucherUsageModel } from '~/server/models'
-import { Invoice } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
