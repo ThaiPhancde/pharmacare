@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
 import { toTypedSchema } from '@vee-validate/zod'
-import { FieldArray, useForm } from 'vee-validate'
-import { h, ref } from 'vue'
+import { useForm } from 'vee-validate'
+import { onMounted, ref } from 'vue'
 import * as z from 'zod'
-import { toast } from '~/components/ui/toast'
+import { useToast } from '@/components/ui/toast'
 
-const verifiedEmails = ref(['m@example.com', 'm@google.com', 'm@support.com'])
+const { userProfile, fetchProfile, updateProfile, changePassword } = useUserProfile()
+const { toast } = useToast()
+
+const isSubmitting = ref(false)
+const isChangingPassword = ref(false)
 
 const profileFormSchema = toTypedSchema(z.object({
   username: z
@@ -17,84 +20,120 @@ const profileFormSchema = toTypedSchema(z.object({
     .max(30, {
       message: 'Username must not be longer than 30 characters.',
     }),
-  email: z
-    .string({
-      required_error: 'Please select an email to display.',
-    })
-    .email(),
-  bio: z.string().max(160, { message: 'Bio must not be longer than 160 characters.' }).min(4, { message: 'Bio must be at least 2 characters.' }),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: 'Please enter a valid URL.' }),
-      }),
-    )
-    .optional(),
+  bio: z.string().max(160, { message: 'Bio must not be longer than 160 characters.' }).optional(),
 }))
 
-const { handleSubmit, resetForm } = useForm({
+const { handleSubmit, resetForm, setValues } = useForm({
   validationSchema: profileFormSchema,
-  initialValues: {
-    bio: 'I own a computer.',
-    urls: [
-      { value: 'https://shadcn.com' },
-      { value: 'http://twitter.com/shadcn' },
-    ],
-  },
 })
 
-const onSubmit = handleSubmit((values) => {
-  toast({
-    title: 'You submitted the following values:',
-    description: h('pre', { class: 'mt-2 w-[340px] rounded-md bg-slate-950 p-4' }, h('code', { class: 'text-white' }, JSON.stringify(values, null, 2))),
-  })
+onMounted(async () => {
+  await fetchProfile()
+  if (userProfile.value) {
+    setValues({
+      username: userProfile.value.username || '',
+      bio: userProfile.value.bio || '',
+    })
+  }
 })
+
+const onSubmit = handleSubmit(async (values) => {
+  isSubmitting.value = true
+  
+  const success = await updateProfile({
+    username: values.username,
+    bio: values.bio,
+  })
+  
+  if (success) {
+    toast({ title: 'Profile updated successfully!' })
+    await fetchProfile()
+    
+    // Button flash effect
+    setTimeout(() => {
+      isSubmitting.value = false
+    }, 500)
+  } else {
+    isSubmitting.value = false
+  }
+})
+
+// Password change form
+const passwordFormSchema = toTypedSchema(z.object({
+  currentPassword: z.string().min(1, 'Please enter current password'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm password'),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+}))
+
+async function onPasswordSubmit(values: any) {
+  isChangingPassword.value = true
+  
+  const success = await changePassword(values.currentPassword, values.newPassword)
+  
+  if (success) {
+    toast({ title: 'Password changed successfully!' })
+    // Reset form
+    values.currentPassword = ''
+    values.newPassword = ''
+    values.confirmPassword = ''
+    
+    // Button flash effect
+    setTimeout(() => {
+      isChangingPassword.value = false
+    }, 500)
+  } else {
+    isChangingPassword.value = false
+  }
+}
 </script>
 
 <template>
   <div>
     <h3 class="text-lg font-medium">
-      Profile
+      Hồ sơ
     </h3>
     <p class="text-sm text-muted-foreground">
-      This is how others will see you on the site.
+      Thông tin cá nhân và mô tả về bạn.
     </p>
   </div>
   <Separator />
-  <form class="space-y-8" @submit="onSubmit">
+
+  <!-- Profile Info -->
+  <form v-if="userProfile" class="space-y-6" @submit="onSubmit">
+    <div class="space-y-4">
+      <div class="grid gap-2">
+        <div class="text-sm font-medium">
+          Email
+        </div>
+        <div class="rounded-md border bg-muted px-3 py-2 text-sm">
+          {{ userProfile.email }}
+        </div>
+        <p class="text-xs text-muted-foreground">
+          Email không thể thay đổi.
+        </p>
+      </div>
+
+      <div class="grid gap-2">
+        <div class="text-sm font-medium">
+          Vai trò
+        </div>
+        <div class="capitalize rounded-md border bg-muted px-3 py-2 text-sm">
+          {{ userProfile.role === 'admin' ? 'Quản trị viên' : userProfile.role === 'warehouse' ? 'Kho' : 'Bán hàng' }}
+        </div>
+      </div>
+    </div>
+
     <FormField v-slot="{ componentField }" name="username">
       <FormItem>
         <FormLabel>Username</FormLabel>
         <FormControl>
-          <Input type="text" placeholder="shadcn" v-bind="componentField" />
+          <Input type="text" placeholder="Enter username" v-bind="componentField" />
         </FormControl>
         <FormDescription>
-          This is your public display name. It can be your real name or a pseudonym. You can only change this once every 30 days.
-        </FormDescription>
-        <FormMessage />
-      </FormItem>
-    </FormField>
-
-    <FormField v-slot="{ componentField }" name="email">
-      <FormItem>
-        <FormLabel>Email</FormLabel>
-
-        <Select v-bind="componentField">
-          <FormControl>
-            <SelectTrigger>
-              <SelectValue placeholder="Select an email" />
-            </SelectTrigger>
-          </FormControl>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem v-for="email in verifiedEmails" :key="email" :value="email">
-                {{ email }}
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-        <FormDescription>
-          You can manage verified email addresses in your email settings.
+          Your public display username.
         </FormDescription>
         <FormMessage />
       </FormItem>
@@ -104,54 +143,21 @@ const onSubmit = handleSubmit((values) => {
       <FormItem>
         <FormLabel>Bio</FormLabel>
         <FormControl>
-          <Textarea placeholder="Tell us a little bit about yourself" v-bind="componentField" />
+          <Textarea placeholder="Tell us a little bit about yourself..." v-bind="componentField" />
         </FormControl>
         <FormDescription>
-          You can <span>@mention</span> other users and organizations to link to them.
+          Brief description about yourself (max 160 characters).
         </FormDescription>
         <FormMessage />
       </FormItem>
     </FormField>
 
-    <div>
-      <FieldArray v-slot="{ fields, push, remove }" name="urls">
-        <div v-for="(field, index) in fields" :key="`urls-${field.key}`">
-          <FormField v-slot="{ componentField }" :name="`urls[${index}].value`">
-            <FormItem>
-              <FormLabel :class="cn(index !== 0 && 'sr-only')">
-                URLs
-              </FormLabel>
-              <FormDescription :class="cn(index !== 0 && 'sr-only')">
-                Add links to your website, blog, or social media profiles.
-              </FormDescription>
-              <div class="relative flex items-center">
-                <FormControl>
-                  <Input type="url" v-bind="componentField" />
-                </FormControl>
-                <button type="button" class="absolute end-0 py-2 pe-3 text-muted-foreground" @click="remove(index)">
-                  <Icon name="i-radix-icons-cross-1" class="w-3" />
-                </button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          </FormField>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          class="mt-2 w-20 text-xs"
-          @click="push({ value: '' })"
-        >
-          Add URL
-        </Button>
-      </FieldArray>
-    </div>
-
     <div class="flex justify-start gap-2">
-      <Button type="submit">
-        Update profile
+      <Button 
+        type="submit"
+        :class="{ 'bg-green-600 hover:bg-green-600': isSubmitting }"
+      >
+        Update Profile
       </Button>
 
       <Button
@@ -159,8 +165,75 @@ const onSubmit = handleSubmit((values) => {
         variant="outline"
         @click="resetForm"
       >
-        Reset form
+        Reset
       </Button>
     </div>
   </form>
+
+  <Separator class="my-8" />
+
+  <!-- Password Change Section -->
+  <div>
+    <h3 class="text-lg font-medium">
+      Change Password
+    </h3>
+    <p class="text-sm text-muted-foreground">
+      Update your login password.
+    </p>
+  </div>
+  <Separator />
+
+  <Form v-slot="{ values }" :validation-schema="passwordFormSchema" class="space-y-6" @submit="(vals: any) => onPasswordSubmit(vals)">
+    <FormField v-slot="{ componentField }" name="currentPassword">
+      <FormItem>
+        <FormLabel>Current Password</FormLabel>
+        <FormControl>
+          <PasswordInput
+            v-bind="componentField"
+            placeholder="Enter current password"
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    </FormField>
+
+    <FormField v-slot="{ componentField }" name="newPassword">
+      <FormItem>
+        <FormLabel>New Password</FormLabel>
+        <FormControl>
+          <PasswordInput
+            v-bind="componentField"
+            placeholder="Enter new password"
+          />
+        </FormControl>
+        <FormDescription>
+          Password must be at least 6 characters.
+        </FormDescription>
+        <FormMessage />
+      </FormItem>
+    </FormField>
+
+    <FormField v-slot="{ componentField }" name="confirmPassword">
+      <FormItem>
+        <FormLabel>Confirm Password</FormLabel>
+        <FormControl>
+          <PasswordInput
+            v-bind="componentField"
+            placeholder="Re-enter new password"
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    </FormField>
+
+    <div class="flex justify-start">
+      <Button 
+        type="submit" 
+        :disabled="!values.currentPassword || !values.newPassword || !values.confirmPassword"
+        :class="{ 'bg-green-600 hover:bg-green-600': isChangingPassword }"
+      >
+        Change Password
+      </Button>
+    </div>
+  </Form>
 </template>

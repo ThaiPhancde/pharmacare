@@ -303,10 +303,10 @@ const saveCustomer = async () => {
       <div class="flex justify-between">
         <h2 class="text-2xl font-bold tracking-tight">Customer List</h2>
       </div>
-      <n-button type="primary" @click="handleAdd">
+      <Button @click="handleAdd">
         <Plus class="mr-2 h-4 w-4" />
         Add Customer
-      </n-button>
+      </Button>
     </div>
     <DataTable
       :data="dataTable"
@@ -419,7 +419,7 @@ const saveCustomer = async () => {
       </div>
       <template #footer>
         <div class="flex justify-end">
-          <n-button @click="showView = false">Close</n-button>
+          <Button variant="outline" @click="showView = false">Close</Button>
         </div>
       </template>
     </n-modal>
@@ -508,8 +508,12 @@ const saveCustomer = async () => {
       </n-form>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <n-button @click="showAdd = false">Cancel</n-button>
-          <n-button type="primary" @click="saveCustomer">Save</n-button>
+          <Button variant="outline" @click="showAdd = false">
+            Cancel
+          </Button>
+          <Button @click="saveCustomer">
+            Save
+          </Button>
         </div>
       </template>
     </n-modal>

@@ -147,9 +147,6 @@ const filteredNavMenuBottom = computed(() => {
         <component :is="resolveNavItemComponent(item)" v-for="(item, index) in filteredNavMenuBottom" :key="index" :item="item" size="sm" />
       </SidebarGroup>
     </SidebarContent>
-    <SidebarFooter>
-      <LayoutSidebarNavFooter :user="user" />
-    </SidebarFooter>
     <SidebarRail />
   </Sidebar>
 </template>

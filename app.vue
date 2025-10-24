@@ -62,6 +62,7 @@ const dir = computed(() => (textDirection.value === "rtl" ? "rtl" : "ltr"));
           </NuxtLayout>
           <AppSettings />
           <PharmaCareAdvancedBot />
+          <BaseMessageContainer />
         </div>
         <Toaster />
         <Sonner class="pointer-events-auto" />

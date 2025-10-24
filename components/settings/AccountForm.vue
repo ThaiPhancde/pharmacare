@@ -1,19 +1,26 @@
 <script setup lang="ts">
+import { CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import { cn } from '@/lib/utils'
-import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
 import { toTypedSchema } from '@vee-validate/zod'
 import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { toDate } from 'radix-vue/date'
-import { h, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import * as z from 'zod'
-import { toast } from '~/components/ui/toast'
+import { useToast } from '@/components/ui/toast'
+
+const { userProfile, fetchProfile, updateProfile, uploadAvatar } = useUserProfile()
+const { toast } = useToast()
 
 const open = ref(false)
 const dateValue = ref()
 const placeholder = ref()
+const avatarFile = ref<File | null>(null)
+const avatarPreview = ref<string>('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const languages = [
   { label: 'English', value: 'en' },
+  { label: 'Tiếng Việt', value: 'vi' },
   { label: 'French', value: 'fr' },
   { label: 'German', value: 'de' },
   { label: 'Indonesia', value: 'id' },
@@ -32,25 +39,109 @@ const df = new DateFormatter('en-US', {
 const accountFormSchema = toTypedSchema(z.object({
   name: z
     .string({
-      required_error: 'Required.',
+      required_error: 'Please enter your name.',
     })
     .min(2, {
       message: 'Name must be at least 2 characters.',
     })
-    .max(30, {
-      message: 'Name must not be longer than 30 characters.',
+    .max(50, {
+      message: 'Name must not be longer than 50 characters.',
     }),
-  dob: z.string().datetime().optional().refine(date => date !== undefined, 'Please select a valid date.'),
+  phone: z.string().optional(),
+  dob: z.string().datetime().optional(),
   language: z.string().min(1, 'Please select a language.'),
 }))
 
-// https://github.com/logaretm/vee-validate/issues/3521
-// https://github.com/logaretm/vee-validate/discussions/3571
+// Lấy avatar hiện tại
+const currentAvatar = computed(() => {
+  if (avatarPreview.value)
+    return avatarPreview.value
+  if (userProfile.value?.avatar)
+    return userProfile.value.avatar
+  return '/avatars/default-avatar.png'
+})
+
+// Load profile khi component mount
+onMounted(async () => {
+  await fetchProfile()
+
+  // Set giá trị ban đầu cho form
+  if (userProfile.value) {
+    if (userProfile.value.dob) {
+      const date = new Date(userProfile.value.dob)
+      dateValue.value = parseDate(date.toISOString().split('T')[0])
+    }
+  }
+})
+
+// Xử lý chọn file avatar
+function handleAvatarSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (file) {
+    // Kiểm tra file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Error', description: 'Please select an image file', variant: 'destructive' })
+      return
+    }
+
+    // Kiểm tra file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Error', description: 'File size must not exceed 5MB', variant: 'destructive' })
+      return
+    }
+
+    avatarFile.value = file
+
+    // Preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      avatarPreview.value = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+// Upload avatar
+async function handleUploadAvatar() {
+  if (!avatarFile.value) {
+    toast({ title: 'Error', description: 'Please select an image', variant: 'destructive' })
+    return
+  }
+
+  const result = await uploadAvatar(avatarFile.value)
+  if (result) {
+    toast({ title: 'Avatar updated successfully!' })
+    avatarFile.value = null
+    avatarPreview.value = ''
+    await fetchProfile() // Refresh to sync with header
+  }
+}
+
+const isSubmitting = ref(false)
+
 async function onSubmit(values: any) {
-  toast({
-    title: 'You submitted the following values:',
-    description: h('pre', { class: 'mt-2 w-[340px] rounded-md bg-slate-950 p-4' }, h('code', { class: 'text-white' }, JSON.stringify(values, null, 2))),
+  isSubmitting.value = true
+  
+  const success = await updateProfile({
+    name: values.name,
+    phone: values.phone,
+    dob: values.dob,
+    language: values.language,
   })
+
+  if (success) {
+    toast({ title: 'Account updated successfully!' })
+    await fetchProfile()
+    
+    // Button flash effect
+    setTimeout(() => {
+      isSubmitting.value = false
+    }, 500)
+  } else {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -60,19 +151,91 @@ async function onSubmit(values: any) {
       Account
     </h3>
     <p class="text-sm text-muted-foreground">
-      Update your account settings. Set your preferred language and timezone.
+      Update your account settings. Set your preferred language and personal information.
     </p>
   </div>
   <Separator />
-  <Form v-slot="{ setFieldValue }" :validation-schema="accountFormSchema" class="space-y-8" @submit="onSubmit">
+
+  <!-- Avatar Section -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-6">
+      <Avatar class="h-24 w-24">
+        <AvatarImage :src="currentAvatar" alt="Avatar" />
+        <AvatarFallback>{{ userProfile?.name?.charAt(0) || 'U' }}</AvatarFallback>
+      </Avatar>
+      <div class="space-y-2">
+        <div class="text-sm font-medium">
+          Profile Picture
+        </div>
+        <div class="text-xs text-muted-foreground">
+          JPG, PNG, GIF or WEBP. Max 5MB.
+        </div>
+        <div class="flex gap-2">
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="handleAvatarSelect"
+          >
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            @click="fileInputRef?.click()"
+          >
+            Choose Image
+          </Button>
+          <Button
+            v-if="avatarFile"
+            type="button"
+            size="sm"
+            :disabled="loading"
+            @click="handleUploadAvatar"
+          >
+            {{ loading ? 'Uploading...' : 'Upload' }}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <Separator />
+
+  <Form
+    v-if="userProfile"
+    v-slot="{ setFieldValue }"
+    :validation-schema="accountFormSchema"
+    :initial-values="{
+      name: userProfile.name,
+      phone: userProfile.phone || '',
+      language: userProfile.language || 'en',
+      dob: userProfile.dob,
+    }"
+    class="space-y-8"
+    @submit="onSubmit"
+  >
     <FormField v-slot="{ componentField }" name="name">
       <FormItem>
-        <FormLabel>Name</FormLabel>
+        <FormLabel>Full Name</FormLabel>
         <FormControl>
-          <Input type="text" placeholder="Your name" v-bind="componentField" />
+          <Input type="text" placeholder="Enter your full name" v-bind="componentField" />
         </FormControl>
         <FormDescription>
-          This is the name that will be displayed on your profile and in emails.
+          This is the name that will be displayed on your profile.
+        </FormDescription>
+        <FormMessage />
+      </FormItem>
+    </FormField>
+
+    <FormField v-slot="{ componentField }" name="phone">
+      <FormItem>
+        <FormLabel>Phone Number</FormLabel>
+        <FormControl>
+          <Input type="text" placeholder="Enter your phone number" v-bind="componentField" />
+        </FormControl>
+        <FormDescription>
+          Your contact phone number.
         </FormDescription>
         <FormMessage />
       </FormItem>
@@ -80,12 +243,13 @@ async function onSubmit(values: any) {
 
     <FormField v-slot="{ field, value }" name="dob">
       <FormItem class="flex flex-col">
-        <FormLabel>Date of birth</FormLabel>
+        <FormLabel>Date of Birth</FormLabel>
         <Popover>
           <PopoverTrigger as-child>
             <FormControl>
               <Button
-                variant="outline" :class="cn(
+                variant="outline"
+                :class="cn(
                   'w-[240px] justify-start text-left font-normal',
                   !value && 'text-muted-foreground',
                 )"
@@ -117,7 +281,7 @@ async function onSubmit(values: any) {
           </PopoverContent>
         </Popover>
         <FormDescription>
-          Your date of birth is used to calculate your age.
+          Your date of birth.
         </FormDescription>
         <FormMessage />
       </FormItem>
@@ -132,7 +296,10 @@ async function onSubmit(values: any) {
           <PopoverTrigger as-child>
             <FormControl>
               <Button
-                variant="outline" role="combobox" :aria-expanded="open" :class="cn(
+                variant="outline"
+                role="combobox"
+                :aria-expanded="open"
+                :class="cn(
                   'w-[200px] justify-between',
                   !value && 'text-muted-foreground',
                 )"
@@ -152,7 +319,9 @@ async function onSubmit(values: any) {
               <CommandList>
                 <CommandGroup>
                   <CommandItem
-                    v-for="language in languages" :key="language.value" :value="language.label"
+                    v-for="language in languages"
+                    :key="language.value"
+                    :value="language.label"
                     @select="() => {
                       setFieldValue('language', language.value)
                       open = false
@@ -173,15 +342,18 @@ async function onSubmit(values: any) {
         </Popover>
 
         <FormDescription>
-          This is the language that will be used in the dashboard.
+          The language that will be used in the dashboard.
         </FormDescription>
         <FormMessage />
       </FormItem>
     </FormField>
 
-    <div class="flex justify-start">
-      <Button type="submit">
-        Update account
+    <div class="flex justify-start gap-2">
+      <Button 
+        type="submit" 
+        :class="{ 'bg-green-600 hover:bg-green-600': isSubmitting }"
+      >
+        Update Account
       </Button>
     </div>
   </Form>

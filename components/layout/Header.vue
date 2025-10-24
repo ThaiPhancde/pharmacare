@@ -74,15 +74,20 @@ const links = ref<
   }[]
 >(setLinks());
 
-const user: {
-  name: string;
-  email: string;
-  avatar: string;
-} = {
-  name: "An Thái",
-  email: "dianpratama2@gmail.com",
-  avatar: "/avatars/avatartion.png",
-};
+const { userProfile, fetchProfile } = useUserProfile()
+
+// Load user profile khi component mount
+onMounted(() => {
+  fetchProfile()
+})
+
+// Computed user data từ userProfile
+const user = computed(() => ({
+  name: userProfile.value?.name || 'Guest',
+  email: userProfile.value?.email || 'guest@pharmacare.com',
+  avatar: userProfile.value?.avatar || '/avatars/default-avatar.png'
+}))
+
 watch(
   () => route.fullPath,
   (val) => {
@@ -186,16 +191,11 @@ watch(
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Icon name="i-lucide-sparkles" />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Icon name="i-lucide-badge-check" />
-                Account
+              <DropdownMenuItem as-child>
+                <NuxtLink to="/settings/account">
+                  <Icon name="i-lucide-badge-check" />
+                  Account
+                </NuxtLink>
               </DropdownMenuItem>
               <DropdownMenuItem as-child>
                 <NuxtLink to="/settings">
@@ -203,14 +203,16 @@ watch(
                   Settings
                 </NuxtLink>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Icon name="i-lucide-bell" />
-                Notifications
+              <DropdownMenuItem as-child>
+                <NuxtLink to="/settings/notifications">
+                  <Icon name="i-lucide-bell" />
+                  Notifications
+                </NuxtLink>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem as-child>
                 <NuxtLink
-                  to="https://github.com/dianprata/nuxt-shadcn-dashboard"
+                  to="https://github.com/ThaiPhancde/pharmacare"
                   external
                   target="_blank"
                 >

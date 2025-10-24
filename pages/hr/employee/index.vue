@@ -184,9 +184,9 @@ onMounted(fetchEmployees)
         </p>
       </div>
 
-      <n-button type="primary" @click="router.push('/hr/employee/create')">
+      <Button @click="router.push('/hr/employee/create')">
         ➕ Add Employee
-      </n-button>
+      </Button>
     </div>
 
     <!-- Filters -->

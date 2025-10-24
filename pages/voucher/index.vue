@@ -178,9 +178,9 @@ onMounted(fetchVouchers)
         </p>
       </div>
 
-      <n-button type="primary" @click="router.push('/voucher/create')">
+      <Button @click="router.push('/voucher/create')">
         ➕ Create Voucher
-      </n-button>
+      </Button>
     </div>
 
     <!-- Filters -->

@@ -473,7 +473,7 @@ export const navMenuBottom: NavMenuItems = [
   {
     title: "Help & Support",
     icon: "i-lucide-circle-help",
-    link: "https://github.com/ThaiPhancde/pharmacare",
+    link: "https://github.com/ThaiPhancde",
   },
   {
     title: "Feedback",

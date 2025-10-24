@@ -130,9 +130,9 @@ onMounted(fetchReport)
           placeholder="To date"
           clearable
         />
-        <n-button type="primary" @click="fetchReport">
+        <Button @click="fetchReport">
           🔍 Search
-        </n-button>
+        </Button>
       </div>
     </n-card>
 

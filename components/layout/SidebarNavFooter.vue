@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { useSidebar } from '@/components/ui/sidebar'
 
-defineProps<{
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}>()
-
 const { isMobile, setOpenMobile } = useSidebar()
+const { userProfile, fetchProfile } = useUserProfile()
+
+// Load user profile khi component mount
+onMounted(() => {
+  fetchProfile()
+})
+
+// Computed user data từ userProfile
+const user = computed(() => ({
+  name: userProfile.value?.name || 'Guest',
+  email: userProfile.value?.email || 'guest@pharmacare.com',
+  avatar: userProfile.value?.avatar || '/avatars/default-avatar.png'
+}))
 
 const showModalTheme = ref(false)
 </script>
@@ -57,16 +62,11 @@ const showModalTheme = ref(false)
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Icon name="i-lucide-sparkles" />
-              Upgrade to Pro
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Icon name="i-lucide-badge-check" />
-              Account
+            <DropdownMenuItem as-child>
+              <NuxtLink to="/settings/account" @click="setOpenMobile(false)">
+                <Icon name="i-lucide-badge-check" />
+                Account
+              </NuxtLink>
             </DropdownMenuItem>
             <DropdownMenuItem as-child>
               <NuxtLink to="/settings" @click="setOpenMobile(false)">
@@ -74,13 +74,15 @@ const showModalTheme = ref(false)
                 Settings
               </NuxtLink>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Icon name="i-lucide-bell" />
-              Notifications
+            <DropdownMenuItem as-child>
+              <NuxtLink to="/settings/notifications" @click="setOpenMobile(false)">
+                <Icon name="i-lucide-bell" />
+                Notifications
+              </NuxtLink>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem as-child>
-              <NuxtLink to="https://github.com/dianprata/nuxt-shadcn-dashboard" external target="_blank">
+              <NuxtLink to="https://github.com/ThaiPhancde/pharmacare" external target="_blank">
                 <Icon name="i-lucide-github" />
                 Github Repository
               </NuxtLink>
