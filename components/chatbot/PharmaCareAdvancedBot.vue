@@ -49,6 +49,7 @@ const sessionId = ref('')
 const consultationStage = ref('greeting')
 const chatMessages = ref<HTMLElement | null>(null)
 const unreadCount = ref(0)
+const showImageUpload = ref(false)
 
 // Conversation stages visualization
 const conversationStages = computed<ConversationStage[]>(() => [
@@ -301,6 +302,151 @@ function scrollToBottom() {
   if (chatMessages.value) {
     chatMessages.value.scrollTop = chatMessages.value.scrollHeight
   }
+}
+
+/**
+ * Handle image upload success
+ */
+function handleImageUploadSuccess(data: any) {
+  showImageUpload.value = false
+
+  // Add user message with image
+  addUserMessage(`[Đã gửi ảnh thuốc: ${data.recognized.medicineName || 'Không nhận diện được'}]`)
+
+  // Prepare bot response
+  let responseText = '📸 Kết quả phân tích ảnh:\n\n'
+
+  // Recognition result
+  if (data.recognized.confidence >= 70) {
+    responseText += `✅ Nhận diện: ${data.recognized.medicineName}`
+    if (data.recognized.brandName) {
+      responseText += ` (${data.recognized.brandName})`
+    }
+    responseText += `\n🎯 Độ chính xác: ${data.recognized.confidence}%\n\n`
+
+    if (data.recognized.ingredients) {
+      responseText += `💊 Thành phần: ${data.recognized.ingredients}\n`
+    }
+    if (data.recognized.dosageForm) {
+      responseText += `📦 Dạng bào chế: ${data.recognized.dosageForm}\n`
+    }
+    if (data.recognized.manufacturer) {
+      responseText += `🏭 Nhà sản xuất: ${data.recognized.manufacturer}\n`
+    }
+  }
+  else {
+    responseText += `⚠️ Độ chính xác thấp (${data.recognized.confidence}%)\n`
+    responseText += `Tên thuốc có thể là: ${data.recognized.medicineName || 'Không xác định'}\n\n`
+    responseText += `💡 Tip: Chọn ảnh rõ nét hơn hoặc nhập tên thuốc để tìm kiếm chính xác.\n`
+  }
+
+  // Database match result
+  responseText += '\n📦 Kiểm tra kho:\n'
+  if (data.databaseMatch.found && data.databaseMatch.medicines.length > 0) {
+    const medicine = data.databaseMatch.medicines[0]
+    responseText += `\n✅ Tìm thấy trong kho!\n`
+    responseText += `📌 Tên: ${medicine.name}\n`
+    responseText += `💰 Giá: ${formatCurrency(medicine.price)}\n`
+    responseText += `📊 Tồn kho: ${medicine.stock?.quantity || 0} ${medicine.unit}\n`
+
+    if (medicine.stock?.expiryStatus === 'expired') {
+      responseText += `⚠️ Cảnh báo: Thuốc đã HẾT HẠN (${formatDate(medicine.stock.expiryDate)})\n`
+    }
+    else if (medicine.stock?.expiryStatus === 'expiring_soon') {
+      responseText += `⏰ Gần hết hạn: ${medicine.stock.daysUntilExpiry} ngày (${formatDate(medicine.stock.expiryDate)})\n`
+    }
+
+    // Add action buttons
+    const actionButtons: ActionButton[] = [
+      {
+        label: 'Xem chi tiết',
+        icon: 'mdi:information',
+        action: 'view_detail',
+        data: { medicineId: medicine._id },
+        color: 'blue',
+      },
+      {
+        label: 'Hỏi cách dùng',
+        icon: 'mdi:help-circle',
+        action: 'ask_usage',
+        query: `Cho tôi biết cách dùng thuốc ${medicine.name}`,
+        color: 'green',
+      },
+    ]
+
+    if ((medicine.stock?.quantity || 0) > 0 && medicine.stock?.expiryStatus !== 'expired') {
+      actionButtons.push({
+        label: 'Đặt mua',
+        icon: 'mdi:cart',
+        action: 'order',
+        data: { medicineId: medicine._id },
+        color: 'amber',
+      })
+    }
+
+    addBotMessage(responseText, 'buttons', { actionButtons })
+  }
+  else {
+    responseText += '\n❌ Không tìm thấy trong kho.\n'
+    responseText += '💡 Bạn có thể:\n'
+    responseText += '- Nhập tên thuốc chính xác để tìm\n'
+    responseText += '- Liên hệ để đặt hàng\n'
+
+    addBotMessage(responseText, 'buttons', {
+      actionButtons: [
+        {
+          label: 'Tìm thuốc tương tự',
+          icon: 'mdi:magnify',
+          action: 'search_similar',
+          query: `Tìm thuốc có thành phần ${data.recognized.ingredients || data.recognized.medicineName}`,
+          color: 'blue',
+        },
+        {
+          label: 'Liên hệ đặt hàng',
+          icon: 'mdi:phone',
+          action: 'contact',
+          query: '',
+          color: 'green',
+        },
+      ],
+    })
+  }
+}
+
+/**
+ * Handle image upload error
+ */
+function handleImageUploadError(error: string) {
+  showImageUpload.value = false
+  addBotMessage(`❌ Lỗi upload ảnh: ${error}\n\nVui lòng thử lại hoặc nhập tên thuốc để tìm kiếm.`)
+}
+
+/**
+ * Toggle image upload modal
+ */
+function toggleImageUpload() {
+  showImageUpload.value = !showImageUpload.value
+}
+
+/**
+ * Format currency VND
+ */
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  }).format(amount)
+}
+
+/**
+ * Format date Vietnamese
+ */
+function formatDateVN(date: Date): string {
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(date))
 }
 
 function saveChatHistory() {
@@ -583,7 +729,36 @@ const groupedMessages = computed(() => {
 
           <!-- Input -->
           <div class="border-t border-gray-200 bg-white p-4">
+            <!-- Image Upload Modal -->
+            <div v-if="showImageUpload" class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <div class="mb-2 flex items-center justify-between">
+                <h4 class="text-sm text-blue-900 font-medium">
+                  📤 Tải ảnh thuốc lên để nhận diện
+                </h4>
+                <button
+                  class="text-blue-600 hover:text-blue-800"
+                  @click="toggleImageUpload"
+                >
+                  <Icon name="mdi:close" class="h-5 w-5" />
+                </button>
+              </div>
+              <ChatbotMedicineImageUpload
+                :session-id="sessionId"
+                @upload-success="handleImageUploadSuccess"
+                @upload-error="handleImageUploadError"
+              />
+            </div>
+
             <div class="flex gap-2">
+              <!-- Image Upload Button -->
+              <button
+                class="rounded-xl border border-gray-300 bg-white px-3 py-3 text-gray-600 transition-colors hover:bg-gray-50"
+                title="Tải ảnh thuốc lên"
+                @click="toggleImageUpload"
+              >
+                <Icon name="mdi:image-plus" class="h-5 w-5" />
+              </button>
+
               <input
                 v-model="userInput"
                 type="text"

@@ -1,3 +1,8 @@
+Phân loại các loại thuốc kê đơn loại thuốc chức nằng (invoice)
+Giới hạn loại thuốc người có thể mua trong 1 ngày(tính năng)
+phân chia ca và kết toán cuối ca(report), phân chia người bán hàng (invoice kết toán phải chia theo ca)
+Mã giảm giá có giới hạn thời gian, lượt sử dụng và người dùng nhiều nhất
+
 Voucher (Phiếu giảm giá/Khuyến mãi)
 
 Chức năng chính của mục Voucher là quản lý các chương trình khuyến mãi (mã giảm giá, ưu đãi). Hệ thống cho phép tạo và lưu trữ các voucher với đa dạng loại giảm giá (theo % hoặc số tiền cố định, tặng kèm sản phẩm). Các điều kiện áp dụng (mặt hàng, số lượng, nhóm khách hàng, thời hạn) được thiết lập linh hoạt. Khi thanh toán, phần mềm tự động áp dụng ưu đãi đã kích hoạt, đảm bảo khách hàng được giảm đúng giá và tránh sai sót thủ công. Ví dụ, cho phép thiết lập nhiều chiến dịch khuyến mãi (dịp lễ, khách hàng thân thiết, mua 1 tặng 1…) theo thời hạn xác định
@@ -59,24 +64,3 @@ Human Resource	Nhân viên	Quản lý danh sách nhân viên (bảng dữ liệu
 
 Giao diện (UI): Sử dụng bảng dữ liệu Admin hiện đại cho danh sách nhân viên, form pop-up hoặc trang riêng để nhập thông tin chi tiết. Tính năng tính lương và chấm công nên tự động hóa cao – ví dụ, tự động tính công và lương qua dữ liệu vào/ra, như nhiều hệ thống HR đã thực hiện “tự động hóa chấm công, bảng lương. Bên cạnh đó, phần mềm theo dõi hiệu suất nhân viên, báo cáo nhân sự cũng cần trực quan hóa (biểu đồ cơ cấu nhân sự, tỷ lệ nghỉ). Theo [35], hệ thống HR cho hiệu thuốc nên “theo dõi sự có mặt và vắng mặt” để quản lý hiệu quả đội ngũ
 
-
-Dịch vụ khám bệnh (Service)
-
-Mục Service mở rộng tính năng tích hợp khám bệnh cho hiệu thuốc, bao gồm: quản lý lịch khám, bác sĩ, bệnh nhân và hồ sơ bệnh án, chăm sóc sau khám. Cụ thể:
-
-Bác sĩ: Quản lý thông tin bác sĩ (tên, chuyên khoa, lịch trực, liên hệ). Xem lịch làm việc của bác sĩ trên giao diện lịch (calendar). Cho phép thiết lập ca làm việc và phân công lịch trực.
-
-Bệnh nhân: Lưu hồ sơ bệnh nhân: thông tin cá nhân, tiền sử bệnh, đơn thuốc đã kê trước đó. Cho phép tìm kiếm và cập nhật tình trạng sức khỏe. Theo [31], phần mềm nên “tập trung hóa dữ liệu bệnh nhân” để hỗ trợ chăm sóc cá nhân hóa
-
-Lịch khám (đặt lịch): Quản lý lịch hẹn khám bệnh của phòng khám tại nhà thuốc. Cho phép nhân viên y tế hoặc bệnh nhân đặt lịch trực tuyến/offline, xem lịch khám theo ngày/tuần. Giao diện: Calendar hiện đại, có màu phân biệt bác sĩ hoặc tình trạng hẹn. Có thông báo nhắc lịch cho bệnh nhân và bác sĩ.
-
-Hồ sơ bệnh án: Lưu trữ kết quả khám, chẩn đoán, đơn thuốc và kế hoạch điều trị của bệnh nhân sau mỗi lần khám. Cho phép tải lên kết quả xét nghiệm, ảnh phim nếu có. Giao diện: trang cá nhân bệnh án theo bệnh nhân với lịch sử khám.
-
-Chăm sóc hậu khám: Các công cụ nhắc tái khám (reminder), tư vấn sau khám (ví dụ, nhắc dùng thuốc, hẹn xét nghiệm). Theo dõi kết quả điều trị, ghi nhận phản hồi của bệnh nhân. (Ví dụ: tự động nhắn tin thông báo tái khám).
-
-Mục chính	Mục phụ	Chức năng chính (mục đích, gợi ý UI)
-Service	Bác sĩ	Quản lý danh sách bác sĩ: tên, chuyên khoa, thời gian làm việc. Giao diện: bảng danh sách hoặc profile bác sĩ, tích hợp lịch cá nhân hiển thị ca trực của từng bác sĩ.
-	Bệnh nhân	Quản lý hồ sơ bệnh nhân: thông tin cá nhân, tiền sử bệnh, dị ứng, đơn thuốc đã dùng. Cho phép tìm kiếm bệnh nhân. Giao diện: trang thông tin bệnh nhân (forms + lịch sử điều trị).
-	Lịch khám	Quản lý đặt lịch khám (lịch hẹn): hiển thị dưới dạng lịch calendar theo bác sĩ hoặc phòng khám. Cho phép thêm/sửa lịch hẹn (thời gian, ngày). Hệ thống nhắc nhở qua email/SMS.
-	Hồ sơ bệnh án	Lưu hồ sơ y tế từng lần khám: triệu chứng, chuẩn đoán, kết quả xét nghiệm, đơn thuốc. Cho phép in đơn thuốc. Giao diện: form nhập liệu khám bệnh, xem lại qua lịch sử.
-	Hậu khám (tái khám)	Theo dõi và nhắc lịch tái khám, đánh giá hiệu quả điều trị. Ví dụ: ghi nhận phản hồi sức khỏe, thông báo uống thuốc đầy đủ. (Tùy chọn nhưng nâng cao chất lượng dịch vụ.)

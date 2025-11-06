@@ -141,6 +141,11 @@ export const navMenu: NavMenu[] = [
             link: "/report/user-sales",
           },
           {
+            title: "Shift Closing",
+            link: "/report/shift-closing",
+            new: true,
+          },
+          {
             title: "Closing List",
             link: "/report/closing",
           },
@@ -160,35 +165,20 @@ export const navMenu: NavMenu[] = [
             link: "/hr/attendance",
           },
           {
+            title: "Shift Management",
+            link: "/hr/shift",
+          },
+          {
             title: "Payroll",
             link: "/hr/payroll",
           },
           {
+            title: "Benefits",
+            link: "/hr/benefits",
+          },
+          {
             title: "Expense",
             link: "/hr/expense",
-          },
-          {
-            title: "Loan",
-            link: "/hr/loan",
-          },
-        ],
-        new: true,
-      },
-      {
-        title: "Service",
-        icon: "i-lucide-stethoscope",
-        children: [
-          {
-            title: "Service List",
-            link: "/service",
-          },
-          {
-            title: "Appointments",
-            link: "/service/appointments",
-          },
-          {
-            title: "Consultation",
-            link: "/service/consultation",
           },
         ],
         new: true,

@@ -16,15 +16,14 @@ import MedicalConsultation from './MedicalConsultation';
 import Symptom from './Symptom';
 import MedicalCondition from './MedicalCondition';
 import DrugInteraction from './DrugInteraction';
-// New HR & Service modules
+// New HR & Voucher modules
 import Employee from './Employee';
 import Attendance from './Attendance';
 import Payroll from './Payroll';
 import Expense from './Expense';
-import Loan from './Loan';
-import Service from './Service';
-import Appointment from './Appointment';
 import Voucher, { VoucherUsageModel } from './Voucher';
+import Campaign from './Campaign';
+import { ShiftModel, BenefitModel } from './HRExtended';
 
 // Đảm bảo rằng các model đã được import và đăng ký đúng cách
 export { 
@@ -49,11 +48,11 @@ export {
   Attendance,
   Payroll,
   Expense,
-  Loan,
-  Service,
-  Appointment,
   Voucher,
-  VoucherUsageModel
+  VoucherUsageModel,
+  Campaign,
+  ShiftModel,
+  BenefitModel
 };
 
 // Export default là một object chứa tất cả các model để sử dụng linh hoạt hơn
@@ -79,9 +78,9 @@ export default {
   Attendance,
   Payroll,
   Expense,
-  Loan,
-  Service,
-  Appointment,
   Voucher,
-  VoucherUsageModel
+  VoucherUsageModel,
+  Campaign,
+  Shift: ShiftModel,
+  Benefit: BenefitModel
 };

@@ -22,3 +22,8 @@ logs
 .env
 .env.*
 !.env.example
+
+# Uploads
+public/uploads/temp/*
+public/uploads/medicine-images/*
+!public/uploads/.gitkeep

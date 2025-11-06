@@ -45,6 +45,7 @@
     "chatbot:import": "node scripts/import-chatbot-data.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@iconify-json/lucide": "^1.2.30",
     "@iconify-json/radix-icons": "^1.2.2",
     "@internationalized/date": "^3.7.0",
@@ -63,7 +64,9 @@
     "jsbarcode": "^3.11.6",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.0",
+    "multer": "^2.0.2",
     "reka-ui": "^2.1.1",
+    "sharp": "^0.34.4",
     "tailwindcss-animate": "^1.0.7",
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.5.0",
@@ -77,6 +80,7 @@
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/tailwindcss": "^6.13.2",
     "@pinia/nuxt": "^0.5.1",
+    "@types/multer": "^2.0.0",
     "@unocss/eslint-plugin": "^66.0.0",
     "@unocss/nuxt": "^66.0.0",
     "@vee-validate/zod": "^4.15.0",
