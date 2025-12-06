@@ -1,0 +1,825 @@
+Có bao nhiêu thuốc dạng Tablet?	
+Có 10 loại thuốc (Brufen 400mg, Zithromax 250mg, Zantac 150mg, Lorfats, Fugacar,
+Motilium, Glucophage 500mg, Staduvas 5mg, Simlo 10mg, Nexium 20mg).
+
+Có bao nhiêu thuốc dạng Capsule?	
+Có 5 loại thuốc (Hapacol 500mg, Medocillin 500mg, Clarityn, Dalacin C, Hasrax 200mg).
+
+
+
+Hệ thống phân loại thuốc thành bao nhiêu loại (Type) khác nhau?	
+Có 2 loại: OTC và Prescription.
+
+
+
+Hệ thống có bao nhiêu loại đơn vị đóng gói (Unit) khác nhau?	
+Có 6 loại: Capsule, Tablet, Effervescent, Syrup, Inhaler, Cream.
+
+
+
+Các nhà cung cấp ở HCM ?	
+Sunrise Pharma, VitaWell và Tam Anh Pharma.
+
+
+
+Có bao nhiêu nhà cung cấp tại Đà Nẵng?	
+Có 1 nhà cung cấp.
+
+
+
+Có bao nhiêu nhà cung cấp tại TP. Hồ Chí Minh?	
+Có 3 nhà cung cấp.
+
+
+
+Có bao nhiêu loại thuốc có giá trên 100.000 đồng?	
+Có 9 loại thuốc.
+
+
+
+Thuốc rẻ nhất là thuốc nào và giá bao nhiêu?	
+Brufen 400mg với giá 30.000 đồng.
+
+
+
+Thuốc đắt nhất trong hệ thống là thuốc nào và giá bao nhiêu?	
+Simlo 10mg với giá 649.000 đồng.
+
+
+
+Giá trung bình của các loại thuốc trong hệ thống là bao nhiêu?	
+Khoảng 149.650 đồng.
+
+
+
+Phân bố số thuốc theo đơn vị đóng gói (Unit) như thế nào?	
+Tablet: 10; Capsule: 5; Effervescent: 2; Syrup: 1; Inhaler: 1; Cream: 1.
+
+
+
+Phân bố số lượng thuốc theo nhóm (Category) như thế nào?	
+Painkiller: 2; Antibiotic: 4; Allergy: 2; Vitamin: 1; Digestive: 3; Cough: 1; Antiworm: 1;
+Diabetes: 1; Heart: 1; Respiratory: 1; Cholesterol: 1; Cardiovascular: 1; Anti-inflammatory:
+1.
+
+
+
+Hệ thống có bao nhiêu nhóm thuốc khác nhau?	
+Có 13 nhóm thuốc khác nhau.
+
+
+
+Nhóm thuốc nào có nhiều loại nhất trong hệ thống?	
+Nhóm Antibiotic với 4 loại thuốc.
+
+
+
+Có bao nhiêu loại thuốc không kê đơn (OTC) và kê đơn (Prescription)?	
+Có 8 loại thuốc OTC và 12 loại thuốc kê đơn.
+
+
+
+Hệ thống có bao nhiêu nhà cung cấp?	
+Có 6 nhà cung cấp.
+
+
+
+Hệ thống hiện có bao nhiêu loại thuốc?	
+Có 20 loại thuốc.
+
+
+
+Cortone Acetate (Cortisone): Liều lượng dùng thuốc phù hợp cho người lớn?	
+25–300mg/ngày (uống 1–2 lần). Thông thường dùng 25–50mg/ngày với viêm khớp
+dạng thấp; liều tối thiểu có hiệu quả.
+
+
+
+Cortone Acetate (Cortisone): Tác dụng phụ của thuốc này là gì?	
+Tăng cân, phù, tăng huyết áp, tăng đường huyết; mất canxi xương (loãng xương) và teo
+cơ. Thay đổi tâm trạng (hưng phấn hoặc trầm cảm) là phổ biến.
+
+
+
+Upsa C (Vitamin C): Liều lượng dùng thuốc phù hợp cho người lớn?	
+1 viên/ngày (1000mg), tối đa 2 viên/ngày (2000mg/ngày).
+
+
+
+Upsa C : Có chống chỉ định cho người có bệnh nền không?	
+Tránh liều cao ở bệnh nhân thiếu men G6PD; thận trọng ở người sỏi thận. Không dùng
+quá 2g/ngày trừ khi có chỉ định đặc biệt.
+
+
+
+Upsa C : Thuốc này tương tác với loại thuốc nào?	
+Như vitamin C: tăng hấp thu sắt; làm giảm hấp thu thuốc kháng acid chứa nhôm/magiê.
+Có thể tăng tác dụng warfarin nếu dùng kéo dài.
+
+
+
+Upsa C (Vitamin C): Tác dụng phụ của thuốc này là gì?	
+Tương tự vitamin C: buồn nôn, đau bụng, tiêu chảy khi liều cao (>3g/ngày); hiếm có thể
+gây sỏi thận oxalat ở người nhạy cảm.
+
+
+
+Nexium 20mg (Esomeprazole): Liều lượng dùng thuốc phù hợp cho người lớn?	
+20mg mỗi ngày (uống trước ăn sáng)
+
+
+
+Nexium 20mg (Esomeprazole): Có chống chỉ định cho người có bệnh nền không?	
+Không dùng nếu dị ứng với các PPI. Thận trọng ở suy gan nặng (chỉ dùng 20mg/ngày)
+drugs.com . Trước khi dùng, cần loại trừ ung thư dạ dày ở bệnh nhân nghi ngờ.
+
+
+
+Nexium 20mg (Esomeprazole): Thuốc này tương tác với loại thuốc nào?	
+Ức chế tiết acid làm giảm hấp thu thuốc cần môi trường acid (ketoconazole,
+itraconazole, atazanavir) và giảm tác dụng clopidogrel. Tăng nồng độ digoxin; giảm
+hấp thu sắt nếu dùng đồng thời.
+
+
+
+Nexium 20mg (Esomeprazole): Tác dụng phụ của thuốc này là gì?	
+Nhức đầu, buồn nôn, tiêu chảy, táo bón, đầy hơi; có thể bị đau bụng nhẹ, chán ăn hoặc
+chóng mặt thoáng qua.
+
+
+
+Simlo (Simvastatin) 10mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+10mg mỗi ngày (uống trước khi đi ngủ). Không vượt quá 80mg/ngày; hạn chế 10mg khi
+dùng cùng amlodipine/diltiazem.
+
+
+
+Simlo (Simvastatin) 10mg: Có chống chỉ định cho người có bệnh nền không ?	
+Không dùng nếu có bệnh gan tiến triển (ALT/AST > 3 lần), hoặc đang mang thai/cho
+con bú. Thận trọng ở đái tháo đường (kiểm soát đường huyết kỹ) và ở người lớn tuổi.
+
+Simlo (Simvastatin) 10mg: Thuốc này tương tác với loại thuốc nào?	
+Sỏi bưởi, azole kháng nấm (ketoconazole), erythromycin, ritonavir (ức chế CYP3A4)
+làm tăng nồng độ statin gây độc cơ. Kết hợp cyclosporin hoặc amiodaron cũng tăng
+nguy cơ. Đối kháng với thuốc huyết áp chẹn kênh calci (amlodipine, diltia... Read more
+
+
+
+Simlo (Simvastatin) 10mg: Tác dụng phụ của thuốc này là gì?	
+Nhức đầu, đầy bụng, táo bón hoặc tiêu chảy; đau cơ, mệt mỏi. Có thể tăng men gan
+(xét nghiệm) và hiếm gây tiêu cơ vân. Rất hiếm dị ứng da hay đau cơ nghiêm trọng.
+
+
+
+Hasrax 200mg (Cefuroxime): Liều lượng dùng thuốc phù hợp cho người lớn?	
+200–250mg mỗi 12 giờ (2 lần/ngày).
+
+
+
+Hasrax 200mg (Cefuroxime): Có chống chỉ định cho người có bệnh nền không?	
+Chống chỉ định khi dị ứng nặng với penicillin/cephalosporin. Thận trọng ở người suy
+thận (giảm liều). Tiền sử viêm đại tràng do kháng sinh là chống chỉ định tương đối.
+
+
+
+Hasrax 200mg (Cefuroxime): Thuốc này tương tác với loại thuốc nào?	
+Probenecid làm tăng nồng độ cefuroxime; các kháng sinh aminoglycoside có thể tăng
+độc thận; dùng chung thuốc tránh thai đường uống có thể giảm hiệu quả (do thay đổi vi
+khuẩn ruột); antacid chứa nhôm magiê làm giảm hấp thu.
+
+
+
+Hasrax 200mg (Cefuroxime): Tác dụng phụ của thuốc này là gì?	
+Buồn nôn, tiêu chảy, đầy hơi, đau đầu; phát ban da do dị ứng. Hệ vi khuẩn đường ruột
+thay đổi có thể gây nấm vùng sinh dục (ngứa, huyết trắng tăng).
+
+
+
+Ventolin (Salbutamol) Inhaler: Liều lượng dùng thuốc phù hợp cho người lớn?	
+2 hít x 4 lần/ngày khi cần. Nếu cần nhiều, có thể tăng đến 8 hít/ngày. (Mỗi hít
+~100mcg).
+
+
+
+Ventolin (Salbutamol) Inhaler: Có chống chỉ định cho người có bệnh nền không?	
+Thận trọng ở người có rối loạn nhịp tim nặng, đau thắt ngực không ổn định. Không nên
+dùng cho cường giáp không kiểm soát, tiểu đường nặng, hạ kali máu.
+
+
+
+Ventolin (Salbutamol) Inhaler: Thuốc này tương tác với loại thuốc nào?	
+Thuốc chẹn beta toàn thân (propranolol) sẽ đối kháng tác dụng giãn phế quản. Kết hợp
+corticosteroid hoặc thuốc lợi tiểu thiazid/có thể làm tăng hạ kali máu; tránh dùng với
+MAOI.
+
+
+
+Ventolin (Salbutamol) Inhaler: Tác dụng phụ của thuốc này là gì?	
+Run tay, đánh trống ngực, nhịp tim nhanh; đau đầu, mất ngủ. Hiếm gặp hạ kali máu
+thoáng qua, kích ứng cổ họng.
+
+
+
+Dalacin C (Clindamycin): Liều lượng dùng thuốc phù hợp cho người lớn?	
+150–300mg mỗi 6 giờ (x 4 lần/ngày). Nhiễm trùng nặng có thể tăng đến 300–450mg
+mỗi 6 giờ.
+
+
+
+Dalacin C (Clindamycin): Có chống chỉ định cho người có bệnh nền không?	
+Chống chỉ định nếu có viêm đại tràng màng giả hiện tại hoặc tiền sử nặng. Không dùng
+ở viêm màng não. Thận trọng ở suy gan nặng, bệnh tim nặng.
+
+
+
+Dalacin C (Clindamycin): Thuốc này tương tác với loại thuốc nào?	
+Tăng tác dụng của thuốc giãn cơ (succinylcholine, tubocurarine) gây tăng ức chế cơ;
+làm tăng nồng độ theophylline (khi dùng cùng) do ức chế chuyển hóa. Dùng chung với
+warfarin có thể tăng INR.
+
+
+
+Dalacin C (Clindamycin): Tác dụng phụ của thuốc này là gì?	
+Buồn nôn, nôn, đau bụng, tiêu chảy; phát ban da và nhiễm nấm sinh dục (vaginal
+candidiasis) do mất cân bằng vi khuẩn. Đặc biệt nguy cơ viêm đại tràng giả mạc (C.
+difficile) nghiêm trọng.
+
+
+
+Stadovas (Amlodipine) 5mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+5mg mỗi ngày; có thể tăng đến 10mg/ngày (uống vào buổi sáng)
+
+
+
+Stadovas (Amlodipine) 5mg: Có chống chỉ định cho người có bệnh nền không?	
+Không dùng nếu sốc tim, hẹp van động mạch chủ nặng, hạ huyết áp rõ. Thận trọng ở
+suy gan nặng (giảm liều).
+
+
+
+Stadovas (Amlodipine) 5mg: Thuốc này tương tác với loại thuốc nào?	
+Kết hợp với một số thuốc kháng nấm (itraconazole) hoặc chống HIV (ritonavir) ức chế
+CYP3A4 có thể tăng nồng độ amlodipine. Phối hợp với nitrates hoặc thuốc hạ áp khác
+có thể làm hạ huyết áp nhiều hơn.
+
+
+
+Stadovas (Amlodipine) 5mg: Tác dụng phụ của thuốc này là gì?	
+Nhức đầu, phù chân, đánh trống ngực, mệt mỏi; có thể gây đỏ bừng mặt, chóng mặt
+nhẹ.
+
+
+
+Glucophage (Metformin) 500mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+500mg x 2 lần/ngày (sáng, tối) hoặc 850mg/ngày, tăng dần nếu cần; tối đa
+2000–2550mg/ngày (chia 2–3 lần).
+
+
+
+Glucophage (Metformin) 500mg: Có chống chỉ định cho người có bệnh nền không?	
+Không dùng khi suy thận nặng (CrCl <30ml/phút), suy gan nặng, toan ceton đái tháo
+đường, suy tim mất bù, nghiện rượu.
+
+
+
+Glucophage (Metformin) 500mg: Thuốc này tương tác với loại thuốc nào?	
+Rượu (tăng nguy cơ toan lactic); thuốc cản quang chứa iod (ngưng Metformin trước và
+sau thủ thuật); corticosteroid, lợi tiểu (tăng đường huyết).
+
+
+
+Glucophage (Metformin) 500mg: Tác dụng phụ của thuốc này là gì?	
+Buồn nôn, tiêu chảy, đầy hơi là phổ biến; có thể giảm hấp thu vitamin B12 khi dùng lâu
+dài. Hiếm gặp toan ceton lactic (nguy hiểm) ở bệnh nhân suy chức năng thận hoặc ngộ
+độc rượu.
+
+
+
+Motilium (Domperidone) 10mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+10mg x 3 lần/ngày, trước bữa ăn.
+
+
+
+Motilium (Domperidone) 10mg: Có chống chỉ định cho người có bệnh nền không?	
+Không dùng khi QT kéo dài hoặc hạ kali, mag thấp; chống chỉ định ở suy gan nặng, suy
+tim mất bù; trẻ em <12 tuổi.
+
+
+
+Motilium (Domperidone) 10mg: Thuốc này tương tác với loại thuốc nào?	
+Không dùng cùng thuốc ức chế CYP3A4 (ketoconazole, clarithromycin) hoặc thuốc
+kéo dài QT (citalopram, haloperidol…) vì tăng nguy cơ loạn nhịp. Cẩn thận khi phối hợp
+với thuốc kháng cholinergic (tăng bí tiểu).
+
+
+
+Motilium (Domperidone) 10mg: Tác dụng phụ của thuốc này là gì?	
+Khô miệng, đau đầu, mệt mỏi, buồn ngủ; đôi khi tăng Prolactin gây mất kinh, tăng tiết
+sữa. Uống liều cao có thể gây loạn nhịp tim (kéo dài khoảng QT).
+
+
+
+Fugacar (Mebendazole): Thuốc này tương tác với loại thuốc nào?	
+Ít tương tác. Lưu ý khi dùng chung với rifampicin, carbamazepine có thể giảm nồng độ
+mebendazole (giảm hiệu quả).
+
+
+
+Fugacar (Mebendazole): Có chống chỉ định cho người có bệnh nền không?	
+Không dùng cho phụ nữ có thai (nhất là ba tháng đầu) hoặc cho con bú; trẻ dưới 2 tuổi;
+thận trọng ở suy gan nặng.
+
+
+
+Fugacar (Mebendazole): Liều lượng dùng thuốc phù hợp cho người lớn?	
+100mg mỗi 12 giờ (sáng và tối) trong 3 ngày liên tục; hoặc liều đơn 500mg (một liều
+duy nhất) tùy chỉ định.
+
+
+
+Fugacar (Mebendazole): Tác dụng phụ của thuốc này là gì?	
+Buồn nôn, nôn, tiêu chảy, đau bụng; hiếm phát ban da, đau đầu nhẹ. Thường nhẹ và tự
+hết khi ngừng thuốc.
+
+Terpin Codein (siro): Liều lượng dùng thuốc phù hợp cho người lớn?	
+5–10ml (khoảng 5–10mg codein) mỗi 4–6 giờ, tối đa 30mg codein/ngày hoặc theo chỉ
+định bác sĩ.
+
+
+
+Terpin Codein (siro): Có chống chỉ định cho người có bệnh nền không?	
+Chống chỉ định khi hen suyễn nặng, suy hô hấp, tăng áp lực nội sọ, tắc ruột. Không
+dùng cho trẻ dưới 12 tuổi hoặc người nghiện rượu/ma túy.
+
+
+
+Terpin Codein: Thuốc này tương tác với loại thuốc nào?	
+Tăng ức chế thần kinh trung ương nếu dùng cùng rượu, thuốc an thần hoặc opioid
+khác. Tránh phối hợp với MAOI (trong vòng 14 ngày). Dùng chung thuốc chống co giật
+có thể tăng độc tính.
+
+
+
+Terpin Codein (siro): Tác dụng phụ của thuốc này là gì?	
+Gây buồn ngủ, chóng mặt, buồn nôn, táo bón, bí tiểu; ít khi nhức đầu hoặc tim đập
+nhanh. Nhóm opiate (codein) cũng có nguy cơ lệ thuộc.
+
+
+
+Lorfast: Liều lượng dùng thuốc phù hợp cho người lớn?	
+10mg (1 viên) mỗi ngày.
+
+
+
+Lorfast: Có chống chỉ định cho người có bệnh nền không?	
+Không dùng nếu dị ứng loratadine; thận trọng ở suy gan/thận nặng (giảm liều).
+
+
+
+Lorfast: Thuốc này tương tác với loại thuốc nào?	
+Các tương tác giống Clarityn: ketoconazole, erythromycin (ức chế CYP3A4) tăng nồng
+độ loratadine, rifampicin (CYP3A4) giảm tác dụng.
+
+
+
+Lorfast: Tác dụng phụ của thuốc này là gì?	
+Tương tự Clarityn: nhức đầu, mệt mỏi, khô miệng; đôi khi chóng mặt, khó tiêu nhẹ.
+
+
+
+Zantac 150mg (Ranitidine): Liều lượng dùng thuốc phù hợp cho người lớn?	
+150mg x 2 lần/ngày (sáng, tối) hoặc 300mg x 1 lần/ngày (trước khi ngủ)
+
+
+
+Zantac 150mg (Ranitidine): Có chống chỉ định cho người có bệnh nền không?	
+Thận trọng ở suy thận nặng (phải giảm liều); chống chỉ định trong loét dạ dày tá tràng
+đang chảy máu; không dùng nếu dị ứng với ranitidine.
+
+
+
+Zantac 150mg (Ranitidine): Thuốc này tương tác với loại thuốc nào?	
+Ranitidine làm giảm hấp thu các thuốc cần pH dạ dày thấp (ketoconazole, itraconazole,
+atazanavir) gây giảm hiệu lực. Có thể làm thay đổi INR khi dùng chung warfarin.
+
+
+
+Zantac 150mg (Ranitidine): Tác dụng phụ của thuốc này là gì?	
+Buồn nôn, táo bón, tiêu chảy, đau đầu, mệt mỏi; hiếm chóng mặt hoặc rối loạn nhịp
+nhẹ.
+
+
+
+Zithromax 250mg (Azithromycin): Liều lượng dùng thuốc phù hợp cho người lớn?	
+500mg ngày đầu, sau đó 250mg/ngày x 4 ngày (tổng 5 ngày) hoặc 500mg/ngày trong
+3 ngày cho đơn nhiễm khuẩn thông thường.
+
+
+
+Zithromax 250mg (Azithromycin): Có chống chỉ định cho người có bệnh nền không?	
+Không dùng nếu dị ứng nhóm macrolid. Thận trọng ở người suy gan, rối loạn nhịp tim
+(QT kéo dài) hoặc tiền sử loạn nhịp.
+
+
+
+Zithromax 250mg (Azithromycin): Thuốc này tương tác với loại thuốc nào?	
+Không dùng cùng antacid chứa nhôm hoặc magiê (giảm hấp thu). Tránh đồng thời với
+các thuốc kéo dài QT (antiarrhythmic, thuốc chống nấm azol) do nguy cơ loạn nhịp
+tăng.
+
+
+
+Zithromax 250mg (Azithromycin): Tác dụng phụ của thuốc này là gì?	
+Đau bụng, tiêu chảy, buồn nôn, nôn, đau đầu là thường gặp. Có thể thấy phát ban nhẹ.
+Hiếm gặp tăng QT (loạn nhịp tim) khi dùng liều cao.
+
+
+
+C sủi STADA (Vitamin C 1000mg): Liều lượng dùng thuốc phù hợp cho người lớn?	
+1 viên (1000mg) mỗi ngày, tối đa 2 viên/ngày (2000mg/ngày).
+
+
+
+C sủi STADA (Vitamin C 1000mg): Có chống chỉ định cho người có bệnh nền không?	
+Không nên dùng liều >2g/ngày. Cẩn trọng ở người sỏi thận, rối loạn chuyển hóa oxalat,
+thiếu men G6PD.
+
+
+
+C sủi STADA (Vitamin C 1000mg): Thuốc này tương tác với loại thuốc nào?	
+Vitamin C tăng hấp thu sắt (tốt cho thiếu máu). Có thể làm giảm hiệu lực thuốc antacid
+chứa nhôm/magiê và một số thuốc chống đông (warfarin). Dùng chung với estrogens,
+corticosteroid có thể tăng nguy cơ sỏi thận.
+
+
+
+C sủi STADA (Vitamin C 1000mg): Tác dụng phụ của thuốc này là gì?	
+Thường có thể bị tiêu chảy, buồn nôn, đau bụng khi dùng quá liều (>3g/ngày). Hiếm
+gặp sỏi thận do oxalat nếu dùng liều cao lâu ngày.
+
+
+
+Brufen (Ibuprofen) 400mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+400–600mg mỗi 6–8 giờ, tối đa 2400–3200mg/ngày (tùy theo triệu chứng).
+
+
+
+Brufen (Ibuprofen) 400mg: Có chống chỉ định cho người có bệnh nền không?	
+Không dùng khi loét dạ dày/ruột đang tiến triển, suy tim mất bù, suy gan, suy thận
+nặng. Thận trọng ở người hen phế quản có tiền sử mẫn cảm với NSAID.
+
+
+
+Brufen (Ibuprofen) 400mg: Thuốc này tương tác với loại thuốc nào?	
+NSAID như ibuprofen làm tăng tác dụng của thuốc ức chế beta/ACE trên huyết áp và
+giảm tác dụng lợi tiểu. Tương tác với warfarin (gây xuất huyết), lithium (tăng độc),
+methotrexate (tăng độc thận).
+
+
+
+Brufen (Ibuprofen) 400mg: Tác dụng phụ của thuốc này là gì?	
+Đau dạ dày, buồn nôn, tiêu chảy, đầy hơi; có thể nhức đầu. Ngoài ra, dùng lâu có thể
+gây loét dạ dày, xuất huyết tiêu hóa.
+
+
+
+Clarityn (Loratadine) 10mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+10mg (1 viên) mỗi ngày (không vượt quá 10mg/ngày).
+
+
+
+Clarityn (Loratadine) 10mg: Có chống chỉ định cho người có bệnh nền không?	
+Không dùng nếu dị ứng với loratadine. Cần thận trọng giảm liều ở người suy gan hoặc
+suy thận nặng.
+
+
+
+Clarityn (Loratadine) 10mg: Thuốc này tương tác với loại thuốc nào?	
+Có thể tăng nồng độ loratadine khi dùng cùng ketoconazole, erythromycin (ức chế
+CYP3A4); rifampicin (CYP3A4) có thể giảm tác dụng. Cimetidine cũng làm tăng nồng
+độ thuốc.
+
+
+
+Clarityn (Loratadine) 10mg: Tác dụng phụ của thuốc này là gì?	
+Nhức đầu, mệt mỏi, khô miệng, đau bụng nhẹ là các phản ứng thường gặp. Rất hiếm
+gặp buồn ngủ, chóng mặt.
+
+
+
+Medocillin 500mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+500mg x 3 lần/ngày (có thể dùng 250–500mg x 3 lần/ngày)
+
+
+
+Medocillin 500mg: Có chống chỉ định cho người có bệnh nền không?	
+Chống chỉ định khi dị ứng với penicillin/cephalosporin. Thận trọng ở người suy thận
+(cần giảm liều) và người có tiền sử viêm đại tràng do kháng sinh.
+
+Medocillin 500mg: Thuốc này tương tác với loại thuốc nào?	
+Làm tăng INR khi dùng chung với warfarin. Probenecid có thể tăng nồng độ Amoxicillin.
+Các thuốc kháng sinh nhóm tetracycline làm giảm hiệu lực Amoxicillin. Đồng thời
+Amoxicillin có thể làm giảm tác dụng thuốc tránh thai đường uống (do tha... Read more
+
+
+
+Medocillin 500mg (Amoxicillin): Tác dụng phụ của thuốc này là gì?	
+Buồn nôn, nôn, tiêu chảy, đau bụng; đôi khi phát ban da nhẹ. Hiếm gặp viêm đại tràng
+giả mạc do Clostridium difficile.
+
+
+
+Paracetamol 1g: Liều lượng dùng thuốc phù hợp cho người lớn?	
+1 viên (1000mg) mỗi 4–6 giờ, tối đa 4 viên/ngày (4g/ngày).
+
+
+
+Paracetamol 1g: Có chống chỉ định cho người có bệnh nền không?	
+Cần tránh Paracetamol nếu suy gan nặng, suy thận nặng hoặc thiếu hụt G6PD. Dị ứng
+với paracetamol cũng là chống chỉ định rõ ràng.
+
+
+
+Paracetamol 1g: Thuốc này tương tác với loại thuốc nào?	
+Paracetamol làm tăng tác dụng của thuốc chống đông (coumarin) khi phối hợp; đồng
+thời tăng độc gan khi dùng với isoniazid hoặc rượu. Cẩn thận khi dùng chung
+corticosteroid hoặc chống viêm vì tăng nguy cơ tác dụng bất lợi.
+
+
+
+Paracetamol 1g: Tác dụng phụ của thuốc này là gì?	
+Tác dụng phụ tương tự Hapacol: buồn nôn, đau bụng, tiêu chảy, phát ban da. Quá liều
+có thể gây tổn thương gan nghiêm trọng.
+
+
+
+Hapacol 500mg: Liều lượng dùng thuốc phù hợp cho người lớn?	
+500–1000mg mỗi 4–6 giờ, tối đa 4g/ngày (ở người suy gan chỉ 2g/ngày).
+
+
+
+Hapacol 500mg: Có chống chỉ định cho người có bệnh nền (tim, gan, thận...) không?	
+Không dùng Hapacol ở người suy gan nặng, suy thận, hoặc thiếu men G6PD; thận
+trọng ở người nghiện rượu. Không dùng nếu dị ứng paracetamol.
+
+
+
+Hapacol 500mg: Thuốc này tương tác với loại thuốc nào?	
+Paracetamol trong Hapacol có thể làm tăng tác dụng của thuốc chống đông (warfarin)
+dẫn đến chảy máu dễ dàng; còn cimetidine, isoniazid có thể làm tăng độc tính trên gan.
+Tránh phối hợp với các thuốc giảm đau khác cùng tác dụng (NSAID) vì tăn... Read more
+
+
+
+Hapacol 500mg: Tác dụng phụ của thuốc này là gì?	
+Các tác dụng phụ chính do thành phần paracetamol gây ra gồm mệt mỏi, buồn nôn,
+tiêu chảy, đau bụng, dị ứng da; quá liều có thể gây tổn thương gan nặng.
+
+
+
+Lorfast có giá bao nhiêu?	
+45,000 VND
+
+
+
+Lorfast dùng để làm gì?	
+Chống dị ứng
+
+
+
+Fugacar có giá bao nhiêu?	
+50,000 VND
+
+
+
+Mebendazole dùng để làm gì?	
+Tẩy giun
+
+
+
+Có thuốc nào trị giun không?	
+Fugacar
+
+
+
+Motilium giá bao nhiêu vậy?	
+35,000 VND
+
+
+
+Domperidone là thuốc gì?	
+Tiêu hóa, chống nôn
+
+
+
+Tôi bị tiêu chảy, nên uống gì?	
+Motilium
+
+
+
+Hasrax giá bao nhiêu?	
+350,000 VND
+
+
+
+Cefixime dùng để làm gì?	
+Nhiễm khuẩn hô hấp
+
+
+
+Có thuốc trị nhiễm khuẩn hô hấp không?	
+Hasrax 200mg
+
+
+
+Giá Upsa C bao nhiêu vậy?	
+600,000 VND
+
+
+
+Upsa C có tác dụng gì?	
+Phòng ngừa nhồi máu cơ tim
+
+
+
+Có thuốc nào phòng ngừa tim mạch không?	
+Simlo 10mg, Upsa C
+
+
+
+Simlo giá bao nhiêu?	
+649,000 VND
+
+
+
+Simvastatin trị bệnh gì?	
+Mỡ máu, tim mạch
+
+
+
+Tôi muốn thuốc trị cao mỡ máu.	
+Simlo 10mg
+
+
+
+Dalacin C giá bao nhiêu?	
+70,000 VND
+
+
+
+Clindamycin là thuốc gì?	
+Kháng sinh trị mụn
+
+
+
+Có thuốc nào trị mụn hiệu quả không?	
+Dalacin C
+
+Cortone Acetate giá bao nhiêu vậy?	
+40,000 VND
+
+
+
+Có thuốc nào trị viêm da không?	
+Cortone Acetate
+
+
+
+Giá thuốc Zantac là bao nhiêu?	
+40,000 VND
+
+
+
+Ranitidine trị bệnh gì?	
+Acid dạ dày
+
+
+
+Tôi bị acid dạ dày cao, uống thuốc gì?	
+Zantac 150mg
+
+
+
+Ventolin giá bao nhiêu?	
+124,000 VND
+
+
+
+Salbutamol là thuốc gì?	
+Thuốc trị hen
+
+
+
+Có thuốc nào trị hen suyễn không?	
+Ventolin Inhaler
+
+
+
+Medocillin giá bao nhiêu?	
+40,000 VND
+
+
+
+Amoxicillin dùng để làm gì?	
+Kháng sinh phổ rộng
+
+
+
+Có thuốc nào kháng sinh không?	
+Medocillin 500mg
+
+
+
+C sủi giá bao nhiêu vậy?	
+60,000 VND
+
+
+
+Tôi muốn tìm thuốc bổ sung vitamin C.	
+C sủi STADA
+
+
+
+Stadovas có giá là bao nhiêu?	
+130,000 VND
+
+
+
+Amlodipine dùng cho bệnh gì?	
+Cao huyết áp
+
+
+
+Có thuốc nào trị cao huyết áp không?	
+Stadovas 5mg
+
+
+
+Glucophage giá bao nhiêu vậy?	
+230,000 VND
+
+
+
+Metformin là thuốc gì?	
+Thuốc tiểu đường
+
+
+
+Tôi bị tiểu đường, nên dùng thuốc gì?	
+Glucophage 500mg
+
+
+
+Terpin Codein có giá bao nhiêu?	
+120,000 VND
+
+
+
+Có loại thuốc nào giúp giảm ho không?	
+Terpin Codein
+
+
+
+Giá thuốc Zithromax là bao nhiêu?	
+120,000 VND
+
+
+
+Zithromax dùng để làm gì?	
+Trị nhiễm khuẩn
+
+
+
+Loratadine là thuốc gì?	
+Thuốc dị ứng
+
+
+
+Tôi bị dị ứng, nên uống thuốc gì?	
+Clarityn
+
+
+
+Nexium giá bao nhiêu vậy?	
+130,000 VND
+
+
+
+Có thuốc nào trị viêm loét dạ dày không?	
+Nexium 20mg
+
+
+
+Thuốc giảm đau nào tốt?	
+Brufen 400mg, Hapacol 500mg
+
+
+
+Paracetamol 1 có giá bao nhiêu?	
+60,000 VND
+
+
+
+Tôi bị sốt, có thuốc nào hạ sốt không?	
+Bạn có thể dùng thuốc hạ sốt như Hapacol 500mg (Paracetamol). Đây là loại thuốc
+thường được dùng để giảm đau và hạ sốt cho cả người lớn và trẻ em. 

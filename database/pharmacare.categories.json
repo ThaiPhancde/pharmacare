@@ -1,0 +1,275 @@
+[
+{
+  "_id": {
+    "$oid": "68078f614abd41a535dc1d81"
+  },
+  "name": "Allergy",
+  "description": "Chống dị ứng",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325921184"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1746672856451"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078f734abd41a535dc1d88"
+  },
+  "name": "Antibiotic",
+  "description": "Kháng sinh",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325939600"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325939600"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078f8e4abd41a535dc1d8f"
+  },
+  "name": "Vitamin",
+  "description": "Vitamin",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325966392"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325966392"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680795a4386704a76dcc13ce"
+  },
+  "name": "Digestive",
+  "description": "Hỗ trợ",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745327524942"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745327544082"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68079656386704a76dcc1401"
+  },
+  "name": "Diabetes",
+  "description": "Hạ đường huyết",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745327702276"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745327702276"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680796d3386704a76dcc1405"
+  },
+  "name": "Heart",
+  "description": "Tim mạch",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745327827336"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745327827336"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680796df386704a76dcc1409"
+  },
+  "name": "Cough",
+  "description": "Giảm ho",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745327839646"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745327839646"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680796fe386704a76dcc1411"
+  },
+  "name": "Respiratory",
+  "description": "Hô hấp",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745327870550"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745327870550"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68079710386704a76dcc1417"
+  },
+  "name": "Antiworm",
+  "description": "Giun sán",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745327888616"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745327888616"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "6807982e4e083ca8e3390f54"
+  },
+  "name": "Painkiller",
+  "description": "Giảm đau",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328174619"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328174619"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680b0111a7d7f616cf6c2255"
+  },
+  "name": "Cholesterol",
+  "description": "Cholesterol",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745551633390"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745551633390"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680b1e136179670a2e03ba18"
+  },
+  "name": "Cardiovascular",
+  "description": "Tim mạch",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745559059928"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745559059928"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680b1e806179670a2e03ba4d"
+  },
+  "name": "Anti-inflammatory",
+  "description": "Chống viêm",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745559168883"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745559168883"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

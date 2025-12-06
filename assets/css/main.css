@@ -1,0 +1,499 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --primary: 217 91% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --primary: 217 91% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Fix for Naive UI dialog buttons - ensure text is visible */
+.n-dialog__action .n-button {
+  color: inherit !important;
+}
+
+.n-dialog__action .n-button--error-type,
+.n-dialog__action .n-button[type="error"] {
+  background-color: #d32f2f !important;
+  color: #fff !important;
+  border-color: #d32f2f !important;
+}
+
+.n-dialog__action .n-button--error-type:hover,
+.n-dialog__action .n-button[type="error"]:hover {
+  background-color: #b71c1c !important;
+  border-color: #b71c1c !important;
+  color: #fff !important;
+}
+
+.n-dialog__action .n-button--error-type .n-button__content,
+.n-dialog__action .n-button[type="error"] .n-button__content {
+  color: #fff !important;
+}
+
+.n-dialog__action .n-button--warning-type,
+.n-dialog__action .n-button[type="warning"] {
+  background-color: #ed6c02 !important;
+  color: #fff !important;
+  border-color: #ed6c02 !important;
+}
+
+.n-dialog__action .n-button--warning-type:hover,
+.n-dialog__action .n-button[type="warning"]:hover {
+  background-color: #d84315 !important;
+  border-color: #d84315 !important;
+  color: #fff !important;
+}
+
+.n-dialog__action .n-button--warning-type .n-button__content,
+.n-dialog__action .n-button[type="warning"] .n-button__content {
+  color: #fff !important;
+}
+
+.n-dialog__action .n-button--primary-type,
+.n-dialog__action .n-button[type="primary"] {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+}
+
+.n-dialog__action .n-button--primary-type:hover,
+.n-dialog__action .n-button[type="primary"]:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-dialog__action .n-button--primary-type .n-button__content,
+.n-dialog__action .n-button[type="primary"] .n-button__content {
+  color: #fff !important;
+}
+
+.n-dialog__action .n-button--default-type,
+.n-dialog__action .n-button[type="default"] {
+  color: #666 !important;
+  background-color: #fff !important;
+  border-color: #d9d9d9 !important;
+}
+
+.n-dialog__action .n-button--default-type:hover,
+.n-dialog__action .n-button[type="default"]:hover {
+  color: #333 !important;
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+}
+
+.n-dialog__action .n-button--default-type .n-button__content,
+.n-dialog__action .n-button[type="default"] .n-button__content {
+  color: #666 !important;
+}
+
+/* Ensure all button text is visible */
+.n-dialog__action .n-button span,
+.n-dialog__action .n-button .n-button__content {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Fix for ALL Naive UI buttons - set primary color to #2563eb */
+.n-button {
+  transition: all 0.2s ease !important;
+}
+
+/* Primary type buttons - main color #2563eb - HIGHEST PRIORITY */
+.n-button--primary-type,
+.n-button[type="primary"],
+.n-button.n-button--primary-type {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+}
+
+.n-button--primary-type:hover,
+.n-button[type="primary"]:hover,
+.n-button.n-button--primary-type:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-button--primary-type .n-button__content,
+.n-button[type="primary"] .n-button__content,
+.n-button.n-button--primary-type .n-button__content,
+.n-button--primary-type span,
+.n-button[type="primary"] span {
+  color: #fff !important;
+}
+
+/* Default type buttons - also use primary color #2563eb */
+.n-button--default-type,
+.n-button[type="default"],
+.n-button:not([type]):not(.n-button--primary-type):not(.n-button--success-type):not(.n-button--warning-type):not(.n-button--error-type):not(.n-button--info-type):not(.n-button--ghost-type) {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+  border-width: 1px !important;
+}
+
+.n-button--default-type:hover,
+.n-button[type="default"]:hover,
+.n-button:not([type]):not(.n-button--primary-type):not(.n-button--success-type):not(.n-button--warning-type):not(.n-button--error-type):not(.n-button--info-type):not(.n-button--ghost-type):hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-button--default-type .n-button__content,
+.n-button[type="default"] .n-button__content,
+.n-button:not([type]):not(.n-button--primary-type):not(.n-button--success-type):not(.n-button--warning-type):not(.n-button--error-type):not(.n-button--info-type):not(.n-button--ghost-type) .n-button__content,
+.n-button--default-type span,
+.n-button[type="default"] span {
+  color: #fff !important;
+}
+
+/* Info type buttons - use primary color */
+.n-button--info-type,
+.n-button[type="info"] {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+}
+
+.n-button--info-type:hover,
+.n-button[type="info"]:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-button--info-type .n-button__content,
+.n-button[type="info"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Success type buttons - keep green but ensure text is white */
+.n-button--success-type,
+.n-button[type="success"] {
+  background-color: #52c41a !important;
+  color: #fff !important;
+  border-color: #52c41a !important;
+}
+
+.n-button--success-type:hover,
+.n-button[type="success"]:hover {
+  background-color: #73d13d !important;
+  border-color: #73d13d !important;
+  color: #fff !important;
+}
+
+.n-button--success-type .n-button__content,
+.n-button[type="success"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Warning type buttons - keep orange but ensure text is white */
+.n-button--warning-type,
+.n-button[type="warning"] {
+  background-color: #faad14 !important;
+  color: #fff !important;
+  border-color: #faad14 !important;
+}
+
+.n-button--warning-type:hover,
+.n-button[type="warning"]:hover {
+  background-color: #ffc53d !important;
+  border-color: #ffc53d !important;
+  color: #fff !important;
+}
+
+.n-button--warning-type .n-button__content,
+.n-button[type="warning"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Error type buttons - keep red but ensure text is white */
+.n-button--error-type,
+.n-button[type="error"] {
+  background-color: #ff4d4f !important;
+  color: #fff !important;
+  border-color: #ff4d4f !important;
+}
+
+.n-button--error-type:hover,
+.n-button[type="error"]:hover {
+  background-color: #ff7875 !important;
+  border-color: #ff7875 !important;
+  color: #fff !important;
+}
+
+.n-button--error-type .n-button__content,
+.n-button[type="error"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Ghost type buttons - transparent with blue text */
+.n-button--ghost-type,
+.n-button[type="ghost"] {
+  background-color: transparent !important;
+  color: #2563eb !important;
+  border-color: transparent !important;
+}
+
+.n-button--ghost-type:hover,
+.n-button[type="ghost"]:hover {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+  color: #1d4ed8 !important;
+}
+
+.n-button--ghost-type .n-button__content,
+.n-button[type="ghost"] .n-button__content {
+  color: inherit !important;
+}
+
+/* Ensure all button content is visible */
+.n-button .n-button__content,
+.n-button span {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Override any inline styles or specific classes */
+.n-button[style*="background"],
+.n-button[style*="background-color"] {
+  background-color: #2563eb !important;
+  color: #fff !important;
+}
+
+/* Fix for buttons with green borders - override to blue */
+.n-button[style*="border-color: green"],
+.n-button[style*="border-color:#"],
+.n-button.border-green,
+.n-button[class*="border-green"] {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+
+/* Fix for all Naive UI buttons - set primary color to #2563eb */
+.n-button {
+  transition: all 0.2s ease !important;
+}
+
+/* Primary type buttons - main color #2563eb */
+.n-button--primary-type,
+.n-button[type="primary"] {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+}
+
+.n-button--primary-type:hover,
+.n-button[type="primary"]:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-button--primary-type .n-button__content,
+.n-button[type="primary"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Default type buttons - also use primary color */
+.n-button--default-type,
+.n-button[type="default"] {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+  border-width: 1px !important;
+}
+
+.n-button--default-type:hover,
+.n-button[type="default"]:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-button--default-type .n-button__content,
+.n-button[type="default"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Info type buttons - use primary color */
+.n-button--info-type,
+.n-button[type="info"] {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+}
+
+.n-button--info-type:hover,
+.n-button[type="info"]:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+.n-button--info-type .n-button__content,
+.n-button[type="info"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Success type buttons - keep green but ensure text is white */
+.n-button--success-type,
+.n-button[type="success"] {
+  background-color: #52c41a !important;
+  color: #fff !important;
+  border-color: #52c41a !important;
+}
+
+.n-button--success-type:hover,
+.n-button[type="success"]:hover {
+  background-color: #73d13d !important;
+  border-color: #73d13d !important;
+  color: #fff !important;
+}
+
+.n-button--success-type .n-button__content,
+.n-button[type="success"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Warning type buttons - keep orange but ensure text is white */
+.n-button--warning-type,
+.n-button[type="warning"] {
+  background-color: #faad14 !important;
+  color: #fff !important;
+  border-color: #faad14 !important;
+}
+
+.n-button--warning-type:hover,
+.n-button[type="warning"]:hover {
+  background-color: #ffc53d !important;
+  border-color: #ffc53d !important;
+  color: #fff !important;
+}
+
+.n-button--warning-type .n-button__content,
+.n-button[type="warning"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Error type buttons - keep red but ensure text is white */
+.n-button--error-type,
+.n-button[type="error"] {
+  background-color: #ff4d4f !important;
+  color: #fff !important;
+  border-color: #ff4d4f !important;
+}
+
+.n-button--error-type:hover,
+.n-button[type="error"]:hover {
+  background-color: #ff7875 !important;
+  border-color: #ff7875 !important;
+  color: #fff !important;
+}
+
+.n-button--error-type .n-button__content,
+.n-button[type="error"] .n-button__content {
+  color: #fff !important;
+}
+
+/* Ghost type buttons - transparent with blue text */
+.n-button--ghost-type,
+.n-button[type="ghost"] {
+  background-color: transparent !important;
+  color: #2563eb !important;
+  border-color: transparent !important;
+}
+
+.n-button--ghost-type:hover,
+.n-button[type="ghost"]:hover {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+  color: #1d4ed8 !important;
+}
+
+.n-button--ghost-type .n-button__content,
+.n-button[type="ghost"] .n-button__content {
+  color: inherit !important;
+}
+
+/* Ensure all button content is visible */
+.n-button .n-button__content,
+.n-button span {
+  color: inherit !important;
+  opacity: 1 !important;
+}

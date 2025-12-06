@@ -1,0 +1,43 @@
+[
+{
+  "_id": {
+    "$oid": "680797e503bcd96ca4d4f223"
+  },
+  "name": "OTC",
+  "description": "",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328101115"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328101115"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "680797e803bcd96ca4d4f227"
+  },
+  "name": "Prescription",
+  "status": true,
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745328104567"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745328104567"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

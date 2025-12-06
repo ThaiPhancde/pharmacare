@@ -1,0 +1,292 @@
+[
+{
+  "_id": {
+    "$oid": "68078e024abd41a535dc1d0b"
+  },
+  "name": "Sunrise Pharma",
+  "address": "12 Pasteur, Q.1",
+  "phone": "0912345678",
+  "mail": "contact@sunrise.vn",
+  "city": "HCM",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325570109"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325570125"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078e4e4abd41a535dc1d31"
+  },
+  "name": "An Khang Med",
+  "address": "45 Trần Hưng Đạo",
+  "phone": "0987654321",
+  "mail": "ankhang@med.vn",
+  "city": "Hà Nội",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325646428"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325646428"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078e664abd41a535dc1d35"
+  },
+  "name": "BioCare Vietnam",
+  "address": "28 Nguyễn Du",
+  "phone": "0932112233",
+  "mail": "info@biocare.vn",
+  "city": "Đà Nẵng",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325670915"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325670916"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078e824abd41a535dc1d39"
+  },
+  "name": "VitaWell",
+  "address": "99 Phạm Văn Đồng",
+  "phone": "0905123456",
+  "mail": "support@vitawell.vn",
+  "city": "HCM",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325698774"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325698774"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078ea14abd41a535dc1d3d"
+  },
+  "name": "Mega Health Co.",
+  "address": "10 Hoàng Hoa Thám",
+  "phone": "0944998877",
+  "mail": "sales@megahealth.vn",
+  "city": "Cần Thơ",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325729844"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325729845"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078eba4abd41a535dc1d41"
+  },
+  "name": "Tam Anh Pharma",
+  "address": "5 Lê Văn Sỹ",
+  "phone": "0909090909",
+  "mail": "contact@tamanh.vn",
+  "city": "HCM",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325754892"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325754892"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078ee84abd41a535dc1d49"
+  },
+  "name": "Green Life Co.",
+  "address": "60 Lý Thường Kiệt",
+  "phone": "0977886655",
+  "mail": "hello@greenlife.vn",
+  "city": "Hà Nội",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325800333"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325800333"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078efc4abd41a535dc1d4d"
+  },
+  "name": "EcoMed Vietnam",
+  "address": "33 Nguyễn Cư Trinh",
+  "phone": "0911223344",
+  "mail": "info@ecomed.vn",
+  "city": "HCM",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325820321"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325820322"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078f104abd41a535dc1d51"
+  },
+  "name": "Meditek Asia",
+  "address": "88 Nguyễn Trãi",
+  "phone": "\t0922334455",
+  "mail": "contact@meditek.vn",
+  "city": "Đà Nẵng",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325840869"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325840870"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68078f284abd41a535dc1d55"
+  },
+  "name": "Đại Nam BioTech",
+  "address": "76 Bạch Đằng",
+  "phone": "0966778899",
+  "mail": "biotech@dainam.vn",
+  "city": "Huế",
+  "state": "",
+  "zip": "",
+  "country": "Vietnam",
+  "balance": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1745325864333"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1745325864334"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]

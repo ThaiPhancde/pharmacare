@@ -1,0 +1,1 @@
+import{d as o,h as t,o as n,n as r,u as c,f as p,p as l,aV as m}from"./CKxg9VfS.js";const _=o({__name:"CardDescription",props:{class:{}},setup(s){const e=s;return(a,u)=>(n(),t("p",{class:r(c(p)("text-sm text-muted-foreground",e.class))},[l(a.$slots,"default")],2))}}),d=m("/logo.png");export{d as _,_ as a};

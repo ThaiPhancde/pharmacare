@@ -1,0 +1,937 @@
+[
+{
+  "_id": {
+    "$oid": "68248f3486a570916192365b"
+  },
+  "medicine": {
+    "$oid": "680798a8aceecf11e2094809"
+  },
+  "batch_id": "8930001001",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420028"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "60000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420028"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420028"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a570916192365c"
+  },
+  "medicine": {
+    "$oid": "680799094e083ca8e3390f7e"
+  },
+  "batch_id": "8930001002",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420140"
+    }
+  },
+  "box_pattern": "20x20",
+  "box_quantity": {
+    "$numberInt": "20"
+  },
+  "unit_quantity": {
+    "$numberInt": "8000"
+  },
+  "purchase_price": {
+    "$numberInt": "2000000"
+  },
+  "mrp": {
+    "$numberInt": "0"
+  },
+  "vat": {
+    "$numberInt": "10"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420140"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747230540784"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a570916192365d"
+  },
+  "medicine": {
+    "$oid": "6807995806fdd585b12e38cd"
+  },
+  "batch_id": "8930001003",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420248"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "70000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420248"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420248"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a570916192365e"
+  },
+  "medicine": {
+    "$oid": "680799eb4e083ca8e3390f8d"
+  },
+  "batch_id": "8930001004",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420356"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "30000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420356"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420356"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a570916192365f"
+  },
+  "medicine": {
+    "$oid": "68079a6baceecf11e2094840"
+  },
+  "batch_id": "8930001005",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420464"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "60000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420464"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420464"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a5709161923660"
+  },
+  "medicine": {
+    "$oid": "68079aa106fdd585b12e3925"
+  },
+  "batch_id": "8930001006",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420572"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "120000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420572"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420572"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a5709161923661"
+  },
+  "medicine": {
+    "$oid": "68079add4e083ca8e3390fc1"
+  },
+  "batch_id": "8930001007",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420676"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "40000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420676"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420676"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a5709161923662"
+  },
+  "medicine": {
+    "$oid": "68079b1606fdd585b12e3932"
+  },
+  "batch_id": "8930001011",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420780"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "45000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420780"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420780"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a5709161923663"
+  },
+  "medicine": {
+    "$oid": "68079b654e083ca8e3390fcc"
+  },
+  "batch_id": "8930001012",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420884"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "120000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420884"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420884"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3486a5709161923664"
+  },
+  "medicine": {
+    "$oid": "68079b90aceecf11e209485d"
+  },
+  "batch_id": "8930001015",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298420992"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "50000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226420992"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226420992"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a5709161923665"
+  },
+  "medicine": {
+    "$oid": "680afa6b88c6a64c86620203"
+  },
+  "batch_id": "8930001008",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421092"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "35000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421092"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421092"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a5709161923666"
+  },
+  "medicine": {
+    "$oid": "680aff00a7d7f616cf6c21e6"
+  },
+  "batch_id": "8930001009",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421192"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "230000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421192"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421192"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a5709161923667"
+  },
+  "medicine": {
+    "$oid": "680aff2fa7d7f616cf6c21f8"
+  },
+  "batch_id": "8930001010",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421296"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "130000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421296"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421296"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a5709161923668"
+  },
+  "medicine": {
+    "$oid": "680aff6aa7d7f616cf6c220b"
+  },
+  "batch_id": "8930001013",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421404"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "70000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421404"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421404"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a5709161923669"
+  },
+  "medicine": {
+    "$oid": "680affc6a7d7f616cf6c221e"
+  },
+  "batch_id": "8930001014",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421508"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "124000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421508"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421508"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a570916192366a"
+  },
+  "medicine": {
+    "$oid": "680b00f1a7d7f616cf6c2246"
+  },
+  "batch_id": "8930001016",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421623"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "350000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421623"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421623"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a570916192366b"
+  },
+  "medicine": {
+    "$oid": "680b1dce6179670a2e03b9fc"
+  },
+  "batch_id": "8930001017",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421728"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "649000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421728"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421728"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a570916192366c"
+  },
+  "medicine": {
+    "$oid": "680b1df26179670a2e03ba09"
+  },
+  "batch_id": "8930001018",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421836"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "130000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421836"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421836"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3586a570916192366d"
+  },
+  "medicine": {
+    "$oid": "680b1e3e6179670a2e03ba27"
+  },
+  "batch_id": "8930001019",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298421936"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "600000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226421936"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226421936"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "68248f3686a570916192366e"
+  },
+  "medicine": {
+    "$oid": "680b1ed46179670a2e03ba64"
+  },
+  "batch_id": "8930001020",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810298422036"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "40000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747226422036"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747226422036"
+    }
+  }
+},
+{
+  "_id": {
+    "$oid": "6825b7f5d70b8963cc5d90a8"
+  },
+  "medicine": {
+    "$oid": "68079a6baceecf11e2094840"
+  },
+  "purchase": {
+    "$oid": "6825b7f5d70b8963cc5d90a5"
+  },
+  "batch_id": "8930001005",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1747674000000"
+    }
+  },
+  "box_pattern": "2x2",
+  "box_quantity": {
+    "$numberInt": "2"
+  },
+  "unit_quantity": {
+    "$numberInt": "8"
+  },
+  "purchase_price": {
+    "$numberInt": "22222"
+  },
+  "mrp": {
+    "$numberInt": "0"
+  },
+  "vat": {
+    "$numberInt": "8"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747302389584"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747302389584"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "6825ff1db15be08e24022380"
+  },
+  "medicine": {
+    "$oid": "68079b1606fdd585b12e3932"
+  },
+  "purchase": {
+    "$oid": "6825ff1cb15be08e2402237d"
+  },
+  "batch_id": "8930001011",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1748106000000"
+    }
+  },
+  "box_pattern": "4x4",
+  "box_quantity": {
+    "$numberInt": "10"
+  },
+  "unit_quantity": {
+    "$numberInt": "160"
+  },
+  "purchase_price": {
+    "$numberInt": "50000"
+  },
+  "mrp": {
+    "$numberInt": "60000"
+  },
+  "vat": {
+    "$numberInt": "10"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747320605110"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747320605110"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+},
+{
+  "_id": {
+    "$oid": "68270133b82e1cbe434ebe31"
+  },
+  "medicine": {
+    "$oid": "68270133b82e1cbe434ebe2f"
+  },
+  "batch_id": "BATCH-1747386675258",
+  "expiry_date": {
+    "$date": {
+      "$numberLong": "1810458675258"
+    }
+  },
+  "box_pattern": "",
+  "box_quantity": {
+    "$numberInt": "0"
+  },
+  "unit_quantity": {
+    "$numberInt": "0"
+  },
+  "purchase_price": {
+    "$numberInt": "0"
+  },
+  "mrp": {
+    "$numberInt": "20000"
+  },
+  "vat": {
+    "$numberInt": "0"
+  },
+  "createdAt": {
+    "$date": {
+      "$numberLong": "1747386675259"
+    }
+  },
+  "updatedAt": {
+    "$date": {
+      "$numberLong": "1747386675259"
+    }
+  },
+  "__v": {
+    "$numberInt": "0"
+  }
+}
+]
