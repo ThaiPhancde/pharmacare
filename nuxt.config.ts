@@ -88,7 +88,7 @@ export default defineNuxtConfig({
   imports: {
     dirs: ["./lib"],
   },
-  ssr: true,
+  ssr: false,
 
   compatibilityDate: "2024-12-14",
 
