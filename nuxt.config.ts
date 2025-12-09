@@ -8,7 +8,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   nitro: {
-    preset: 'vercel'
+    preset: 'vercel',
+    externals: {
+         allowlist: ['mongoose']
+       }
   },
 
   runtimeConfig: {
