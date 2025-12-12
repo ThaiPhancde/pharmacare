@@ -82,17 +82,29 @@ const deleteInvoice = async (id) => {
         method: 'DELETE',
       });
       
-      const data = await res.json();
+      const result = await res.json();
       
-      if (data.status) {
-        toast.success("Xóa hóa đơn thành công");
-        // Fetch data again to update the list
+      if (result.status) {
+        toast({
+          title: "Thành công",
+          description: "Xóa hóa đơn thành công",
+        });
+        // Reset to page 1 and fetch data again to update the list
+        pagination.page = 1;
         await fetchData();
       } else {
-        toast.error(data.message || "Xóa hóa đơn thất bại");
+        toast({
+          title: "Lỗi",
+          description: result.message || "Xóa hóa đơn thất bại",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      toast.error("Xóa hóa đơn thất bại");
+      toast({
+        title: "Lỗi",
+        description: "Xóa hóa đơn thất bại",
+        variant: "destructive",
+      });
       console.error("Failed to delete invoice:", error);
     } finally {
       loading.value = false;

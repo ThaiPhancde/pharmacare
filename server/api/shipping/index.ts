@@ -54,15 +54,15 @@ export default defineEventHandler(async (event) => {
     try {
       const body = await readBody(event);
       
-      // Thử tìm theo _id bất kể định dạng
+      // Thử tìm theo _id bất kể định dạng - POPULATE MEDICINE để lấy tên
       let invoice;
       try {
-        invoice = await Invoice.findById(body.invoice as any);
+        invoice = await Invoice.findById(body.invoice as any).populate('items.medicine');
       } catch {}
 
       // Nếu không tìm thấy theo _id, thử theo mã hóa đơn (invoice_no)
       if (!invoice) {
-        invoice = await Invoice.findOne({ invoice_no: body.invoice });
+        invoice = await Invoice.findOne({ invoice_no: body.invoice }).populate('items.medicine');
       }
 
       if (!invoice) {
@@ -77,23 +77,23 @@ export default defineEventHandler(async (event) => {
         // Try to get medicine name from different possible sources
         let medicineName = 'Thuốc';
         
-        if (item.medicine) {
+        // First check if medicine_name is stored directly in item
+        if (item.medicine_name) {
+          medicineName = item.medicine_name;
+        }
+        // Then check populated medicine object
+        else if (item.medicine) {
           if (typeof item.medicine === 'object' && item.medicine.name) {
             medicineName = item.medicine.name;
-          } else if (typeof item.medicine === 'string') {
-            medicineName = item.medicine_name || 'Thuốc';
           }
-        } else if (item.medicine_name) {
-          medicineName = item.medicine_name;
         }
         
         const quantity = item.quantity || 1;
-        const batchInfo = item.batch_id ? ` - Batch: ${item.batch_id}` : '';
         
-        console.log(`Creating shipping item: ${medicineName} x ${quantity}${batchInfo}`);
+        console.log(`Creating shipping item: ${medicineName} x ${quantity}`);
         
         return {
-          name: `${medicineName} x ${quantity}${batchInfo}`,
+          name: `${medicineName} x ${quantity}`,
           quantity: item.quantity || 1,
           weight: Math.round(body.weight / invoice.items.length) // Distribute weight among items
         };

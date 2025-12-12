@@ -149,6 +149,14 @@ export default defineEventHandler(async (event) => {
 
       // Xóa các trường không cần thiết và đảm bảo giá được set đúng
       body.items.forEach((item: any) => {
+        // Đảm bảo medicine_name được lưu (lấy từ medicineMap nếu không có)
+        if (!item.medicine_name) {
+          const medicine = medicineMap.get(item.medicine.toString());
+          if (medicine) {
+            item.medicine_name = medicine.name;
+          }
+        }
+        
         // Đảm bảo price là số và > 0
         item.price = Number(item.price) || 0;
         if (item.price <= 0) {

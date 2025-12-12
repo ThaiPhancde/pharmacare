@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import DataTable from "@/components/base/DataTable/index.vue";
-import { Eye } from "lucide-vue-next";
+import { Eye, Edit, Trash } from "lucide-vue-next";
 import { type Customer } from "@/models/customer";
 import { ref } from "vue";
+import { useToast } from "@/components/ui/toast";
+
+const { toast } = useToast();
 
 // Column table
 const columns = ref([
@@ -56,6 +59,16 @@ const columns = ref([
             "w-4 h-4 text-green-600 cursor-pointer hover:scale-110 transition",
           onClick: () => handleViewDetail(item),
         }),
+        h(Edit, {
+          class:
+            "w-4 h-4 text-blue-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleEdit(item),
+        }),
+        h(Trash, {
+          class:
+            "w-4 h-4 text-red-600 cursor-pointer hover:scale-110 transition",
+          onClick: () => handleDelete(item),
+        }),
       ]);
     },
   },
@@ -83,7 +96,24 @@ onMounted(fetchData);
 
 // Form handle
 const showView = ref(false);
+const showEdit = ref(false);
 const selectedCustomer = ref<Customer | null>(null);
+
+// Form data for editing
+const editForm = ref({
+  full_name: '',
+  contact_info: {
+    phone: '',
+    email: '',
+    address: '',
+  },
+  medical_profile: {
+    chronic_conditions: [] as string[],
+    allergies: [] as string[],
+    current_medications: [] as string[],
+  },
+  notes: '',
+});
 
 const handleViewDetail = (item: Customer) => {
   console.log("View detail item:", item);
@@ -102,6 +132,87 @@ const handleViewDetail = (item: Customer) => {
   selectedCustomer.value = item;
   showView.value = true;
 };
+
+const handleEdit = (item: Customer) => {
+  selectedCustomer.value = item;
+  editForm.value = {
+    full_name: item.full_name || '',
+    contact_info: {
+      phone: item.contact_info?.phone || '',
+      email: item.contact_info?.email || '',
+      address: item.contact_info?.address || '',
+    },
+    medical_profile: {
+      chronic_conditions: item.medical_profile?.chronic_conditions || [],
+      allergies: item.medical_profile?.allergies || [],
+      current_medications: item.medical_profile?.current_medications || [],
+    },
+    notes: item.notes || '',
+  };
+  showEdit.value = true;
+};
+
+const handleSaveEdit = async () => {
+  if (!selectedCustomer.value) return;
+  
+  try {
+    const res = await api.put(`/api/customers/${selectedCustomer.value._id}`, editForm.value);
+    
+    if (res.status) {
+      toast({
+        title: "Thành công",
+        description: "Cập nhật khách hàng thành công",
+      });
+      showEdit.value = false;
+      await fetchData();
+    } else {
+      toast({
+        title: "Lỗi",
+        description: res.message || "Cập nhật khách hàng thất bại",
+        variant: "destructive",
+      });
+    }
+  } catch (error) {
+    console.error("Error updating customer:", error);
+    toast({
+      title: "Lỗi",
+      description: "Cập nhật khách hàng thất bại",
+      variant: "destructive",
+    });
+  }
+};
+
+const handleDelete = async (item: Customer) => {
+  if (!confirm(`Bạn có chắc chắn muốn xóa khách hàng "${item.full_name}"?`)) {
+    return;
+  }
+  
+  try {
+    const res = await api.delete(`/api/customers/${item._id}`);
+    
+    if (res.status) {
+      toast({
+        title: "Thành công",
+        description: "Xóa khách hàng thành công",
+      });
+      pagination.page = 1;
+      await fetchData();
+    } else {
+      toast({
+        title: "Lỗi",
+        description: res.message || "Xóa khách hàng thất bại",
+        variant: "destructive",
+      });
+    }
+  } catch (error) {
+    console.error("Error deleting customer:", error);
+    toast({
+      title: "Lỗi",
+      description: "Xóa khách hàng thất bại",
+      variant: "destructive",
+    });
+  }
+};
 </script>
 
 <template>
@@ -110,7 +221,7 @@ const handleViewDetail = (item: Customer) => {
       <div class="flex flex-col gap-1">
         <h2 class="text-2xl font-bold tracking-tight">Customer List</h2>
         <p class="text-sm text-gray-500">
-          Customers are created automatically during checkout. Manual add/edit is disabled.
+          Manage your customers. You can view, edit and delete customer information.
         </p>
       </div>
     </div>
@@ -226,6 +337,61 @@ const handleViewDetail = (item: Customer) => {
       <template #footer>
         <div class="flex justify-end">
           <Button variant="outline" @click="showView = false">Close</Button>
+        </div>
+      </template>
+    </n-modal>
+    
+    <!-- Edit Customer Modal -->
+    <n-modal v-model:show="showEdit" preset="card" style="width: 600px" title="Edit Customer">
+      <div v-if="selectedCustomer" class="grid gap-4 py-4">
+        <n-form>
+          <n-form-item label="Full Name">
+            <n-input v-model:value="editForm.full_name" placeholder="Enter full name" />
+          </n-form-item>
+          
+          <h3 class="font-semibold mt-4 mb-2">Contact Information</h3>
+          <n-form-item label="Phone">
+            <n-input v-model:value="editForm.contact_info.phone" placeholder="Enter phone" />
+          </n-form-item>
+          <n-form-item label="Email">
+            <n-input v-model:value="editForm.contact_info.email" placeholder="Enter email" />
+          </n-form-item>
+          <n-form-item label="Address">
+            <n-input v-model:value="editForm.contact_info.address" placeholder="Enter address" />
+          </n-form-item>
+          
+          <h3 class="font-semibold mt-4 mb-2">Medical Profile</h3>
+          <n-form-item label="Chronic Conditions (comma separated)">
+            <n-input 
+              :value="editForm.medical_profile.chronic_conditions.join(', ')"
+              @update:value="(v: string) => editForm.medical_profile.chronic_conditions = v.split(',').map(s => s.trim()).filter(s => s)"
+              placeholder="e.g., Diabetes, Hypertension"
+            />
+          </n-form-item>
+          <n-form-item label="Allergies (comma separated)">
+            <n-input 
+              :value="editForm.medical_profile.allergies.join(', ')"
+              @update:value="(v: string) => editForm.medical_profile.allergies = v.split(',').map(s => s.trim()).filter(s => s)"
+              placeholder="e.g., Penicillin, Aspirin"
+            />
+          </n-form-item>
+          <n-form-item label="Current Medications (comma separated)">
+            <n-input 
+              :value="editForm.medical_profile.current_medications.join(', ')"
+              @update:value="(v: string) => editForm.medical_profile.current_medications = v.split(',').map(s => s.trim()).filter(s => s)"
+              placeholder="e.g., Metformin, Lisinopril"
+            />
+          </n-form-item>
+          
+          <n-form-item label="Notes">
+            <n-input type="textarea" v-model:value="editForm.notes" placeholder="Additional notes" />
+          </n-form-item>
+        </n-form>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button variant="outline" @click="showEdit = false">Cancel</Button>
+          <Button @click="handleSaveEdit">Save Changes</Button>
         </div>
       </template>
     </n-modal>

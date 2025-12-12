@@ -12,6 +12,9 @@
           <n-form-item label="Số điện thoại">
             <n-input v-model:value="formData.recipient_phone" placeholder="Nhập số điện thoại" />
           </n-form-item>
+          <div v-if="formData.recipient_phone && !phoneRegex.test(formData.recipient_phone)" class="text-red-500 text-sm -mt-2 mb-2">
+            Wrong phone number, please check again (must be 10 digits starting with 0)
+          </div>
         </div>
         
         <!-- Địa chỉ giao hàng -->
@@ -117,10 +120,8 @@
         <!-- Button tạo đơn vận chuyển -->
         <div class="flex justify-end">
           <n-button 
-            type="primary" 
             :loading="submitting"
-            :disabled="!isFormValid || submitting"
-            @click="createShippingOrder">
+            @click="handleCreateOrder">
             Create Shipping Order
           </n-button>
         </div>
@@ -343,11 +344,35 @@ const calculateShippingFee = async () => {
 };
 
 // Create shipping order
+const handleCreateOrder = () => {
+  if (!isFormValid.value) {
+    if (!formData.value.recipient_phone || !phoneRegex.test(formData.value.recipient_phone)) {
+      showError('Wrong phone number, please check again');
+      return;
+    }
+    if (!formData.value.recipient_name) {
+      showError('Please enter recipient name');
+      return;
+    }
+    if (!formData.value.province_id || !formData.value.district_id || !formData.value.ward_code) {
+      showError('Please select full address (Province, District, Ward)');
+      return;
+    }
+    if (!formData.value.recipient_address) {
+      showError('Please enter address details');
+      return;
+    }
+    if (shippingFee.value <= 0) {
+      showError('Shipping fee not calculated yet');
+      return;
+    }
+    return;
+  }
+  createShippingOrder();
+};
+
 const createShippingOrder = async () => {
   if (!isFormValid.value) {
-    if (!phoneRegex.test(formData.value.recipient_phone)) {
-      showError('Phone number must be 10 digits and start with 0');
-    }
     return;
   }
   
