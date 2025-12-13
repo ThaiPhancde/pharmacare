@@ -92,25 +92,32 @@ export default defineEventHandler(async (event) => {
       }
 
       // Xử lý cập nhật Stock
-      // Tạo map của items cũ theo medicine + batch_id
+      // Tạo map của items cũ theo medicine + batch_id + expiry_date
       const oldItemsMap = new Map();
       for (const item of oldPurchase.items || []) {
-        const key = `${item.medicine}_${item.batch_id}`;
+        let expiryDateStr = '';
+        if (item.expiry_date) {
+          const date = item.expiry_date instanceof Date ? item.expiry_date : new Date(item.expiry_date);
+          expiryDateStr = date.toISOString().split('T')[0];
+        }
+        const key = `${item.medicine}_${item.batch_id}_${expiryDateStr}`;
         oldItemsMap.set(key, item);
       }
 
       // Tạo map của items mới
       const newItemsMap = new Map();
-      for (const item of body.items || []) {
-        const key = `${item.medicine}_${item.batch_id}`;
+      for (const item of updated.items || []) {
+        let expiryDateStr = '';
+        if (item.expiry_date) {
+          const date = item.expiry_date instanceof Date ? item.expiry_date : new Date(item.expiry_date);
+          expiryDateStr = date.toISOString().split('T')[0];
+        }
+        const key = `${item.medicine}_${item.batch_id}_${expiryDateStr}`;
         newItemsMap.set(key, item);
       }
 
       // Xử lý từng item mới
-      for (const newItem of body.items || []) {
-        const key = `${newItem.medicine}_${newItem.batch_id}`;
-        const oldItem = oldItemsMap.get(key);
-
+      for (const newItem of updated.items || []) {
         // Convert expiry_date to Date
         let expiryDate = newItem.expiry_date;
         if (typeof expiryDate === 'number') {
@@ -118,7 +125,12 @@ export default defineEventHandler(async (event) => {
         } else if (typeof expiryDate === 'string') {
           expiryDate = new Date(expiryDate);
         }
+        
+        const expiryDateStr = expiryDate ? expiryDate.toISOString().split('T')[0] : '';
+        const key = `${newItem.medicine}_${newItem.batch_id}_${expiryDateStr}`;
+        const oldItem = oldItemsMap.get(key);
 
+        // Tìm stock tương ứng
         const stock = await Stock.findOne({
           medicine: newItem.medicine,
           batch_id: newItem.batch_id,
@@ -126,34 +138,29 @@ export default defineEventHandler(async (event) => {
         }).session(session);
 
         if (oldItem) {
-          // Item đã tồn tại, cập nhật stock
+          // Item đã tồn tại trong purchase cũ, cập nhật stock dựa trên sự thay đổi
           if (stock) {
             // Tính toán sự thay đổi số lượng
-            const boxDiff = newItem.box_quantity - oldItem.box_quantity;
-            const unitDiff = newItem.unit_quantity - oldItem.unit_quantity;
+            const boxDiff = (newItem.box_quantity || 0) - (oldItem.box_quantity || 0);
+            const unitDiff = (newItem.unit_quantity || 0) - (oldItem.unit_quantity || 0);
 
-            // Cập nhật stock
+            // Cập nhật stock với số lượng thay đổi
             stock.box_pattern = newItem.box_pattern;
             stock.box_quantity += boxDiff;
             stock.unit_quantity += unitDiff;
             stock.purchase_price = newItem.supplier_price;
             stock.mrp = newItem.mrp;
             stock.vat = newItem.vat;
-            await stock.save({ session });
-          }
-        } else {
-          // Item mới, thêm vào stock
-          if (stock) {
-            // Stock đã tồn tại, cộng thêm số lượng
-            stock.box_pattern = newItem.box_pattern;
-            stock.box_quantity += newItem.box_quantity;
-            stock.unit_quantity += newItem.unit_quantity;
-            stock.purchase_price = newItem.supplier_price;
-            stock.mrp = newItem.mrp;
-            stock.vat = newItem.vat;
-            await stock.save({ session });
+            
+            // Nếu số lượng <= 0 sau khi update, xóa stock
+            if (stock.box_quantity <= 0 && stock.unit_quantity <= 0) {
+              await Stock.deleteOne({ _id: stock._id }).session(session);
+            } else {
+              await stock.save({ session });
+            }
           } else {
-            // Tạo stock mới
+            // Stock không tồn tại nhưng item đã có trong purchase cũ
+            // Tạo stock mới với số lượng từ item mới
             await Stock.create(
               [
                 {
@@ -162,8 +169,39 @@ export default defineEventHandler(async (event) => {
                   batch_id: newItem.batch_id,
                   expiry_date: expiryDate,
                   box_pattern: newItem.box_pattern,
-                  box_quantity: newItem.box_quantity,
-                  unit_quantity: newItem.unit_quantity,
+                  box_quantity: newItem.box_quantity || 0,
+                  unit_quantity: newItem.unit_quantity || 0,
+                  purchase_price: newItem.supplier_price,
+                  mrp: newItem.mrp,
+                  vat: newItem.vat,
+                },
+              ],
+              { session }
+            );
+          }
+        } else {
+          // Item mới, không có trong purchase cũ
+          if (stock) {
+            // Stock đã tồn tại (có thể từ purchase khác), cộng thêm số lượng
+            stock.box_pattern = newItem.box_pattern;
+            stock.box_quantity += (newItem.box_quantity || 0);
+            stock.unit_quantity += (newItem.unit_quantity || 0);
+            stock.purchase_price = newItem.supplier_price;
+            stock.mrp = newItem.mrp;
+            stock.vat = newItem.vat;
+            await stock.save({ session });
+          } else {
+            // Tạo stock hoàn toàn mới
+            await Stock.create(
+              [
+                {
+                  medicine: newItem.medicine,
+                  purchase: id,
+                  batch_id: newItem.batch_id,
+                  expiry_date: expiryDate,
+                  box_pattern: newItem.box_pattern,
+                  box_quantity: newItem.box_quantity || 0,
+                  unit_quantity: newItem.unit_quantity || 0,
                   purchase_price: newItem.supplier_price,
                   mrp: newItem.mrp,
                   vat: newItem.vat,
@@ -177,7 +215,13 @@ export default defineEventHandler(async (event) => {
 
       // Xử lý items đã bị xóa (có trong old nhưng không có trong new)
       for (const oldItem of oldPurchase.items || []) {
-        const key = `${oldItem.medicine}_${oldItem.batch_id}`;
+        let expiryDateStr = '';
+        if (oldItem.expiry_date) {
+          const date = oldItem.expiry_date instanceof Date ? oldItem.expiry_date : new Date(oldItem.expiry_date);
+          expiryDateStr = date.toISOString().split('T')[0];
+        }
+        const key = `${oldItem.medicine}_${oldItem.batch_id}_${expiryDateStr}`;
+        
         if (!newItemsMap.has(key)) {
           // Item đã bị xóa, trừ số lượng trong stock
           let expiryDate = oldItem.expiry_date;
@@ -194,10 +238,10 @@ export default defineEventHandler(async (event) => {
           }).session(session);
 
           if (stock) {
-            stock.box_quantity -= oldItem.box_quantity;
-            stock.unit_quantity -= oldItem.unit_quantity;
+            stock.box_quantity -= (oldItem.box_quantity || 0);
+            stock.unit_quantity -= (oldItem.unit_quantity || 0);
             
-            // Nếu số lượng = 0, có thể xóa stock hoặc giữ lại tùy logic
+            // Nếu số lượng <= 0, xóa stock
             if (stock.box_quantity <= 0 && stock.unit_quantity <= 0) {
               await Stock.deleteOne({ _id: stock._id }).session(session);
             } else {
