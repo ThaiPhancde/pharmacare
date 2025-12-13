@@ -102,9 +102,22 @@ async function handleSubmit() {
     const res = await api[method.toLowerCase() as 'put' | 'post'](url, formData.value)
 
     if (res.status) {
+      const isEditMode = selectedBenefit.value !== null
       message.success(res.message)
       showDialog.value = false
       fetchBenefits()
+      
+      // Chỉ reset khi ADD, không reset khi UPDATE
+      if (!isEditMode) {
+        selectedBenefit.value = null
+        formData.value = {
+          employee: null,
+          benefit_type: 'insurance',
+          amount: 0,
+          effective_date: new Date().toISOString().split('T')[0],
+          notes: '',
+        }
+      }
     }
     else {
       message.error(res.message || 'Lỗi khi lưu phúc lợi')

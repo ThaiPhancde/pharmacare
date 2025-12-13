@@ -73,7 +73,7 @@ const editInvoice = (id) => {
 };
 
 const deleteInvoice = async (id) => {
-  if (confirm("Bạn có chắc chắn muốn xóa hóa đơn này không?")) {
+  if (confirm("Are you sure you want to delete this invoice?")) {
     try {
       // Show loading indicator
       loading.value = true;
@@ -86,23 +86,23 @@ const deleteInvoice = async (id) => {
       
       if (result.status) {
         toast({
-          title: "Thành công",
-          description: "Xóa hóa đơn thành công",
+          title: "Success",
+          description: "Invoice deleted successfully",
         });
         // Reset to page 1 and fetch data again to update the list
         pagination.page = 1;
         await fetchData();
       } else {
         toast({
-          title: "Lỗi",
-          description: result.message || "Xóa hóa đơn thất bại",
+          title: "Error",
+          description: result.message || "Failed to delete invoice",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Xóa hóa đơn thất bại",
+        title: "Error",
+        description: "Failed to delete invoice",
         variant: "destructive",
       });
       console.error("Failed to delete invoice:", error);

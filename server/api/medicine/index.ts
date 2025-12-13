@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
     let medicineQuery = Medicine.find(condition)
       .skip(skip)
       .limit(limit)
-      .select('name bar_code image price generic description unit_id category_id type_id')
+      .select('name bar_code image price generic description unit_id category_id type_id strength supplier supplier_price max_quantity_per_day max_quantity_per_month prescription_required')
       .sort({ createdAt: -1 })
       .lean();
 

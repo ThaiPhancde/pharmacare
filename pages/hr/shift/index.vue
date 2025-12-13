@@ -129,9 +129,16 @@ async function handleSubmit() {
     const res = await api[method.toLowerCase() as 'put' | 'post'](url, submitData)
 
     if (res.status) {
+      const isEditMode = selectedShift.value !== null
       message.success(res.message)
       showDialog.value = false
       fetchShifts()
+      
+      // Chỉ reset khi ADD, không reset khi UPDATE
+      if (!isEditMode) {
+        selectedShift.value = null
+        resetForm()
+      }
     }
     else {
       message.error(res.message || 'Error saving shift')

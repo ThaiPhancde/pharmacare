@@ -128,9 +128,10 @@ const handleAdd = () => {
 
 const onSubmit = formValue.handleSubmit(async (values) => {
   const payload = { ...values };
+  const isEditMode = selectedSupplier.value !== null;
 
   let response;
-  if (selectedSupplier.value) {
+  if (isEditMode) {
     // Update supplier
     response = await api.put(`/api/suppliers/${selectedSupplier.value._id}`, payload);
   } else {
@@ -139,13 +140,16 @@ const onSubmit = formValue.handleSubmit(async (values) => {
   }
 
   if (response.status) {
-    toast({ title: selectedSupplier.value ? "Update success" : "Add success" });
+    toast({ title: isEditMode ? "Update success" : "Add success" });
     await fetchData();
+    showAdd.value = false;
+    
+    // Chỉ reset khi ADD, không reset khi UPDATE
+    if (!isEditMode) {
+      selectedSupplier.value = null;
+      formValue.resetForm();
+    }
   }
-
-  showAdd.value = false;
-  selectedSupplier.value = null;
-  formValue.resetForm(); // reset form after submit
 });
 </script>
 

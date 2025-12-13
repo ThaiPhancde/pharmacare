@@ -37,6 +37,7 @@ const formValue = reactive({
   description: null,
   prescription_required: false,
   max_quantity_per_day: null,
+  max_quantity_per_month: null,
 });
 
 const showBarcodeScanner = ref(false);
@@ -168,22 +169,30 @@ const handleViewDetail = (item) => {
 const handleEdit = async (item) => {
   await preloadFormData();
   selectedMedicine.value = item;
-  // Reset form first
+  
+  // Backend transform _id fields thành objects chỉ có name, không có _id
+  // Cần tìm _id bằng cách match name với options
+  const unitId = item.unit?.name ? units.value.find(u => u.label === item.unit.name)?.value : null;
+  const typeId = item.type?.name ? medicineTypes.value.find(t => t.label === item.type.name)?.value : null;
+  const categoryId = item.category?.name ? categories.value.find(c => c.label === item.category.name)?.value : null;
+  
+  // Set form values
   Object.assign(formValue, {
     bar_code: item.bar_code || null,
     name: item.name || null,
     generic: item.generic || null,
     strength: item.strength || null,
     image: item.image || null,
-    unit_id: item.unit_id?._id || item.unit_id || null,
-    type_id: item.type_id?._id || item.type_id || null,
-    category_id: item.category_id?._id || item.category_id || null,
+    unit_id: unitId,
+    type_id: typeId,
+    category_id: categoryId,
     supplier: item.supplier || null,
     supplier_price: item.supplier_price || null,
     price: item.price || null,
     description: item.description || null,
     prescription_required: item.prescription_required || false,
     max_quantity_per_day: item.max_quantity_per_day || null,
+    max_quantity_per_month: item.max_quantity_per_month || null,
   });
   fileList.value = item.image
     ? [
@@ -217,6 +226,7 @@ const handleShowModalAdd = async () => {
     description: null,
     prescription_required: false,
     max_quantity_per_day: null,
+    max_quantity_per_month: null,
   });
   fileList.value = [];
   showAdd.value = true;
@@ -281,25 +291,29 @@ const handleSubmit = async () => {
       toast({ title: isEditMode ? "Update success" : "Add success" });
       await fetchData(); // Refresh data after submit
       showAdd.value = false; // Close modal
-      // Reset form after successful submit
-      selectedMedicine.value = null;
-      Object.assign(formValue, {
-        bar_code: null,
-        name: null,
-        generic: null,
-        strength: null,
-        image: null,
-        unit_id: null,
-        type_id: null,
-        category_id: null,
-        supplier: null,
-        supplier_price: null,
-        price: null,
-        description: null,
-        prescription_required: false,
-        max_quantity_per_day: null,
-      });
-      fileList.value = [];
+      
+      // Chỉ reset form khi ADD, không reset khi UPDATE (để giữ dữ liệu cho lần edit sau)
+      if (!isEditMode) {
+        selectedMedicine.value = null;
+        Object.assign(formValue, {
+          bar_code: null,
+          name: null,
+          generic: null,
+          strength: null,
+          image: null,
+          unit_id: null,
+          type_id: null,
+          category_id: null,
+          supplier: null,
+          supplier_price: null,
+          price: null,
+          description: null,
+          prescription_required: false,
+          max_quantity_per_day: null,
+          max_quantity_per_month: null,
+        });
+        fileList.value = [];
+      }
     }
   } catch (error) {
     toast({ title: "Error", description: error.message, type: "error" });
@@ -569,6 +583,13 @@ const generateRandomBarcode = () => {
                 :min="0" placeholder="Enter max quantity per day (leave empty for no limit)" />
               <div class="text-xs text-gray-500 mt-1 ml-2">
                 Example: If supplement is limited to 10 units/day, enter 10
+              </div>
+            </n-form-item>
+            <n-form-item label="Monthly Purchase Limit (30 days)" path="max_quantity_per_month">
+              <n-input-number class="w-full" clearable v-model:value="formValue.max_quantity_per_month" :precision="0"
+                :min="0" placeholder="Enter max quantity per month (leave empty for no limit)" />
+              <div class="text-xs text-gray-500 mt-1 ml-2">
+                Example: If supplement is limited to 30 units/month, enter 30
               </div>
             </n-form-item>
           </div>

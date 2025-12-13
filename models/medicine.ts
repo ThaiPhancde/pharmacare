@@ -20,6 +20,7 @@ export const data = z.object({
   status: z.boolean(),
   prescription_required: z.boolean().optional().default(false), // Thuốc kê đơn
   max_quantity_per_day: z.coerce.number().min(0).optional().nullable(), // Giới hạn số lượng mua trong ngày
+  max_quantity_per_month: z.coerce.number().min(0).optional().nullable(), // Giới hạn số lượng mua trong tháng (30 ngày)
   // Assuming the references for unit_id, category_id, and type_id are ObjectIds in the database
   unit_id: z.string().optional(), // If unit_id is a string, replace with ObjectId reference if needed.
   category_id: z.string().optional(), // Same for category_id and type_id

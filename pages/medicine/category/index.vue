@@ -83,6 +83,12 @@ const handleEdit = (item) => {
   showAdd.value = true;
 };
 
+const handleAdd = () => {
+  selectedCategory.value = null;
+  formValue.resetForm();
+  showAdd.value = true;
+};
+
 const handleDelete = (item) => {
   selectedCategory.value = item;
   showDelete.value = true;
@@ -101,22 +107,26 @@ const confirmDelete = async () => {
 
 const onSubmit = formValue.handleSubmit(async (values) => {
   const payload = { ...values };
+  const isEditMode = selectedCategory.value !== null;
   let res;
 
-  if (selectedCategory.value) {
+  if (isEditMode) {
     res = await api.put(`/api/categories/${selectedCategory.value._id}`, payload);
   } else {
     res = await api.post("/api/categories", payload);
   }
 
   if (res.status) {
-    toast({ title: selectedCategory.value ? "Update success" : "Add success" });
+    toast({ title: isEditMode ? "Update success" : "Add success" });
     await fetchData();
+    showAdd.value = false;
+    
+    // Chỉ reset khi ADD, không reset khi UPDATE
+    if (!isEditMode) {
+      formValue.resetForm();
+      selectedCategory.value = null;
+    }
   }
-
-  formValue.resetForm();
-  selectedCategory.value = null;
-  showAdd.value = false;
 });
 </script>
 
@@ -124,7 +134,7 @@ const onSubmit = formValue.handleSubmit(async (values) => {
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <h2 class="text-2xl font-bold tracking-tight">Category List</h2>
-      <Button @click="() => (showAdd = true)">Add</Button>
+      <Button @click="handleAdd">Add</Button>
     </div>
 
     <DataTable

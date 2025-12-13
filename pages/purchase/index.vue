@@ -117,22 +117,37 @@ const confirmDelete = (item: any) => {
 
 const deletePurchase = async (id: string) => {
   try {
+    // Show loading indicator
     loading.value = true;
-
+    
     const response = await fetch(`/api/purchase/${id}`, {
       method: "DELETE",
     });
 
     const result = await response.json();
+    console.log("Delete response:", result);
 
     if (result.status) {
-      toast.success("Xóa đơn hàng thành công");
+      toast({
+        title: "Success",
+        description: result.message || "Purchase deleted and refunded successfully",
+      });
+      // Reset to page 1 and fetch data again to update the list
+      pagination.page = 1;
       await fetchData();
     } else {
-      toast.error(result.message || "Xóa đơn hàng thất bại");
+      toast({
+        title: "Error",
+        description: result.message || "Failed to delete purchase",
+        variant: "destructive",
+      });
     }
-  } catch (error) {
-    toast.error("Xóa đơn hàng thất bại");
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: "Failed to delete purchase: " + (error.message || "Unknown error"),
+      variant: "destructive",
+    });
     console.error("Error deleting purchase:", error);
   } finally {
     loading.value = false;

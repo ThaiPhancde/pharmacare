@@ -220,11 +220,16 @@ const saveBank = () => {
       }
       
       if (response.status) {
+        const isEditMode = selectedBank.value !== null;
         // Nếu thành công, reload data
         await bankData.reload();
-        toast.success(selectedBank.value ? 'Bank account updated successfully' : 'Bank account added successfully');
+        toast.success(isEditMode ? 'Bank account updated successfully' : 'Bank account added successfully');
         showAddModal.value = false;
-        resetForm();
+        
+        // Chễ reset khi ADD, không reset khi UPDATE
+        if (!isEditMode) {
+          resetForm();
+        }
       } else {
         toast.error(response.message || 'Failed to save bank account');
       }

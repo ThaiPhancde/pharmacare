@@ -68,7 +68,7 @@
             </n-form-item>
 
             <n-form-item label="MRP" :path="'items[' + index + '].mrp'">
-              <n-input-number v-model:value="item.mrp" :min="0" />
+              <n-input-number v-model:value="item.mrp" :min="0" disabled />
             </n-form-item>
 
             <n-form-item label="VAT (%)" :path="'items[' + index + '].vat'">
@@ -121,6 +121,8 @@ const route = useRoute();
 const router = useRouter();
 const message = useMessage();
 const isMounted = ref(true);
+
+const isEditMode = computed(() => Boolean(route?.params?.id));
 
 const formRef = ref(null);
 const form = ref({
@@ -568,12 +570,14 @@ const fetchData = async () => {
 const handleMedicineSelect = (medicineId, index) => {
   if (!medicineId) {
     form.value.items[index].batch_id = null;
+    form.value.items[index].mrp = 0;
     return;
   }
 
   const medicine = medicineMap.value.get(medicineId);
   if (medicine) {
     form.value.items[index].batch_id = medicine.bar_code || "";
+    form.value.items[index].mrp = Number(medicine.price ?? 0);
   }
 };
 

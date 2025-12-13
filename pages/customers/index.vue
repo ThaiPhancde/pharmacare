@@ -165,6 +165,7 @@ const handleSaveEdit = async () => {
       });
       showEdit.value = false;
       await fetchData();
+      // Không reset editForm và selectedCustomer để giữ dữ liệu cho lần edit sau
     } else {
       toast({
         title: "Lỗi",

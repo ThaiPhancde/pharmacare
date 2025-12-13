@@ -1,0 +1,68 @@
+@startuml
+' Use case diagram for PharmaCare (non-AI)
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+actor Admin
+actor Pharmacist as Staff
+actor Cashier
+actor Supplier
+actor Customer
+actor "Delivery (GHN)" as Delivery
+
+rectangle "Operations" {
+  usecase "Manage users & roles" as UC_Admin
+  usecase "Configure settings" as UC_Settings
+  usecase "Maintain medicine catalog" as UC_Medicine
+  usecase "Manage suppliers" as UC_Supplier
+  usecase "Manage customers" as UC_Customer
+  usecase "Create purchase order" as UC_Purchase
+  usecase "Receive stock batches" as UC_Stock
+  usecase "Handle returns (supplier/customer)" as UC_Returns
+  usecase "Sell via POS" as UC_POS
+  usecase "Apply voucher/discount" as UC_Voucher
+  usecase "Collect payment (cash/QR)" as UC_Payment
+  usecase "Create shipping order" as UC_Shipping
+  usecase "Track shipping" as UC_ShippingTrack
+  usecase "Manage bank accounts/QR" as UC_Bank
+  usecase "Close shift & report" as UC_Shift
+  usecase "View expiring stock report" as UC_Expiring
+}
+
+Admin --> UC_Admin
+Admin --> UC_Settings
+Admin --> UC_Shift
+
+Staff --> UC_Medicine
+Staff --> UC_Supplier
+Staff --> UC_Customer
+Staff --> UC_Purchase
+Staff --> UC_Stock
+Staff --> UC_Returns
+Staff --> UC_POS
+Staff --> UC_Voucher
+Staff --> UC_Bank
+Staff --> UC_Shipping
+Staff --> UC_ShippingTrack
+Staff --> UC_Expiring
+
+Cashier --> UC_POS
+Cashier --> UC_Payment
+Cashier --> UC_Voucher
+Cashier --> UC_Shipping
+Cashier --> UC_Shift
+
+Customer --> UC_POS : "walk-in"
+
+Supplier --> UC_Purchase
+Supplier --> UC_Returns
+
+Delivery --> UC_Shipping
+Delivery --> UC_ShippingTrack
+
+UC_POS --> UC_Payment
+UC_POS --> UC_Voucher
+UC_POS --> UC_Shipping
+
+@enduml

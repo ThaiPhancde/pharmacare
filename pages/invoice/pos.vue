@@ -62,6 +62,13 @@
                 {{ medicine.max_quantity_per_day }}
               </span>
             </div>
+            <!-- Show monthly limit if exists -->
+            <div v-if="medicine.max_quantity_per_month" class="flex justify-between items-center mt-1">
+              <span class="text-xs text-gray-500">Monthly Limit:</span>
+              <span class="text-xs font-medium text-purple-600">
+                {{ medicine.max_quantity_per_month }}
+              </span>
+            </div>
           </n-card>
         </div>
       </n-card>
@@ -464,6 +471,79 @@
         </div>
       </div>
     </div>
+
+    <!-- Purchase History Modal -->
+    <n-modal v-model:show="showPurchaseHistoryModal" preset="card" title="Purchase History" style="max-width: 800px">
+      <div v-if="purchaseHistoryData && purchaseHistoryMedicine" class="space-y-4">
+        <!-- Medicine Info -->
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h3 class="font-semibold text-lg mb-2">{{ purchaseHistoryMedicine.name }}</h3>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div v-if="purchaseHistoryData.daily">
+              <span class="text-gray-600">Daily Limit:</span>
+              <span class="font-medium ml-2">{{ purchaseHistoryData.daily.limit || 'No limit' }}</span>
+            </div>
+            <div v-if="purchaseHistoryData.daily">
+              <span class="text-gray-600">Daily Purchased:</span>
+              <span class="font-medium ml-2" :class="purchaseHistoryData.daily.exceeded ? 'text-red-600' : 'text-green-600'">
+                {{ purchaseHistoryData.daily.purchased }}
+              </span>
+            </div>
+            <div v-if="purchaseHistoryData.monthly">
+              <span class="text-gray-600">Monthly Limit (30 days):</span>
+              <span class="font-medium ml-2">{{ purchaseHistoryData.monthly.limit || 'No limit' }}</span>
+            </div>
+            <div v-if="purchaseHistoryData.monthly">
+              <span class="text-gray-600">Monthly Purchased:</span>
+              <span class="font-medium ml-2" :class="purchaseHistoryData.monthly.exceeded ? 'text-red-600' : 'text-green-600'">
+                {{ purchaseHistoryData.monthly.purchased }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase History Table -->
+        <div class="space-y-2">
+          <h4 class="font-semibold text-md">Purchase History (Last 30 days)</h4>
+          <div v-if="purchaseHistoryData.purchase_history && purchaseHistoryData.purchase_history.length > 0" class="max-h-96 overflow-y-auto">
+            <n-data-table
+              :columns="[
+                { title: 'Date', key: 'date', render: (row) => formatDate(row.date) },
+                { title: 'Customer', key: 'customer_name' },
+                { title: 'Quantity', key: 'quantity', render: (row) => h('span', { class: 'font-medium' }, row.quantity) },
+                { title: 'Invoice ID', key: 'invoice_id', render: (row) => h('span', { class: 'text-xs text-gray-500' }, row.invoice_id.toString().slice(-8)) }
+              ]"
+              :data="purchaseHistoryData.purchase_history"
+              :pagination="{ pageSize: 10 }"
+              size="small"
+            />
+          </div>
+          <div v-else class="text-center text-gray-500 py-4">
+            No purchase history found for this medicine in the last 30 days
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <div class="text-sm space-y-1">
+            <div v-if="purchaseHistoryData.daily && purchaseHistoryData.daily.exceeded" class="text-red-600">
+              ⚠️ Daily limit exceeded. Cannot purchase more today.
+            </div>
+            <div v-if="purchaseHistoryData.monthly && purchaseHistoryData.monthly.exceeded" class="text-orange-600">
+              ⚠️ Monthly limit exceeded. Cannot purchase more in this 30-day period.
+            </div>
+            <div v-if="!purchaseHistoryData.daily?.exceeded && !purchaseHistoryData.monthly?.exceeded" class="text-green-600">
+              ✓ Customer can still purchase within limits
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <n-button @click="showPurchaseHistoryModal = false">Close</n-button>
+        </div>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -548,6 +628,11 @@ const yearOptions = ref([
   { label: '2030', value: '2030' }
 ]);
 const selectedBank = ref(null);
+
+// Purchase limit history
+const showPurchaseHistoryModal = ref(false);
+const purchaseHistoryData = ref<any>(null);
+const purchaseHistoryMedicine = ref<any>(null);
 const momoPaymentUrl = ref(null);
 const momoQrCode = ref(null);
 const currentOrderId = ref(null);
@@ -742,13 +827,13 @@ const setActiveCategory = (categoryId) => {
   activeCategory.value = categoryId;
 };
 
-// Check daily limit before adding to cart
-const checkDailyLimit = async (medicine, quantity = 1) => {
-  if (!medicine.max_quantity_per_day) {
+// Check purchase limit (both daily and monthly) before adding to cart
+const checkPurchaseLimit = async (medicine, quantity = 1) => {
+  if (!medicine.max_quantity_per_day && !medicine.max_quantity_per_month) {
     return { can_purchase: true };
   }
 
-  // If it's a new customer (no customer_id yet), no need to check daily limit
+  // If it's a new customer (no customer_id yet), no need to check limit
   // because they haven't purchased anything yet. Check will be performed when submitting invoice (customer will be created then)
   const isNewCustomer = customerMode.value === 'new' && newCustomerInfo.value.full_name?.trim();
   if (isNewCustomer && !selectedCustomer.value) {
@@ -759,7 +844,7 @@ const checkDailyLimit = async (medicine, quantity = 1) => {
   if (!selectedCustomer.value && !isNewCustomer) {
     return {
       can_purchase: false,
-      message: 'Please select or enter customer information to check daily purchase limit'
+      message: 'Please select or enter customer information to check purchase limit'
     };
   }
 
@@ -770,7 +855,7 @@ const checkDailyLimit = async (medicine, quantity = 1) => {
       return { can_purchase: true };
     }
 
-    const response = await api.post('/api/invoice/check-daily-limit', {
+    const response = await api.post('/api/invoice/check-purchase-limit', {
       medicine_id: medicine._id,
       customer_id: customerId,
       quantity: quantity
@@ -781,14 +866,33 @@ const checkDailyLimit = async (medicine, quantity = 1) => {
     }
     return { can_purchase: true };
   } catch (error) {
-    console.error('Error checking daily limit:', error);
+    console.error('Error checking purchase limit:', error);
     // If check fails and it's a new customer, allow add to cart
     if (isNewCustomer) {
-      return { can_purchase: true, warning: 'Cannot check daily purchase limit. Will check at checkout.' };
+      return { can_purchase: true, warning: 'Cannot check purchase limit. Will check at checkout.' };
     }
     // If it's an existing customer and check fails, still allow but warn
-    return { can_purchase: true, warning: 'Cannot check daily purchase limit' };
+    return { can_purchase: true, warning: 'Cannot check purchase limit' };
   }
+};
+
+// Show purchase history modal
+const showPurchaseHistory = (medicine, historyData) => {
+  purchaseHistoryMedicine.value = medicine;
+  purchaseHistoryData.value = historyData;
+  showPurchaseHistoryModal.value = true;
+};
+
+// Format date for display
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('vi-VN', { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
 // Add medicine to cart
@@ -802,15 +906,44 @@ const addToCart = async (medicine) => {
     return;
   }
 
-  // Check daily limit if medicine has max_quantity_per_day
-  if (medicine.max_quantity_per_day) {
-    const limitCheck = await checkDailyLimit(medicine, 1);
+  // Check purchase limit if medicine has max_quantity_per_day or max_quantity_per_month
+  if (medicine.max_quantity_per_day || medicine.max_quantity_per_month) {
+    const limitCheck = await checkPurchaseLimit(medicine, 1);
     if (!limitCheck.can_purchase) {
-      message.error(limitCheck.message || `Medicine "${medicine.name}" has exceeded the daily purchase limit`);
+      // Show error with option to view purchase history
+      dialog.error({
+        title: 'Purchase Limit Exceeded',
+        content: () => h('div', { class: 'space-y-2' }, [
+          h('p', { class: 'text-red-600 font-medium' }, `Medicine "${medicine.name}" has exceeded the purchase limit`),
+          h('p', { class: 'text-sm' }, limitCheck.message),
+          limitCheck.daily && h('div', { class: 'text-sm bg-red-50 p-2 rounded mt-2' }, [
+            h('strong', 'Daily Limit: '),
+            `${limitCheck.daily.purchased}/${limitCheck.daily.limit} units purchased today. Remaining: ${limitCheck.daily.remaining}`
+          ]),
+          limitCheck.monthly && h('div', { class: 'text-sm bg-orange-50 p-2 rounded mt-2' }, [
+            h('strong', 'Monthly Limit (30 days): '),
+            `${limitCheck.monthly.purchased}/${limitCheck.monthly.limit} units purchased. Remaining: ${limitCheck.monthly.remaining}`
+          ]),
+        ]),
+        positiveText: 'View Purchase History',
+        negativeText: 'Close',
+        onPositiveClick: () => {
+          showPurchaseHistory(medicine, limitCheck);
+        }
+      });
       return;
     }
-    if (limitCheck.remaining !== undefined && limitCheck.remaining < medicine.max_quantity_per_day) {
-      message.warning(`Warning: Medicine "${medicine.name}" has ${limitCheck.remaining} remaining in today's limit`);
+    
+    // Show warnings if approaching limits
+    const warnings = [];
+    if (limitCheck.daily && limitCheck.daily.limit && limitCheck.daily.remaining < limitCheck.daily.limit) {
+      warnings.push(`Daily: ${limitCheck.daily.remaining}/${limitCheck.daily.limit} remaining`);
+    }
+    if (limitCheck.monthly && limitCheck.monthly.limit && limitCheck.monthly.remaining < limitCheck.monthly.limit) {
+      warnings.push(`Monthly: ${limitCheck.monthly.remaining}/${limitCheck.monthly.limit} remaining`);
+    }
+    if (warnings.length > 0) {
+      message.warning(`"${medicine.name}" - ${warnings.join(', ')}`);
     }
   }
 

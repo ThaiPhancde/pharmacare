@@ -17,6 +17,7 @@ interface IMedicine extends Document {
   price: number;
   prescription_required?: boolean; // Thuốc kê đơn
   max_quantity_per_day?: number; // Giới hạn số lượng mua trong ngày
+  max_quantity_per_month?: number; // Giới hạn số lượng mua trong tháng (30 ngày)
   createdAt?: Date;
   updatedAt?: Date;
   stocks?: any[]; // Trường ảo để chứa stocks
@@ -39,6 +40,7 @@ const MedicineSchema = new Schema<IMedicine>(
     bar_code: String,
     prescription_required: { type: Boolean, default: false }, // Thuốc kê đơn
     max_quantity_per_day: { type: Number, default: null }, // Giới hạn số lượng mua trong ngày (null = không giới hạn)
+    max_quantity_per_month: { type: Number, default: null }, // Giới hạn số lượng mua trong tháng - 30 ngày (null = không giới hạn)
   },
   { 
     timestamps: true,

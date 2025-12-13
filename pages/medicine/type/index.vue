@@ -87,6 +87,12 @@ const handleEdit = (item) => {
   showAdd.value = true;
 };
 
+const handleAdd = () => {
+  selectedTypes.value = null;
+  formValue.resetForm();
+  showAdd.value = true;
+};
+
 const handleDelete = (item) => {
   selectedTypes.value = item;
   showDelete.value = true;
@@ -105,9 +111,10 @@ const confirmDelete = async () => {
 
 const onSubmit = formValue.handleSubmit(async (values) => {
   const payload = { ...values };
+  const isEditMode = selectedTypes.value !== null;
   let res;
 
-  if (selectedTypes.value) {
+  if (isEditMode) {
     res = await api.put(
       `/api/types/${selectedTypes.value._id}`,
       payload
@@ -117,13 +124,16 @@ const onSubmit = formValue.handleSubmit(async (values) => {
   }
 
   if (res.status) {
-    toast({ title: selectedTypes.value ? "Update success" : "Add success" });
+    toast({ title: isEditMode ? "Update success" : "Add success" });
     await fetchData();
+    showAdd.value = false;
+    
+    // Chỉ reset khi ADD, không reset khi UPDATE
+    if (!isEditMode) {
+      formValue.resetForm();
+      selectedTypes.value = null;
+    }
   }
-
-  formValue.resetForm();
-  selectedTypes.value = null;
-  showAdd.value = false;
 });
 </script>
 
@@ -131,7 +141,7 @@ const onSubmit = formValue.handleSubmit(async (values) => {
   <div class="w-full flex flex-col items-stretch gap-4">
     <div class="flex flex-wrap items-end justify-between gap-2">
       <h2 class="text-2xl font-bold tracking-tight">Type List</h2>
-      <Button @click="() => (showAdd = true)">Add</Button>
+      <Button @click="handleAdd">Add</Button>
     </div>
 
     <DataTable

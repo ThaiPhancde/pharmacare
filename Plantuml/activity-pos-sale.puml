@@ -1,0 +1,79 @@
+@startuml
+' Activity diagrams: core flows (non-AI)
+|Procurement|
+start
+:Create purchase order;
+:Receive stock batches;
+:Validate batch, expiry, price;
+if (Valid?) then (yes)
+  :Persist purchase & items;
+  :Create stock records;
+else (no)
+  :Reject / rework with supplier;
+endif
+:Update inventory balances;
+stop
+
+===
+|POS Sale|
+start
+:Search/select customer (optional);
+:Scan medicine by name/barcode;
+:Load stock batches + expiry;
+if (Stock available?) then (yes)
+  :Add line items (qty, price, VAT);
+else (no)
+  :Notify out-of-stock;stop
+endif
+:Compute subtotal/VAT;
+:Apply voucher/discount (validate);
+:Show grand total + payment options;
+if (Payment succeeded?) then (yes)
+  :Create invoice (POS flag);
+  :Persist invoice items;
+  :Deduct stock quantities;
+  :Update shift balance;
+  if (Need delivery?) then (yes)
+    :Create shipping order (GHN);
+    :Store tracking + fee;
+  else (no)
+    :Mark pickup completed;
+  endif
+  :Issue receipt + confirmation;
+else (no)
+  :Abort sale / retry payment;
+endif
+stop
+
+===
+|Returns|
+start
+:Receive return request (customer/supplier);
+:Verify invoice/batch;
+if (Within policy?) then (yes)
+  :Restock or adjust inventory;
+  :Issue refund/credit note;
+else (no)
+  :Decline return;
+endif
+stop
+
+===
+|Shipping|
+start
+:Collect recipient + address;
+:Calculate GHN fee/service;
+:Submit shipping order;
+:Receive tracking code;
+:Update shipping status lifecycle;
+stop
+
+===
+|Shift Closing|
+start
+:Count cash & reconcile POS;
+:Summarize sales, discounts, vouchers;
+:Record opening/closing balance;
+:Export/submit closing report;
+stop
+@enduml
