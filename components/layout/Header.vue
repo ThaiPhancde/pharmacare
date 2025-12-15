@@ -20,20 +20,57 @@ import {
 
 const route = useRoute();
 
-// Demo data for expired medications
-const expiredMedications = ref([
-  { name: 'Paracetamol', batchId: '52678', expiryDate: '2024-12-31', daysLeft: -8, stock: 30 },
-  { name: 'Vitamin C', batchId: '589', expiryDate: '2024-12-25', daysLeft: -14, stock: 45 },
-  { name: 'Amoxicillin', batchId: '5665656', expiryDate: '2025-05-07', daysLeft: 1, stock: 40 },
-  { name: 'Loratadine', batchId: '87909876', expiryDate: '2025-04-30', daysLeft: -8, stock: 70 },
-  { name: 'Ibuprofen', batchId: 'Batch-2', expiryDate: '2025-05-01', daysLeft: -7, stock: 25 }
-]);
+// Interface for expiring medicine
+interface ExpiringMedicine {
+  _id: string;
+  medicineName: string;
+  batchId: string;
+  daysLeft: number;
+  expiryDate: string;
+}
 
-// Total expired medications count
-const totalExpiredMedications = computed(() => expiredMedications.value.length);
+// Expiring medications data - only medicines expiring within 30 days (NOT expired)
+const expiringMedications = ref<ExpiringMedicine[]>([]);
+const loadingMedications = ref(false);
+
+// Total expiring medications count
+const totalExpiringMedications = computed(() => expiringMedications.value.length);
 
 // Dialog open state
 const isNotificationOpen = ref(false);
+
+// Session key for login notification
+const notificationShownKey = 'expiringMedicinesShown';
+
+// Fetch expiring medicines from API
+const fetchExpiringMedicines = async () => {
+  loadingMedications.value = true;
+  try {
+    const data = await $fetch<{ status: boolean; data: ExpiringMedicine[] }>('/api/dashboard/expiring', {
+      params: { days: 30, limit: 100 }
+    });
+    
+    if (data?.status && data?.data) {
+      // Only show medicines expiring soon (daysLeft > 0), NOT already expired
+      expiringMedications.value = data.data.filter(item => item.daysLeft > 0 && item.daysLeft <= 30);
+    }
+  } catch (error) {
+    console.error('Error fetching expiring medicines:', error);
+  } finally {
+    loadingMedications.value = false;
+  }
+};
+
+// Show notification on first login
+const checkAndShowNotification = () => {
+  if (import.meta.client) {
+    const shown = sessionStorage.getItem(notificationShownKey);
+    if (!shown && expiringMedications.value.length > 0) {
+      isNotificationOpen.value = true;
+      sessionStorage.setItem(notificationShownKey, 'true');
+    }
+  }
+};
 
 function setLinks() {
   if (route.fullPath === "/") {
@@ -76,9 +113,12 @@ const links = ref<
 
 const { userProfile, fetchProfile } = useUserProfile()
 
-// Load user profile khi component mount
-onMounted(() => {
-  fetchProfile()
+// Load data on mount
+onMounted(async () => {
+  fetchProfile();
+  await fetchExpiringMedicines();
+  // Show notification after data loads
+  setTimeout(checkAndShowNotification, 500);
 })
 
 // Computed user data từ userProfile
@@ -113,25 +153,37 @@ watch(
           <DialogTrigger as-child>
             <Button variant="ghost" size="icon" class="relative">
               <Icon name="i-lucide-bell" class="h-5 w-5" />
-              <span class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
-                {{ totalExpiredMedications }}
+              <span v-if="totalExpiringMedications > 0" class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center font-bold">
+                {{ totalExpiringMedications > 99 ? '99+' : totalExpiringMedications }}
               </span>
             </Button>
           </DialogTrigger>
           <DialogContent class="sm:max-w-[600px] w-full">
             <div class="flex justify-between items-center mb-2">
               <div>
-                <DialogTitle class="text-red-600 flex items-center gap-2 font-semibold">
-                  <Icon name="i-lucide-alert-circle" class="h-5 w-5" />
+                <DialogTitle class="text-orange-500 flex items-center gap-2 font-semibold">
+                  <Icon name="i-lucide-alert-triangle" class="h-5 w-5" />
                   Expiring Medicines Alert
                 </DialogTitle>
                 <DialogDescription class="text-gray-600">
-                  Medications expiring within 30 days or already expired
+                  Medicines expiring within 30 days - Requires inventory action!
                 </DialogDescription>
               </div>
-              <!-- Removed duplicate X button here -->
             </div>
-            <div class="overflow-auto max-h-[500px]">
+            
+            <!-- Loading -->
+            <div v-if="loadingMedications" class="flex justify-center py-8">
+              <Icon name="i-lucide-loader-2" class="h-6 w-6 animate-spin text-orange-500" />
+            </div>
+            
+            <!-- Empty -->
+            <div v-else-if="expiringMedications.length === 0" class="text-center py-8">
+              <Icon name="i-lucide-check-circle" class="h-12 w-12 text-green-500 mx-auto mb-2" />
+              <p class="text-green-600 font-medium">No medicines expiring soon!</p>
+            </div>
+            
+            <!-- Table -->
+            <div v-else class="overflow-auto max-h-[500px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -139,26 +191,35 @@ watch(
                     <TableHead>Batch ID</TableHead>
                     <TableHead>Expiry Date</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Stock</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow v-for="item in expiredMedications" :key="item.batchId"
-                            :class="{ 'bg-red-50 dark:bg-red-950': item.daysLeft <= 0 }">
-                    <TableCell class="font-medium">{{ item.name }}</TableCell>
+                  <TableRow v-for="item in expiringMedications" :key="item._id"
+                            :class="{ 
+                              'bg-red-50 dark:bg-red-950': item.daysLeft <= 7,
+                              'bg-orange-50 dark:bg-orange-950': item.daysLeft > 7 && item.daysLeft <= 15,
+                              'bg-yellow-50 dark:bg-yellow-950': item.daysLeft > 15
+                            }">
+                    <TableCell class="font-medium">{{ item.medicineName }}</TableCell>
                     <TableCell>{{ item.batchId }}</TableCell>
                     <TableCell>{{ new Date(item.expiryDate).toLocaleDateString() }}</TableCell>
                     <TableCell>
-                      <Badge :variant="item.daysLeft <= 0 ? 'destructive' : 'secondary'">
-                        {{ item.daysLeft <= 0 ? 'Expired' : `${item.daysLeft} days left` }}
+                      <Badge :class="{
+                        'bg-red-500': item.daysLeft <= 7,
+                        'bg-orange-500': item.daysLeft > 7 && item.daysLeft <= 15,
+                        'bg-yellow-500 text-black': item.daysLeft > 15
+                      }">
+                        {{ item.daysLeft }} days left
                       </Badge>
                     </TableCell>
-                    <TableCell>{{ item.stock }}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </div>
-            <div class="flex justify-center mt-4">
+            <div class="flex justify-between items-center mt-4">
+              <NuxtLink to="/stock/expiring" class="text-sm text-blue-500 hover:underline">
+                View details →
+              </NuxtLink>
               <DialogClose asChild>
                 <Button variant="outline">Close</Button>
               </DialogClose>

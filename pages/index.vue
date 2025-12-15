@@ -7,7 +7,8 @@ import {
   TestTubeDiagonal,
 } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast/use-toast";
-import ExpiringMedicines from "@/components/dashboard/ExpiringMedicines.vue";
+import TopCustomers from "@/components/dashboard/TopCustomers.vue";
+import TopProducts from "@/components/dashboard/TopProducts.vue";
 
 interface CardData {
   totalCustomer: number;
@@ -211,10 +212,20 @@ watch([() => date.value.from, () => date.value.to], () => {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Expiring Medicines</CardTitle>
+            <CardTitle>Top 5 Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <ExpiringMedicines />
+            <TopCustomers />
+          </CardContent>
+        </Card>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-1 md:gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Top 5 Best Selling Products</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TopProducts />
           </CardContent>
         </Card>
       </div>
