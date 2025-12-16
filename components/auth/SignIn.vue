@@ -24,7 +24,8 @@ const onSubmit = async (event: Event) => {
     if (response.data) {
       const data = response.data as { token: string; user: any };
       authCookie.value = data.token;
-      userCookie.value = JSON.stringify(data.user);
+      // Nuxt useCookie auto-serializes objects - don't JSON.stringify
+      userCookie.value = data.user;
       toast({
         title: "Login success",
       });

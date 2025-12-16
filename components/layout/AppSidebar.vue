@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NavGroup, NavLink, NavSectionTitle } from '@/types/nav'
 import { navMenu, navMenuBottom } from '@/constants/menus'
+import { filterMenuItemsByRole, isRouteAllowed, normalizeRole } from '@/utils/auth'
 
 function resolveNavItemComponent(item: NavLink | NavGroup | NavSectionTitle): any {
   if ('children' in item)
@@ -31,22 +32,19 @@ const teams: {
   // },
 ]
 
-// Get user info from cookie
-const userCookie = useCookie("userInfo");
+// Get user info from cookie (Nuxt useCookie auto-deserializes)
+const userCookie = useCookie<{ name?: string; email?: string; role?: string } | null>("userInfo");
 const user = computed(() => {
-  if (userCookie.value) {
-    try {
-      const userInfo = JSON.parse(userCookie.value as string);
-      console.log('User info from cookie:', userInfo); // Debug log
-      return {
-        name: userInfo.name || 'User',
-        email: userInfo.email || 'user@pharmacare.com',
-        avatar: '/avatars/avatartion.png',
-        role: userInfo.role || 'sales'
-      };
-    } catch (error) {
-      console.error('Error parsing user cookie:', error); // Debug log
-    }
+  const userInfo = userCookie.value;
+  console.log('User info from cookie:', userInfo); // Debug log
+  
+  if (userInfo && typeof userInfo === 'object') {
+    return {
+      name: userInfo.name || 'User',
+      email: userInfo.email || 'user@pharmacare.com',
+      avatar: '/avatars/avatartion.png',
+      role: userInfo.role || 'sales'
+    };
   }
   return {
     name: 'Guest',
@@ -60,74 +58,34 @@ const { sidebar } = useAppSettings()
 
 // Filter menu items based on user role
 const filteredNavMenu = computed(() => {
-  const userRole = user.value.role;
-  console.log('User role for filtering:', userRole); // Debug log
+  const role = normalizeRole(user.value.role);
+  console.log('Filtering menu for role:', role); // Debug
   
-  // Tạm thời trả về toàn bộ menu, không lọc theo vai trò
-  return navMenu;
-  
-  /* Tạm thời comment logic phân quyền
-  const filtered = navMenu.map(section => ({
-    ...section,
-    items: section.items.filter(item => {
-      // Admin can see everything
-      if (userRole === 'admin') return true;
-      
-      // Type guard for NavLink
-      if ('link' in item) {
-        // Warehouse can see stock and purchase
-        if (userRole === 'warehouse') {
-          const warehouseAllowed = ['/', '/suppliers', '/customers', '/medicine', '/stock', '/purchase', '/bank'];
-          return warehouseAllowed.some(path => item.link === path || item.link.startsWith(path + '/'));
-        }
-        
-        // Sales can see everything except admin pages
-        if (userRole === 'sales') {
-          const salesAllowed = ['/', '/suppliers', '/customers', '/medicine', '/invoice', '/returns', '/bank'];
-          return salesAllowed.some(path => item.link === path || item.link.startsWith(path + '/'));
-        }
-      }
-      
-      // Type guard for NavGroup (has children)
-      if ('children' in item) {
-        if (userRole === 'warehouse') {
-          const warehouseAllowed = ['/medicine', '/stock', '/bank'];
-          return warehouseAllowed.some(path => 
-            item.children?.some((child: any) => child.link?.startsWith(path))
-          );
-        }
-        
-        if (userRole === 'sales') {
-          const salesAllowed = ['/medicine', '/invoice', '/bank'];
-          return salesAllowed.some(path => 
-            item.children?.some((child: any) => child.link?.startsWith(path))
-          );
-        }
-      }
-      
-      return false;
-    })
-  }));
-  
-  console.log('Filtered navMenu:', filtered); // Debug log
-  return filtered;
-  */
+  // Admin sees everything
+  if (role === 'admin') return navMenu;
+
+  const sections = navMenu
+    .map(section => ({
+      ...section,
+      items: filterMenuItemsByRole(section.items, role),
+    }))
+    .filter(section => section.items && section.items.length > 0);
+
+  console.log('Filtered sections:', sections); // Debug
+  return sections;
 });
 
 // Filter bottom menu based on role
 const filteredNavMenuBottom = computed(() => {
-  // Tạm thời trả về toàn bộ menu dưới cùng, không lọc theo vai trò
-  return navMenuBottom;
+  const role = normalizeRole(user.value.role);
+  if (role === 'admin') return navMenuBottom;
   
-  /* Tạm thời comment logic phân quyền
-  const userRole = user.value.role;
   return navMenuBottom.filter(item => {
-    if ('link' in item && item.link.startsWith('/admin')) {
-      return userRole === 'admin';
+    if ('link' in item && item.link) {
+      return isRouteAllowed(role, item.link as string);
     }
-    return true;
+    return false;
   });
-  */
 });
 </script>
 
