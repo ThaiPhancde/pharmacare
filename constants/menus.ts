@@ -160,14 +160,22 @@ export const navMenu: NavMenu[] = [
             title: "Employee",
             link: "/hr/employee",
           },
-          // {
-          //   title: "Attendance",
-          //   link: "/hr/attendance",
-          // },
           {
             title: "Shift Management",
             link: "/hr/shift",
           },
+          {
+            title: "Rewards & Penalties",
+            link: "/hr/reward-penalty",
+          },
+          {
+            title: "Salary Statistics",
+            link: "/hr/salary-statistics",
+          },
+          // {
+          //   title: "Attendance",
+          //   link: "/hr/attendance",
+          // },
           // {
           //   title: "Payroll",
           //   link: "/hr/payroll",

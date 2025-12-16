@@ -17,7 +17,7 @@
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import crypto from 'node:crypto'
-import { MedicalConsultation, Medicine, Stock } from '~/server/models'
+import { MedicalConsultation, Medicine, Stock, ChatbotQA } from '~/server/models'
 
 // ============== CONFIGURATION ==============
 const CONFIG = {
@@ -79,6 +79,128 @@ function saveToCache(key: string, response: string, intent: string): void {
       .slice(0, 20)
     oldest.forEach(([k]) => responseCache.delete(k))
   }
+}
+
+/**
+ * 🔍 SEARCH QA DATABASE - Tìm kiếm trong dữ liệu QA từ Chatbot Management
+ * Sử dụng dữ liệu đã được quản lý từ trang Admin Chatbot
+ */
+async function searchQADatabase(message: string): Promise<{ found: boolean, answer: string | null, category: string | null, confidence: number }> {
+  try {
+    const msgLower = message.toLowerCase().trim()
+    
+    // 1. Tìm kiếm chính xác trước
+    const exactMatch = await ChatbotQA.findOne({
+      question: { $regex: new RegExp(`^${escapeRegexString(msgLower)}$`, 'i') }
+    })
+    
+    if (exactMatch) {
+      console.log(`[QA Search] Exact match found: "${exactMatch.question}"`)
+      return {
+        found: true,
+        answer: exactMatch.answer,
+        category: exactMatch.category || 'general',
+        confidence: 100
+      }
+    }
+    
+    // 2. Tìm kiếm theo từ khóa
+    const keywords = msgLower.split(/\s+/).filter(word => word.length > 2)
+    
+    if (keywords.length === 0) {
+      return { found: false, answer: null, category: null, confidence: 0 }
+    }
+    
+    // 3. Tìm kiếm text search
+    try {
+      const textSearchResults = await ChatbotQA.find(
+        { $text: { $search: keywords.join(' ') } },
+        { score: { $meta: 'textScore' } }
+      )
+        .sort({ score: { $meta: 'textScore' } })
+        .limit(3)
+      
+      if (textSearchResults.length > 0) {
+        const topResult = textSearchResults[0] as any
+        const score = topResult._doc?.score || 0
+        const confidence = Math.min(Math.round(score * 25), 95) // Cap at 95 for text search
+        
+        if (confidence >= 40) { // Ngưỡng tối thiểu
+          console.log(`[QA Search] Text search found: "${topResult.question}" (confidence: ${confidence}%)`)
+          return {
+            found: true,
+            answer: topResult.answer,
+            category: topResult.category || 'general',
+            confidence
+          }
+        }
+      }
+    } catch (textSearchError) {
+      console.log('[QA Search] Text search failed, trying regex search')
+    }
+    
+    // 4. Fallback: tìm kiếm regex với từ khóa
+    const regexPattern = keywords.map(k => `(?=.*${escapeRegexString(k)})`).join('')
+    const regexResults = await ChatbotQA.find({
+      $or: [
+        { question: { $regex: new RegExp(regexPattern, 'i') } },
+        { keywords: { $regex: new RegExp(keywords.join('|'), 'i') } },
+        { medicineTerms: { $regex: new RegExp(keywords.join('|'), 'i') } }
+      ]
+    }).limit(5)
+    
+    if (regexResults.length > 0) {
+      // Tính điểm cho mỗi kết quả
+      let bestMatch = regexResults[0]
+      let bestScore = 0
+      
+      for (const result of regexResults) {
+        let score = 0
+        const questionLower = result.question.toLowerCase()
+        
+        for (const keyword of keywords) {
+          if (questionLower.includes(keyword)) {
+            score += 20
+          }
+          if (result.keywords?.toLowerCase().includes(keyword)) {
+            score += 15
+          }
+          if (result.medicineTerms?.toLowerCase().includes(keyword)) {
+            score += 10
+          }
+        }
+        
+        if (score > bestScore) {
+          bestScore = score
+          bestMatch = result
+        }
+      }
+      
+      const confidence = Math.min(bestScore, 85) // Cap at 85 for regex search
+      
+      if (confidence >= 30) {
+        console.log(`[QA Search] Regex search found: "${bestMatch.question}" (confidence: ${confidence}%)`)
+        return {
+          found: true,
+          answer: bestMatch.answer,
+          category: bestMatch.category || 'general',
+          confidence
+        }
+      }
+    }
+    
+    return { found: false, answer: null, category: null, confidence: 0 }
+  } catch (error) {
+    console.error('[QA Search] Error:', error)
+    return { found: false, answer: null, category: null, confidence: 0 }
+  }
+}
+
+/**
+ * Helper: Escape regex special characters
+ */
+function escapeRegexString(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /**
@@ -152,8 +274,8 @@ Chúng tôi hỗ trợ 24/7!`
 }
 
 /**
- * 🧠 OFFLINE AI FALLBACK
- * Trả lời thông minh dựa trên patterns và database khi API bị rate limit
+ * 🧠 OFFLINE AI FALLBACK - WITH QA DATABASE INTEGRATION
+ * Trả lời thông minh dựa trên patterns, QA database và database thuốc khi API bị rate limit
  */
 async function generateOfflineResponse(
   message: string, 
@@ -161,6 +283,34 @@ async function generateOfflineResponse(
   medicineContext: any
 ): Promise<string> {
   const msgLower = message.toLowerCase()
+  
+  // 🆕 TÌM KIẾM TRONG QA DATABASE TRƯỚC
+  try {
+    const qaResult = await searchQADatabase(message)
+    if (qaResult.found && qaResult.confidence >= 40) {
+      console.log(`[Offline AI] Using QA Database (confidence: ${qaResult.confidence}%)`)
+      
+      let response = `🏥 **Pharmacare - Tư vấn dược**\n\n${qaResult.answer}`
+      
+      // Thêm thông tin thuốc từ database nếu có
+      if (medicineContext.medicines && medicineContext.medicines.length > 0) {
+        const relevantMeds = medicineContext.medicines.slice(0, 3)
+        if (relevantMeds.length > 0) {
+          response += `\n\n📦 **Thuốc liên quan tại Pharmacare:**`
+          for (const med of relevantMeds) {
+            const status = med.isExpired ? '⚠️ HẾT HẠN' : (med.stockQuantity > 0 ? '✅ Còn hàng' : '❌ Hết hàng')
+            response += `\n- ${med.name}: ${med.price?.toLocaleString() || 'Liên hệ'}đ/${med.unit || 'viên'} (${status})`
+          }
+        }
+      }
+      
+      response += `\n\n⚠️ _Đây là tư vấn sơ bộ, bạn nên gặp bác sĩ/dược sĩ để được tư vấn chi tiết hơn._`
+      
+      return response
+    }
+  } catch (error) {
+    console.error('[Offline AI] QA Database search error:', error)
+  }
   
   // ============== MEDICAL CONSULTATION ==============
   if (intent === 'medical_consultation') {
@@ -1028,6 +1178,36 @@ export default defineEventHandler(async (event) => {
     const intent = detectIntent(message)
     console.warn(`[Unified AI] Intent: ${intent}`)
 
+    // 2.5 🆕 CHECK QA DATABASE FIRST - Tìm kiếm trong dữ liệu đã quản lý từ Admin
+    const qaResult = await searchQADatabase(message)
+    if (qaResult.found && qaResult.confidence >= 50) {
+      console.log(`[Unified AI] Using QA Database response (confidence: ${qaResult.confidence}%)`)
+      
+      // Format lại câu trả lời với thương hiệu
+      let formattedAnswer = qaResult.answer || ''
+      
+      // Thêm header nếu là tư vấn y tế
+      if (qaResult.category === 'medical' || qaResult.category === 'dosage' || qaResult.category === 'side-effects') {
+        formattedAnswer = `🏥 **Pharmacare - Tư vấn dược**\n\n${formattedAnswer}\n\n⚠️ _Đây là tư vấn sơ bộ, bạn nên gặp bác sĩ/dược sĩ để được tư vấn chi tiết hơn._`
+      }
+      
+      // Save to cache
+      const cacheKey = getCacheKey(message, intent)
+      saveToCache(cacheKey, formattedAnswer, intent)
+      
+      return {
+        success: true,
+        intent: 'qa_database',
+        response: formattedAnswer,
+        consultationStage: 'greeting',
+        sessionId,
+        timestamp: new Date().toISOString(),
+        qaMatch: true,
+        qaConfidence: qaResult.confidence,
+        qaCategory: qaResult.category,
+      }
+    }
+
     // 3. Check smart cache
     const cacheKey = getCacheKey(message, intent)
     const cachedResponse = getFromCache(cacheKey, intent)
@@ -1057,8 +1237,14 @@ export default defineEventHandler(async (event) => {
     // 6. Fetch context
     const medicineContext = await fetchMedicineContext(intent, message)
 
-    // 7. Build prompt
-    const prompt = buildOptimizedPrompt(intent, message, consultation, medicineContext)
+    // 6.5 🆕 TÌM KIẾM QA LIÊN QUAN để bổ sung vào prompt
+    let qaContext = ''
+    if (qaResult.found && qaResult.confidence >= 30) {
+      qaContext = `\n\nTHÔNG TIN TỪ QA DATABASE (confidence: ${qaResult.confidence}%):\nCategory: ${qaResult.category}\nAnswer: ${qaResult.answer?.substring(0, 500) || 'N/A'}`
+    }
+
+    // 7. Build prompt với QA context
+    const prompt = buildOptimizedPrompt(intent, message, consultation, medicineContext) + qaContext
 
     // 8. Call Gemini với retry
     const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyDVqknKtMNdW7EUoROduEZTddjQnNLOHCs'

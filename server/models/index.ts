@@ -24,6 +24,9 @@ import Expense from './Expense';
 import Voucher, { VoucherUsageModel } from './Voucher';
 import Campaign from './Campaign';
 import { ShiftModel, BenefitModel } from './HRExtended';
+// HR Reward/Penalty & Salary Report
+import RewardPenalty from './RewardPenalty';
+import SalaryReport from './SalaryReport';
 
 // Đảm bảo rằng các model đã được import và đăng ký đúng cách
 export { 
@@ -52,7 +55,9 @@ export {
   VoucherUsageModel,
   Campaign,
   ShiftModel,
-  BenefitModel
+  BenefitModel,
+  RewardPenalty,
+  SalaryReport
 };
 
 // Export default là một object chứa tất cả các model để sử dụng linh hoạt hơn
@@ -82,5 +87,7 @@ export default {
   VoucherUsageModel,
   Campaign,
   Shift: ShiftModel,
-  Benefit: BenefitModel
+  Benefit: BenefitModel,
+  RewardPenalty,
+  SalaryReport
 };

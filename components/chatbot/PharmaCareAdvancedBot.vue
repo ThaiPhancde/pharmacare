@@ -212,6 +212,17 @@ async function sendMessage(customMessage?: string) {
         consultationStage.value = response.consultationStage
       }
 
+      // Log response source for debugging
+      if (response.qaMatch) {
+        console.log(`[Chatbot] Response from QA Database (confidence: ${response.qaConfidence}%, category: ${response.qaCategory})`)
+      } else if (response.local) {
+        console.log('[Chatbot] Response from local handler')
+      } else if (response.cached) {
+        console.log('[Chatbot] Response from cache')
+      } else if (response.offline) {
+        console.log('[Chatbot] Response from offline AI fallback')
+      }
+
       // Add bot response
       addBotMessage(
         response.response,
@@ -220,6 +231,8 @@ async function sendMessage(customMessage?: string) {
           actionButtons: response.actionButtons || [],
           intent: response.intent,
           medicines: response.medicines || [],
+          qaMatch: response.qaMatch || false,
+          qaConfidence: response.qaConfidence || 0,
         },
       )
 
@@ -260,7 +273,7 @@ function handleActionButton(button: ActionButton) {
     activeTab.value = 'search'
   }
   else if (button.action === 'order') {
-    addBotMessage('📦 Để đặt mua thuốc, vui lòng:\n\n1. Nhấn vào nút "Mua Ngay" trên thẻ thuốc\n2. Hoặc liên hệ hotline: 1900-xxxx\n3. Hoặc ghé trực tiếp nhà thuốc PharmaCare')
+    addBotMessage('📦 Để đặt mua thuốc, vui lòng:\n\n1. Nhấn vào nút "Mua Ngay" trên thẻ thuốc\n2. Hoặc liên hệ hotline: 1900-xxxx\n3. Hoặc ghé trực tiếp nhà thuốc Pharmacare')
   }
   else if (button.action === 'follow_up') {
     addBotMessage('📅 Tái khám sau 3-5 ngày nếu:\n\n✅ Triệu chứng không cải thiện\n✅ Xuất hiện tác dụng phụ\n✅ Có thắc mắc về thuốc\n\nBạn muốn đặt lịch hẹn tái khám không?', 'buttons', {

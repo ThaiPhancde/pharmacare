@@ -100,6 +100,9 @@ onMounted(() => {
       </div>
       <div class="flex gap-2">
         <n-button @click="router.back()">Back</n-button>
+        <n-button type="info" @click="router.push(`/hr/reward-penalty/employee/${route.params.id}`)">
+          🎁 Rewards & Penalties
+        </n-button>
         <n-button @click="router.push(`/hr/employee/edit/${route.params.id}`)">Edit</n-button>
         <n-button type="error" @click="handleDelete" :loading="loading">Delete</n-button>
       </div>
