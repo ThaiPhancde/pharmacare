@@ -10,8 +10,13 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'vercel',
     externals: {
-         allowlist: ['mongoose']
-       }
+      inline: ['mongoose']
+    },
+    esbuild: {
+      options: {
+        target: 'esnext'
+      }
+    }
   },
 
   runtimeConfig: {

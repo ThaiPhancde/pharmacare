@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install", 
+  "framework": "nuxtjs",
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "node_modules/mongoose/**"
+    }
+  }
+}
