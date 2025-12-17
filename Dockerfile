@@ -1,34 +1,57 @@
-FROM node:20-alpine as build-stage
+# ================================
+# Build Stage
+# ================================
+FROM node:20-alpine AS builder
 
-# Đặt thư mục làm việc
+# Install dependencies for native modules (sharp, etc.)
+RUN apk add --no-cache python3 make g++ libc6-compat
+
 WORKDIR /app
 
-# Sao chép các file cấu hình package
+# Copy package files
 COPY package.json yarn.lock ./
 
-# Cài đặt dependencies
-RUN yarn install --frozen-lockfile
+# Install all dependencies (including devDependencies for build)
+RUN yarn install --frozen-lockfile --network-timeout 100000
 
-# Sao chép toàn bộ source code
+# Copy source code
 COPY . .
 
-# Build ứng dụng
+# Build the Nuxt application
+ENV NODE_ENV=production
 RUN yarn build
 
-# Stage production
-FROM node:20-alpine as production-stage
+# ================================
+# Production Stage
+# ================================
+FROM node:20-alpine AS production
 
-# Đặt thư mục làm việc
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init libc6-compat
+
 WORKDIR /app
 
-# Sao chép các file từ build stage
-COPY --from=build-stage /app/.output /app/.output
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nuxtjs
 
-# Thiết lập các biến môi trường
+# Copy built application from builder
+COPY --from=builder --chown=nuxtjs:nodejs /app/.output ./.output
+
+# Set environment variables
 ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
-# Mở port
+# Switch to non-root user
+USER nuxtjs
+
+# Expose port
 EXPOSE 3000
 
-# Khởi chạy ứng dụng
-CMD ["node", ".output/server/index.mjs"] 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+
+# Start application with dumb-init
+CMD ["dumb-init", "node", ".output/server/index.mjs"] 

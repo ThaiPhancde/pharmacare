@@ -6,10 +6,11 @@ import Components from 'unplugin-vue-components/vite'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 // @ts-expect-error nuxt auto-imports defineNuxtConfig
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
   nitro: {
-    preset: 'vercel',
+    // Use node-server for Railway/Docker, vercel for Vercel
+    preset: process.env.NITRO_PRESET || 'node-server',
   },
 
   runtimeConfig: {

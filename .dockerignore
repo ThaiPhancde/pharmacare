@@ -1,0 +1,57 @@
+# Dependencies
+node_modules
+.yarn
+
+# Build outputs (will be built in Docker)
+.output
+.nuxt
+dist
+
+# Environment files (Railway will inject these)
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE & Editors
+.vscode
+.idea
+*.swp
+*.swo
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Test & Coverage
+coverage
+.nyc_output
+test-results
+playwright-report
+
+# Documentation (not needed in production)
+docs
+*.md
+!README.md
+
+# Development files
+.eslintcache
+*.tsbuildinfo
+
+# Docker files (not needed inside container)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Misc
+*.local
+.vercel
+Plantuml
+test-api
+test-functions

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   mongo:
-    image: mongo
+    image: mongo:7
     container_name: mongo_db
     restart: always
     ports:
@@ -12,23 +12,38 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: thaian
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: pharmacare_app
     restart: always
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     environment:
       NODE_ENV: production
+      HOST: 0.0.0.0
       PORT: 3000
-      MONGO_URI: "mongodb://root:thaian@mongo:27017/pharmacare?authSource=admin"
+      MONGODB_URI: "mongodb://root:thaian@mongo:27017/pharmacare?authSource=admin"
       JWT_SECRET: "pharmacare_secret_key"
+      GHN_TOKEN: "${GHN_TOKEN:-}"
+      GHN_SHOP_ID: "${GHN_SHOP_ID:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   mongodb_data:
