@@ -5,10 +5,13 @@ import {
   BriefcaseMedical,
   Archive,
   TestTubeDiagonal,
+  Download,
+  Loader2,
 } from "lucide-vue-next";
 import { useToast } from "@/components/ui/toast/use-toast";
 import TopCustomers from "@/components/dashboard/TopCustomers.vue";
 import TopProducts from "@/components/dashboard/TopProducts.vue";
+import { downloadExcelReport, type WorkbookData } from "@/utils/excel-export";
 
 interface CardData {
   totalCustomer: number;
@@ -26,6 +29,13 @@ interface DashboardResponse {
   data?: {
     cardData: CardData;
   };
+  error?: string;
+  message?: string;
+}
+
+interface ExportResponse {
+  status: boolean;
+  data?: WorkbookData;
   error?: string;
   message?: string;
 }
@@ -49,6 +59,9 @@ const date = ref({
 
 // Used to trigger data reload on date change
 const reloadTrigger = ref(0);
+
+// Export loading state
+const isExporting = ref(false);
 
 // API to fetch dashboard data
 const fetchDashboardData = async () => {
@@ -81,6 +94,38 @@ const handleDateRangeChange = (newDateRange: {from: Date, to: Date}) => {
   reloadTrigger.value++;
 };
 
+// Handle Excel export
+const handleExportExcel = async () => {
+  isExporting.value = true;
+  try {
+    const response = await $fetch<ExportResponse>('/api/dashboard/export-excel', {
+      query: {
+        from: date.value.from?.toISOString(),
+        to: date.value.to?.toISOString(),
+      }
+    });
+    
+    if (response?.status && response.data) {
+      downloadExcelReport(response.data);
+      toast({
+        title: 'Export Successful',
+        description: 'Dashboard report has been downloaded successfully.',
+      });
+    } else {
+      throw new Error(response?.error || 'Export failed');
+    }
+  } catch (error: any) {
+    console.error('Error exporting report:', error);
+    toast({
+      title: 'Export Failed',
+      description: error.message || 'Unable to export dashboard report. Please try again.',
+      variant: 'destructive',
+    });
+  } finally {
+    isExporting.value = false;
+  }
+};
+
 const { toast } = useToast();
 
 onMounted(() => {
@@ -100,15 +145,14 @@ watch([() => date.value.from, () => date.value.to], () => {
       <div class="flex items-center space-x-2">
         <BaseDateRangePicker v-model="date" @update:model-value="handleDateRangeChange" />
         <Button
-          @click="
-            () =>
-              toast({
-                title: 'Scheduled: Catch up',
-                description: 'Friday, February 10, 2023 at 5:57 PM',
-              })
-          "
-          >Download</Button
+          @click="handleExportExcel"
+          :disabled="isExporting"
+          class="gap-2"
         >
+          <Loader2 v-if="isExporting" class="h-4 w-4 animate-spin" />
+          <Download v-else class="h-4 w-4" />
+          {{ isExporting ? 'Exporting...' : 'Download Report' }}
+        </Button>
       </div>
     </div>
     <main class="flex flex-1 flex-col gap-4 md:gap-8">
@@ -127,11 +171,10 @@ watch([() => date.value.from, () => date.value.to], () => {
               <NumberFlow :value="dataCard.totalCustomer" />
             </div>
             <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.totalCustomerDesc"
-                prefix="+"
-                :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              />
+              <span v-if="dataCard.totalCustomerDesc !== 0" :class="dataCard.totalCustomerDesc >= 0 ? 'text-green-600' : 'text-red-600'">
+                {{ dataCard.totalCustomerDesc >= 0 ? '+' : '' }}{{ dataCard.totalCustomerDesc.toFixed(1) }}%
+              </span>
+              <span v-else class="text-gray-500">0%</span>
               from last month
             </p>
           </CardContent>
@@ -147,15 +190,10 @@ watch([() => date.value.from, () => date.value.to], () => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow :value="dataCard.totalMedicine" prefix="+" />
+              <NumberFlow :value="dataCard.totalMedicine" />
             </div>
             <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.totalMedicineDesc"
-                prefix="+"
-                :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              />
-              from last month
+              Total medicines in system
             </p>
           </CardContent>
         </Card>
@@ -170,14 +208,15 @@ watch([() => date.value.from, () => date.value.to], () => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow :value="dataCard.sales" prefix="+" />
+              <NumberFlow :value="dataCard.sales" />
             </div>
             <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.salesDesc"
-                prefix="+"
-              />
-              expired medicines
+              <span v-if="dataCard.sales > 0" class="text-red-600">
+                Requires immediate action
+              </span>
+              <span v-else class="text-green-600">
+                No expired medicines
+              </span>
             </p>
           </CardContent>
         </Card>
@@ -192,11 +231,15 @@ watch([() => date.value.from, () => date.value.to], () => {
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              <NumberFlow :value="dataCard.expiredMedicine" prefix="+" />
+              <NumberFlow :value="dataCard.expiredMedicine" />
             </div>
             <p class="text-xs text-muted-foreground">
-              <NumberFlow :value="dataCard.expiredMedicineDesc" prefix="-" />
-              within 30 days
+              <span v-if="dataCard.expiredMedicine > 0" class="text-orange-600">
+                Within 30 days
+              </span>
+              <span v-else class="text-green-600">
+                No expiring medicines
+              </span>
             </p>
           </CardContent>
         </Card>

@@ -70,7 +70,8 @@
     "tailwindcss-animate": "^1.0.7",
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.5.0",
-    "vue-barcode-reader": "^1.0.3"
+    "vue-barcode-reader": "^1.0.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.1",
