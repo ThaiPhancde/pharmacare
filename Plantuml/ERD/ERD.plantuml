@@ -1,67 +1,219 @@
 @startuml
-title Entity Relationship Diagram (ERD) - Pharmacare
+title Entity Relationship Diagram (ERD)\nHệ thống Quản lý Nhà thuốc Pharmacare
+
 hide circle
 skinparam linetype ortho
+skinparam ranksep 50
+skinparam nodesep 40
 
-entity "Users" as user {
-  *_id : ObjectId <<PK>>
-  --
-  email : String
-  password : String
-  role : String
-}
-
-entity "Medicines" as medicine {
-  *_id : ObjectId <<PK>>
+' ========== MASTER DATA (Xanh lá) ==========
+entity "**Categories**" as category #E8F5E9 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
   --
   name : String
-  bar_code : String <<Unique>>
-  generic : String
-  *unit_id : ObjectId <<FK>>
-  *category_id : ObjectId <<FK>>
+  description : String
 }
 
-entity "Stocks" as stock {
-  *_id : ObjectId <<PK>>
+entity "**Units**" as unit #E8F5E9 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
   --
-  *medicine : ObjectId <<FK>>
+  name : String
+}
+
+entity "**TypeMedicines**" as typemed #E8F5E9 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  name : String
+}
+
+entity "**Suppliers**" as supplier #E8F5E9 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  name : String
+  phone : String
+  address : String
+}
+
+entity "**Banks**" as bank #E8F5E9 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  bank_name : String
+  account_number : String
+}
+
+' ========== PRODUCT (Xanh dương) ==========
+entity "**Medicines**" as medicine #E3F2FD {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  name : String
+  bar_code : String
+  price : Number
+  <color:#666>unit_id</color> : ObjectId <<FK>>
+  <color:#666>category_id</color> : ObjectId <<FK>>
+  <color:#666>type_id</color> : ObjectId <<FK>>
+}
+
+entity "**Stocks**" as stock #E3F2FD {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  <color:#666>medicine</color> : ObjectId <<FK>>
   batch_id : String
   expiry_date : Date
-  unit_quantity : Number
+  quantity : Number
+  mrp : Number
 }
 
-entity "Customers" as customer {
-  *_id : ObjectId <<PK>>
+entity "**Purchases**" as purchase #E3F2FD {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  <color:#666>supplier</color> : ObjectId <<FK>>
+  invoice_no : String
+  date : Date
+  total : Number
+}
+
+entity "**PurchaseItems**" as purchaseitem #ECEFF1 {
+  <color:#666>medicine</color> : ObjectId <<FK>>
+  batch_id : String
+  quantity : Number
+  price : Number
+}
+
+' ========== SALES (Cam) ==========
+entity "**Customers**" as customer #FFF3E0 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
   --
   full_name : String
-  phone : String <<Index>>
+  phone : String
+  email : String
   medical_profile : Object
 }
 
-entity "Invoices" as invoice {
-  *_id : ObjectId <<PK>>
+entity "**Invoices**" as invoice #FFF3E0 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
   --
   invoice_no : String
-  *customer : ObjectId <<FK>>
-  *created_by : ObjectId <<FK>>
-  created_at : Date
+  date : Date
+  <color:#666>customer</color> : ObjectId <<FK>>
+  <color:#666>voucher</color> : ObjectId <<FK>>
   grand_total : Number
+  payment_method : String
 }
 
-entity "InvoiceItems" as item <<Embedded>> {
-  --
-  *medicine : ObjectId <<FK>>
+entity "**InvoiceItems**" as invoiceitem #ECEFF1 {
+  <color:#666>medicine</color> : ObjectId <<FK>>
+  <color:#666>stock</color> : ObjectId <<FK>>
   batch_id : String
   quantity : Number
-  price : Number <<Snapshot>>
+  price : Number
 }
 
-' Relationships
-medicine ||..|{ stock : "has inventory batches"
-user ||..|{ invoice : "creates"
-customer ||..|{ invoice : "places"
-invoice *--|{ item : "contains"
-item }|..|| medicine : "references"
-item }|..|| stock : "deducts from batch"
+entity "**Vouchers**" as voucher #FFF3E0 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  voucher_code : String
+  discount_type : String
+  discount_value : Number
+  start_date : Date
+  end_date : Date
+  status : String
+}
+
+entity "**CustomerReturns**" as custreturn #FFF3E0 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  <color:#666>invoice</color> : ObjectId <<FK>>
+  <color:#666>customer</color> : ObjectId <<FK>>
+  totalAmount : Number
+  reason : String
+}
+
+entity "**ReturnItems**" as returnitem #ECEFF1 {
+  <color:#666>medicine</color> : ObjectId <<FK>>
+  batch_id : String
+  quantity : Number
+}
+
+' ========== HR (Tím) ==========
+entity "**Employees**" as employee #F3E5F5 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  full_name : String
+  email : String
+  department : String
+  salary_basic : Number
+}
+
+entity "**Attendance**" as attendance #F3E5F5 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  <color:#666>employee</color> : ObjectId <<FK>>
+  date : Date
+  check_in : Time
+  check_out : Time
+}
+
+entity "**Payroll**" as payroll #F3E5F5 {
+  <color:#b8860b><b>_id</b></color> : ObjectId
+  --
+  <color:#666>employee</color> : ObjectId <<FK>>
+  month : Number
+  net_salary : Number
+}
+
+' ========== LAYOUT CONTROL ==========
+category -[hidden]right- unit
+unit -[hidden]right- typemed
+
+medicine -[hidden]down- stock
+
+customer -[hidden]right- invoice
+invoice -[hidden]right- voucher
+
+employee -[hidden]right- attendance
+attendance -[hidden]right- payroll
+
+' ========== RELATIONSHIPS ==========
+' Master -> Medicine
+category ||--o{ medicine : "phân loại"
+unit ||--o{ medicine : "đơn vị"
+typemed ||--o{ medicine : "loại thuốc"
+
+' Medicine -> Stock
+medicine ||--o{ stock : "tồn kho"
+
+' Purchase flow
+supplier ||--o{ purchase : "cung cấp"
+purchase ||--|{ purchaseitem : "chứa"
+purchaseitem }o--|| medicine : "thuốc"
+purchaseitem ..> stock : "nhập vào"
+
+' Sales flow
+customer ||--o{ invoice : "mua hàng"
+voucher ||--o{ invoice : "áp dụng"
+invoice ||--|{ invoiceitem : "chứa"
+invoiceitem }o--|| medicine : "thuốc"
+invoiceitem }o--|| stock : "trừ kho"
+
+' Returns
+invoice ||--o{ custreturn : "trả hàng"
+customer ||--o{ custreturn : "yêu cầu"
+custreturn ||--|{ returnitem : "chứa"
+returnitem }o--|| medicine : "thuốc"
+returnitem ..> stock : "hoàn kho"
+
+' HR
+employee ||--o{ attendance : "chấm công"
+employee ||--o{ payroll : "lương"
+
+' Cross-module
+employee ..> invoice : "tạo hóa đơn"
+employee ..> purchase : "nhập hàng"
+bank ..> payroll : "thanh toán"
+
+' ========== LEGEND ==========
+legend bottom
+  | <#E8F5E9> Master Data | <#E3F2FD> Product & Stock | <#FFF3E0> Sales | <#F3E5F5> HR | <#ECEFF1> Embedded |
+endlegend
 
 @enduml

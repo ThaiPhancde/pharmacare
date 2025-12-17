@@ -423,10 +423,16 @@
                 <n-button v-if="momoPaymentUrl" type="info" class="flex-1" @click="openMoMoApp">
                   Open MoMo App
                 </n-button>
+
+                <n-button v-if="momoPaymentUrl" type="error" class="flex-1" @click="cancelMoMoPayment">
+                  Cancel Payment
+                </n-button>
               </div>
 
               <div v-if="momoPaymentUrl" class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-600">
                 Waiting for payment confirmation. This page will update automatically.
+                <br />
+                <span class="text-amber-600">Click "Cancel Payment" if you want to cancel and return to POS.</span>
               </div>
             </div>
           </template>
@@ -1981,7 +1987,7 @@ const initiateMoMoPayment = async () => {
     // Tạo invoice ID
     currentOrderId.value = `INV-CUS-${Date.now()}`;
 
-    // Tạo invoice trước với trạng thái 'pending'
+    // Tạo invoice với trạng thái 'pending' - sẽ chỉ update thành 'paid' khi thanh toán thành công
     const invoiceData = {
       _id: currentOrderId.value,
       date: Date.now(),
@@ -2006,10 +2012,10 @@ const initiateMoMoPayment = async () => {
       vat_total: vatTotal.value,
       discount: discount.value,
       grand_total: grandTotal.value,
-      paid: grandTotal.value, // Đã thanh toán đầy đủ
-      due: 0, // Không còn nợ
+      paid: 0, // Chưa thanh toán - đợi MoMo xác nhận
+      due: grandTotal.value, // Còn nợ toàn bộ
       payment_method: 'momo',
-      payment_status: 'paid', // Đánh dấu đã thanh toán
+      payment_status: 'pending', // Đang chờ thanh toán MoMo
       payment_details: {
         order_id: currentOrderId.value
       },
@@ -2064,6 +2070,9 @@ const openMoMoApp = () => {
   }
 };
 
+// Biến lưu interval để có thể cancel
+let momoCheckInterval: ReturnType<typeof setInterval> | null = null;
+
 // Check MoMo payment status periodically
 const checkMoMoPaymentStatus = () => {
   if (!currentOrderId.value) {
@@ -2075,7 +2084,7 @@ const checkMoMoPaymentStatus = () => {
   let attempts = 0;
   const maxAttempts = 60; // Check for 5 minutes max
 
-  const checkInterval = setInterval(async () => {
+  momoCheckInterval = setInterval(async () => {
     try {
       attempts++;
       console.log(`Checking MoMo payment status... Attempt ${attempts} for ${currentOrderId.value}`);
@@ -2089,32 +2098,72 @@ const checkMoMoPaymentStatus = () => {
 
       if (response && response.data) {
         if (response.data.status === 'paid') {
-          // Payment successful
+          // Payment successful - update invoice status
           momoPaymentStatus.value = 'Paid';
-          clearInterval(checkInterval);
+          if (momoCheckInterval) {
+            clearInterval(momoCheckInterval);
+            momoCheckInterval = null;
+          }
           message.success('Payment successful!');
 
-          // Invoice already marked as paid, clear cart and refresh medicine data
+          // Clear cart and refresh medicine data
           clearCart();
+          resetMoMoState();
           // Reload medicine data to reflect updated stock quantities
           fetchMedicines();
         } else if (response.data.status === 'not_found') {
           momoPaymentStatus.value = 'Checking...'; // Continue checking
           console.log('Invoice not found yet, continuing to check...');
+        } else if (response.data.status === 'pending') {
+          momoPaymentStatus.value = 'Waiting for payment...';
         }
       }
 
-      // Stop checking after max attempts
+      // Stop checking after max attempts - payment timeout
       if (attempts >= maxAttempts) {
-        clearInterval(checkInterval);
+        if (momoCheckInterval) {
+          clearInterval(momoCheckInterval);
+          momoCheckInterval = null;
+        }
         momoPaymentStatus.value = 'Timeout';
-        message.warning('Payment verification timeout. Please check manually.');
+        message.warning('Payment timeout. The pending invoice will be cancelled.');
+        // Xóa invoice pending và reset state
+        await cancelMoMoPayment();
       }
     } catch (error) {
       console.error('Error checking payment status:', error);
       momoPaymentStatus.value = 'Error checking status';
     }
   }, 5000); // Check every 5 seconds
+};
+
+// Cancel MoMo payment - xóa invoice pending và reset state
+const cancelMoMoPayment = async () => {
+  try {
+    if (currentOrderId.value) {
+      // Xóa invoice pending
+      await api.delete(`/api/invoice/${currentOrderId.value}`);
+      console.log('Pending invoice deleted:', currentOrderId.value);
+    }
+  } catch (error) {
+    console.error('Error deleting pending invoice:', error);
+  } finally {
+    // Reset MoMo state
+    resetMoMoState();
+    message.info('MoMo payment cancelled. Returning to POS.');
+  }
+};
+
+// Reset MoMo state
+const resetMoMoState = () => {
+  if (momoCheckInterval) {
+    clearInterval(momoCheckInterval);
+    momoCheckInterval = null;
+  }
+  momoPaymentUrl.value = null;
+  momoQrCode.value = null;
+  currentOrderId.value = null;
+  momoPaymentStatus.value = 'Pending';
 };
 
 onMounted(async () => {

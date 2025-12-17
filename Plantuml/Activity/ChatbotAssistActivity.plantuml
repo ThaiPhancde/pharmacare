@@ -1,0 +1,48 @@
+@startuml
+title Activity Diagram: Chatbot Tư vấn thuốc
+skinparam activityBackgroundColor #E8F5E9
+skinparam activityBorderColor #388E3C
+
+start
+:Mở chatbot;
+:Hiển thị gợi ý nhanh;
+
+:Nhập câu hỏi;
+:Phân tích Intent;
+
+switch (Loại yêu cầu?)
+case (Tìm theo triệu chứng)
+    :Query symptoms DB;
+    :Gợi ý thuốc phù hợp;
+
+case (Tra cứu thuốc)
+    :Tìm trong Medicine DB;
+    if (Tìm thấy?) then (Có)
+        :Hiển thị thông tin chi tiết;
+    else (Không)
+        :Gợi ý thuốc tương tự;
+    endif
+
+case (Kiểm tra tồn kho)
+    :Query Stock DB;
+    :Hiển thị số lượng & lô hàng;
+
+case (Nhận diện ảnh)
+    :Upload ảnh thuốc;
+    :Gọi Image Recognition;
+    :Hiển thị kết quả;
+
+case (Không hiểu)
+    :Gợi ý câu hỏi mẫu;
+
+endswitch
+
+:Lưu chat history;
+
+if (Tiếp tục?) then (Có)
+else (Không)
+    :Hiển thị đánh giá;
+endif
+
+stop
+@enduml

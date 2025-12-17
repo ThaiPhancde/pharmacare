@@ -1,0 +1,43 @@
+@startuml
+title Activity Diagram: Quản lý Người dùng & Phân quyền
+skinparam activityBackgroundColor #FCE4EC
+skinparam activityBorderColor #AD1457
+
+start
+:Truy cập module User;
+
+if (Có quyền Admin?) then (Không)
+    :Từ chối truy cập;
+    stop
+else (Có)
+endif
+
+switch (Thao tác?)
+case (Tạo tài khoản)
+    :Nhập thông tin & vai trò;
+    
+    if (Email tồn tại?) then (Có)
+        :Báo lỗi trùng email;
+    else (Không)
+        :Hash password & tạo User;
+        :Gửi email thông báo;
+    endif
+
+case (Phân quyền)
+    :Chọn User;
+    :Cấu hình quyền theo module;
+    :Lưu permissions;
+
+case (Khóa/Mở khóa)
+    :Chọn User;
+    :Đổi trạng thái is_active;
+    :Revoke tokens (nếu khóa);
+
+case (Reset mật khẩu)
+    :Tạo password mới;
+    :Gửi email cho User;
+
+endswitch
+
+stop
+@enduml

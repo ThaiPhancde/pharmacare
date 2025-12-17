@@ -1,0 +1,38 @@
+@startuml
+title Activity Diagram: Quản lý Khách hàng
+skinparam activityBackgroundColor #FFF3E0
+skinparam activityBorderColor #E65100
+
+start
+:Truy cập module Khách hàng;
+
+switch (Thao tác?)
+case (Thêm mới)
+    :Nhập thông tin KH;
+    
+    if (SĐT đã tồn tại?) then (Có)
+        :Báo lỗi trùng SĐT;
+    else (Không)
+        :Tạo Customer;
+        :Khởi tạo điểm = 0;
+    endif
+
+case (Cập nhật)
+    :Chọn KH & sửa thông tin;
+    :Lưu thay đổi;
+
+case (Xem lịch sử)
+    :Hiển thị các hóa đơn;
+    :Thống kê chi tiêu;
+
+case (Quản lý điểm)
+    :Xem/Điều chỉnh điểm;
+    :Ghi log lý do;
+
+case (Xuất báo cáo)
+    :Chọn filter & xuất Excel;
+
+endswitch
+
+stop
+@enduml

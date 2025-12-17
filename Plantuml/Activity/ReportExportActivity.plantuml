@@ -1,0 +1,44 @@
+@startuml
+title Activity Diagram: Xuất Báo cáo
+skinparam activityBackgroundColor #E0F2F1
+skinparam activityBorderColor #00695C
+
+start
+:Truy cập module Báo cáo;
+:Chọn loại báo cáo;
+
+switch (Loại?)
+case (Doanh thu)
+    :Filter: Thời gian, Nhóm theo;
+case (Tồn kho)
+    :Filter: Danh mục, Trạng thái;
+case (Bán hàng)
+    :Filter: Thời gian, Nhân viên;
+case (Khách hàng)
+    :Filter: Nhóm KH, Chi tiêu;
+endswitch
+
+:Nhấn "Xem" hoặc "Xuất";
+
+:Truy vấn & xử lý dữ liệu;
+
+if (Xem trước?) then (Có)
+    :Hiển thị biểu đồ & bảng;
+else (Không)
+endif
+
+:Chọn định dạng xuất;
+
+switch (Định dạng?)
+case (Excel)
+    :Tạo file .xlsx;
+case (PDF)
+    :Tạo file .pdf;
+case (CSV)
+    :Tạo file .csv;
+endswitch
+
+:Download file;
+
+stop
+@enduml

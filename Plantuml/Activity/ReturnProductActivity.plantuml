@@ -1,0 +1,45 @@
+@startuml
+title Activity Diagram: Đổi/Trả hàng
+skinparam activityBackgroundColor #FBE9E7
+skinparam activityBorderColor #BF360C
+
+start
+:Nhập mã hóa đơn/SĐT;
+:Tìm hóa đơn gốc;
+
+if (Tìm thấy?) then (Không)
+    :Báo lỗi không tìm thấy;
+    stop
+else (Có)
+endif
+
+if (Còn trong hạn đổi trả?) then (Không)
+    if (Manager cho phép?) then (Có)
+        :Xác nhận ngoại lệ;
+    else (Không)
+        :Từ chối;
+        stop
+    endif
+else (Có)
+endif
+
+:Chọn sản phẩm & số lượng trả;
+:Chọn lý do trả hàng;
+
+switch (Hình thức xử lý?)
+case (Hoàn tiền)
+    :Tính tiền hoàn;
+    :Hoàn qua tiền mặt/CK;
+case (Đổi hàng)
+    :Chọn SP thay thế;
+    :Tính chênh lệch giá;
+case (Voucher)
+    :Tạo voucher tương đương;
+endswitch
+
+:Cập nhật Stock (nếu còn bán được);
+:Tạo phiếu đổi/trả;
+:In phiếu cho khách ký;
+
+stop
+@enduml

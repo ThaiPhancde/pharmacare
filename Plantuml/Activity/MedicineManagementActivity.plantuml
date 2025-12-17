@@ -1,0 +1,40 @@
+@startuml
+title Activity Diagram: Quản lý Thuốc
+skinparam activityBackgroundColor #E0F7FA
+skinparam activityBorderColor #00838F
+
+start
+:Truy cập module Thuốc;
+:Tải danh sách thuốc;
+
+switch (Thao tác?)
+case (Thêm mới)
+    :Nhập thông tin thuốc;
+    :Upload hình ảnh (nếu có);
+    
+    if (Barcode trùng?) then (Có)
+        :Báo lỗi trùng mã;
+    else (Không)
+        :Lưu Medicine + Stock;
+        :Thông báo thành công;
+    endif
+
+case (Sửa)
+    :Chọn thuốc & sửa thông tin;
+    :Lưu cập nhật;
+
+case (Xóa)
+    if (Có trong đơn hàng?) then (Có)
+        :Không cho xóa;
+    else (Không)
+        :Soft delete;
+    endif
+
+case (Tìm kiếm)
+    :Nhập từ khóa;
+    :Hiển thị kết quả;
+
+endswitch
+
+stop
+@enduml

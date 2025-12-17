@@ -1,0 +1,41 @@
+@startuml
+title Activity Diagram: Cảnh báo Tồn kho & Hạn dùng
+skinparam activityBackgroundColor #FFEBEE
+skinparam activityBorderColor #C62828
+
+start
+:Cron Job chạy hàng ngày;
+
+fork
+    :Quét thuốc tồn kho thấp;
+    while (Còn thuốc?) is (Có)
+        if (qty <= min_stock?) then (Có)
+            :Tạo Alert "Sắp hết hàng";
+        else (Không)
+        endif
+    endwhile (Không)
+    
+fork again
+    :Quét thuốc cận hạn;
+    while (Còn lô hàng?) is (Có)
+        if (Hết hạn?) then (Có)
+            :Alert CRITICAL;
+            :Đánh dấu không khả dụng;
+        else if (< 30 ngày?) then (Có)
+            :Alert WARNING;
+        else (Không)
+        endif
+    endwhile (Không)
+end fork
+
+:Lưu alerts vào DB;
+
+if (Có Critical?) then (Có)
+    :Gửi email Admin;
+else (Không)
+endif
+
+:Cập nhật Dashboard;
+
+stop
+@enduml
