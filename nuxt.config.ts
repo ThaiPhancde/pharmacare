@@ -10,14 +10,6 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'vercel',
-    externals: {
-      inline: ['mongoose', 'bson', 'mongodb', 'mongodb-connection-string-url', '@mongodb-js/saslprep', 'kareem', 'mpath', 'mquery', 'ms', 'sift'],
-    },
-    esbuild: {
-      options: {
-        target: 'esnext',
-      },
-    },
   },
 
   runtimeConfig: {
