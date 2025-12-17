@@ -1,0 +1,50 @@
+@startuml
+title Activity Diagram: Nhập kho (Purchase Order)
+skinparam activityBackgroundColor #F3E5F5
+skinparam activityBorderColor #7B1FA2
+
+start
+fork
+    :Tạo phiếu nhập mới;
+fork again
+    :Chọn Nhà cung cấp;
+end fork
+
+:Chọn thuốc cần nhập;
+
+switch (Loại lô hàng?)
+case (Lô mới)
+    fork
+        :Nhập Batch ID;
+    fork again
+        :Nhập Hạn dùng;
+    end fork
+case (Lô có sẵn)
+    :Chọn lô từ danh sách;
+endswitch
+
+fork
+    :Nhập số lượng;
+fork again
+    :Nhập giá nhập;
+end fork
+
+:Xác nhận nhập kho;
+
+if (Dữ liệu hợp lệ?) then (Có)
+    fork
+        :Tạo Purchase Order;
+    fork again
+        :Cập nhật Stock;
+    end fork
+    :Thông báo thành công;
+    if (In phiếu?) then (Có)
+        :Xuất PDF;
+    else (Không)
+    endif
+else (Không)
+    :Hiển thị lỗi;
+endif
+
+stop
+@enduml

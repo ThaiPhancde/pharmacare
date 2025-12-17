@@ -1,0 +1,41 @@
+@startuml
+title Activity Diagram: Đăng nhập hệ thống
+skinparam activityBackgroundColor #E8F5E9
+skinparam activityBorderColor #2E7D32
+
+start
+fork
+    :Nhập Email;
+fork again
+    :Nhập Password;
+end fork
+
+:Nhấn "Đăng nhập";
+
+:Validate & Tìm User;
+
+switch (Kết quả kiểm tra?)
+case (Email không tồn tại)
+    :Báo lỗi "Email không tồn tại";
+    stop
+case (Sai mật khẩu)
+    if (Sai quá 5 lần?) then (Có)
+        :Khóa tài khoản;
+    else (Không)
+        :Báo lỗi "Sai mật khẩu";
+    endif
+    stop
+case (Tài khoản bị khóa)
+    :Báo lỗi "Tài khoản bị khóa";
+    stop
+case (Hợp lệ)
+    fork
+        :Tạo JWT Token;
+    fork again
+        :Lưu vào Cookie;
+    end fork
+    :Chuyển đến Dashboard;
+endswitch
+
+stop
+@enduml

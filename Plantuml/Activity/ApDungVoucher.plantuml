@@ -1,0 +1,46 @@
+@startuml
+title Activity Diagram: Áp dụng Voucher
+skinparam activityBackgroundColor #E8EAF6
+skinparam activityBorderColor #303F9F
+
+start
+fork
+    :Nhập mã Voucher;
+fork again
+    :Nhấn "Áp dụng";
+end fork
+
+:Kiểm tra Voucher;
+
+switch (Trạng thái Voucher?)
+case (Không tồn tại)
+    :Lỗi "Mã không tồn tại";
+    stop
+case (Hết hạn)
+    :Lỗi "Đã hết hạn";
+    stop
+case (Hết lượt)
+    :Lỗi "Hết lượt sử dụng";
+    stop
+case (Chưa đủ điều kiện)
+    :Lỗi "Chưa đủ min order";
+    stop
+case (Hợp lệ)
+    switch (Loại voucher?)
+    case (Phần trăm)
+        :Giảm = Tổng × %%;
+    case (Cố định)
+        :Giảm = Giá trị voucher;
+    case (Free ship)
+        :Giảm = Phí ship;
+    endswitch
+endswitch
+
+fork
+    :Cập nhật tổng thanh toán;
+fork again
+    :Hiển thị số tiền giảm;
+end fork
+
+stop
+@enduml

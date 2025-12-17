@@ -1,0 +1,59 @@
+@startuml
+title Activity Diagram: Bán hàng & Thanh toán (POS)
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityBorderColor #1565C0
+
+start
+:Mở giao diện POS;
+
+fork
+    :Tìm & chọn sản phẩm;
+fork again
+    :Nhập số lượng;
+end fork
+
+if (Đủ tồn kho?) then (Có)
+    :Thêm vào giỏ hàng;
+else (Không)
+    :Cảnh báo hết hàng;
+    stop
+endif
+
+fork
+    if (Có khách hàng?) then (Có)
+        :Chọn khách hàng;
+    else (Không)
+    endif
+fork again
+    if (Có Voucher?) then (Có)
+        :Áp dụng Voucher;
+    else (Không)
+    endif
+end fork
+
+:Chọn phương thức thanh toán;
+
+switch (Phương thức?)
+case (Tiền mặt)
+    :Thu tiền & trả lại;
+case (Chuyển khoản)
+    :Quét QR thanh toán;
+case (Thẻ)
+    :Quẹt thẻ POS;
+endswitch
+
+fork
+    :Trừ tồn kho;
+fork again
+    :Tạo hóa đơn;
+fork again
+    :Cập nhật điểm KH;
+end fork
+
+if (In hóa đơn?) then (Có)
+    :In PDF;
+else (Không)
+endif
+
+stop
+@enduml

@@ -4,27 +4,33 @@ skinparam activityBackgroundColor #FBE9E7
 skinparam activityBorderColor #BF360C
 
 start
-:Nhập mã hóa đơn/SĐT;
-:Tìm hóa đơn gốc;
+fork
+    :Nhập mã hóa đơn/SĐT;
+fork again
+    :Tìm hóa đơn gốc;
+end fork
 
-if (Tìm thấy?) then (Không)
+switch (Kiểm tra hóa đơn?)
+case (Không tìm thấy)
     :Báo lỗi không tìm thấy;
     stop
-else (Có)
-endif
-
-if (Còn trong hạn đổi trả?) then (Không)
+case (Hết hạn đổi trả)
     if (Manager cho phép?) then (Có)
         :Xác nhận ngoại lệ;
     else (Không)
         :Từ chối;
         stop
     endif
-else (Có)
-endif
+case (Hợp lệ)
+endswitch
 
-:Chọn sản phẩm & số lượng trả;
-:Chọn lý do trả hàng;
+fork
+    :Chọn sản phẩm trả;
+fork again
+    :Nhập số lượng;
+fork again
+    :Chọn lý do trả;
+end fork
 
 switch (Hình thức xử lý?)
 case (Hoàn tiền)
@@ -37,9 +43,13 @@ case (Voucher)
     :Tạo voucher tương đương;
 endswitch
 
-:Cập nhật Stock (nếu còn bán được);
-:Tạo phiếu đổi/trả;
-:In phiếu cho khách ký;
+fork
+    :Cập nhật Stock;
+fork again
+    :Tạo phiếu đổi/trả;
+fork again
+    :In phiếu cho khách ký;
+end fork
 
 stop
 @enduml
