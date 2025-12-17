@@ -1,0 +1,16 @@
+@startuml
+left to right direction
+title Use Case: System Configuration
+
+actor "Quản trị viên (Admin)" as Admin
+rectangle "Cấu hình Hệ thống" {
+  usecase "Quản lý Nhóm thuốc (Category)" as UC_Cat
+  usecase "Quản lý Đơn vị tính (Unit)" as UC_Unit
+  usecase "Quản lý Nhà cung cấp" as UC_Supplier
+}
+
+Admin --> UC_Cat
+Admin --> UC_Unit
+Admin --> UC_Supplier
+@enduml
+

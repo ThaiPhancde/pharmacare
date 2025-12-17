@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+title Use Case: POS Transaction Management
+
+actor "Nhân viên Bán hàng" as Sales
+rectangle "Giao dịch POS" {
+  usecase "Tạo hóa đơn mới" as UC_CreateInvoice
+  usecase "Treo đơn hàng (Suspend)" as UC_Suspend
+  usecase "Phục hồi đơn hàng (Resume)" as UC_Resume
+  usecase "Hủy đơn hàng" as UC_Cancel
+  usecase "Thêm sản phẩm vào đơn" as UC_AddItem
+}
+
+Sales --> UC_CreateInvoice
+Sales --> UC_Suspend
+Sales --> UC_Resume
+Sales --> UC_Cancel
+
+UC_CreateInvoice ..> UC_AddItem : <<include>>
+@enduml

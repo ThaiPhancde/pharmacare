@@ -1,0 +1,35 @@
+@startuml
+title Sequence Diagram: Create Employee Account
+actor "Admin" as admin
+participant "User Management UI" as ui
+participant "User API" as api
+database "Users Collection" as db
+
+admin -> ui: Nhập Email, Tên, Vai trò
+admin -> ui: Nhấn "Tạo tài khoản"
+activate ui
+
+ui -> api: POST /api/users
+activate api
+
+api -> db: Check Email Exists
+activate db
+db --> api: Result
+deactivate db
+
+alt Email đã tồn tại
+    api --> ui: Error: "User already exists"
+else Email hợp lệ
+    api -> api: Hash Password (Default)
+    api -> db: Insert New User
+    activate db
+    db --> api: Success
+    deactivate db
+    
+    api --> ui: Success (User Created)
+    ui --> admin: Thông báo thành công
+end
+
+deactivate api
+deactivate ui
+@enduml

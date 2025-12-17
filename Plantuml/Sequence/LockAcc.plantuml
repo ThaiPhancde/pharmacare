@@ -1,0 +1,26 @@
+@startuml
+title Sequence Diagram: Lock/Deactivate Account
+actor "Admin" as admin
+participant "User List UI" as ui
+participant "User API" as api
+database "Users Collection" as db
+
+admin -> ui: Chọn User cần khóa
+admin -> ui: Nhấn "Khóa tài khoản"
+activate ui
+
+ui -> api: PATCH /api/users/{id}/status
+activate api
+
+api -> db: Update { is_active: false }
+activate db
+db --> api: Success
+deactivate db
+
+api -> api: Revoke Active Tokens (Optional)
+api --> ui: Success Message
+deactivate api
+
+ui --> admin: Cập nhật trạng thái "Đã khóa"
+deactivate ui
+@enduml

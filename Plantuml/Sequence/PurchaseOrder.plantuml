@@ -1,0 +1,38 @@
+@startuml
+title Sequence Diagram: Create Purchase Order (Import)
+actor "Warehouse Staff" as staff
+participant "Purchase UI" as ui
+participant "Stock API" as api
+database "MongoDB" as db
+
+staff -> ui: Chọn Nhà cung cấp
+staff -> ui: Thêm thuốc vào phiếu nhập
+loop Mỗi loại thuốc
+    staff -> ui: Nhập Batch ID, Hạn dùng, Số lượng, Giá vốn
+end
+staff -> ui: Nhấn "Nhập kho"
+activate ui
+
+ui -> api: POST /api/purchases
+activate api
+
+api -> db: Start Transaction
+activate db
+
+api -> db: Create PurchaseOrder Document
+loop Mỗi Item trong phiếu
+    api -> db: Upsert Stock (Find by MedID + BatchID)
+    note right: Nếu Batch chưa có -> Tạo mới\nNếu có rồi -> Cộng dồn số lượng
+    db --> api: Stock Updated
+end
+
+api -> db: Commit Transaction
+db --> api: Transaction Success
+deactivate db
+
+api --> ui: Return PO Details
+deactivate api
+
+ui --> staff: Thông báo "Nhập kho thành công"
+deactivate ui
+@enduml

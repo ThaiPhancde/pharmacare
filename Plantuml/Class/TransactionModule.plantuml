@@ -1,0 +1,56 @@
+@startuml
+title Detailed Class Diagram - Transaction Module
+
+class Customer {
+  +String id
+  +String fullName
+  +String phone
+  +String email
+  +Int loyaltyPoints
+  +addPoints(amount)
+  +getPurchaseHistory()
+}
+
+class Invoice {
+  +String id
+  +String invoiceNo
+  +Double subTotal
+  +Double discountAmount
+  +Double grandTotal
+  +String paymentMethod
+  +String status
+  +Date createdAt
+  +String createdBy
+  +calculateTotal()
+  +processPayment()
+}
+
+class InvoiceItem {
+  +String medicineId
+  +String medicineName
+  +String batchId
+  +Int quantity
+  +Double unitPrice
+  +Double total
+}
+
+class Discount {
+  +String code
+  +String type
+  +Double value
+  +Double minOrderValue
+  +isValid()
+}
+
+' Relationships
+Customer "1" -- "*" Invoice : places >
+Invoice *-- "*" InvoiceItem : contains >
+Invoice "0..1" --> "0..1" Discount : applies >
+
+note right of InvoiceItem
+  Lưu trữ giá bán tại thời điểm
+  giao dịch (Snapshot) để
+  tránh sai lệch khi giá gốc thay đổi
+end note
+
+@enduml

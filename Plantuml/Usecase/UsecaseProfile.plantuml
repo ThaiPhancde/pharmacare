@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+title Use Case: User Profile Management
+
+actor "Người dùng (Logged In)" as User
+rectangle "Quản lý Hồ sơ" {
+  usecase "Xem thông tin cá nhân" as UC_ViewProfile
+  usecase "Cập nhật hồ sơ" as UC_UpdateProfile
+  usecase "Đổi mật khẩu" as UC_ChangePass
+  usecase "Tải ảnh đại diện (Avatar)" as UC_UploadAvatar
+}
+
+User --> UC_ViewProfile
+User --> UC_UpdateProfile
+User --> UC_ChangePass
+
+UC_UpdateProfile <.. UC_UploadAvatar : <<extend>>
+@enduml

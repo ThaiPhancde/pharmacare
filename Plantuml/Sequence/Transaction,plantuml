@@ -1,0 +1,43 @@
+@startuml
+title Sequence Diagram: Checkout & Invoice Creation (Transaction)
+actor "Sales Staff" as staff
+participant "POS UI" as ui
+participant "Invoice API" as api
+database "MongoDB (Transaction)" as db
+
+staff -> ui: Nhấn "Thanh toán"
+activate ui
+
+ui -> api: POST /api/invoices (Items, Customer)
+activate api
+
+api -> db: Start Session & Transaction
+activate db
+
+group Stock Validation Loop (Kiểm tra từng thuốc)
+    api -> db: Query Stock (BatchID)
+    db --> api: Return Current Qty
+    
+    alt Stock < Requested Qty
+        api -> db: Abort Transaction
+        api --> ui: Error: "Stock changed/insufficient"
+        ui --> staff: Thông báo lỗi
+    else Stock OK
+        api -> db: Update Stock ($inc: -qty)
+    end
+end
+
+api -> db: Create Invoice Document
+api -> db: Update Customer Points (if any)
+
+api -> db: Commit Transaction
+db --> api: Transaction Committed
+deactivate db
+
+api --> ui: Return Invoice Detail
+deactivate api
+
+ui -> ui: Print Invoice
+ui --> staff: Thông báo "Thanh toán thành công"
+deactivate ui
+@enduml

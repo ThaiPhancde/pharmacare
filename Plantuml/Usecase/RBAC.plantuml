@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+title Use Case: HR & RBAC Management
+
+actor "Quản trị viên (Admin)" as Admin
+rectangle "Quản lý Nhân sự" {
+  usecase "Xem danh sách nhân viên" as UC_ListUser
+  usecase "Tạo tài khoản mới" as UC_CreateUser
+  usecase "Cập nhật thông tin" as UC_UpdateUser
+  usecase "Khóa/Mở khóa tài khoản" as UC_BlockUser
+  usecase "Phân vai trò (Role)" as UC_AssignRole
+}
+
+Admin --> UC_ListUser
+Admin --> UC_CreateUser
+Admin --> UC_UpdateUser
+Admin --> UC_BlockUser
+
+UC_CreateUser ..> UC_AssignRole : <<include>>
+UC_UpdateUser ..> UC_AssignRole : <<extend>>
+@enduml

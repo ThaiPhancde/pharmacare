@@ -1,0 +1,43 @@
+@startuml
+title Sequence Diagram: Login Process
+actor "User" as user
+participant "Login UI" as ui
+participant "Auth Controller" as api
+database "Users Collection" as db
+
+user -> ui: Nhập Email & Password
+user -> ui: Nhấn "Đăng nhập"
+activate ui
+
+ui -> api: POST /api/auth/login
+activate api
+
+api -> db: Find User by Email
+activate db
+db --> api: Return User Document
+deactivate db
+
+alt User không tồn tại
+    api --> ui: Error: "User not found"
+else User tồn tại
+    api -> api: Compare Password (Bcrypt)
+    
+    alt Password sai
+        api --> ui: Error: "Wrong password"
+    else Password đúng
+        api -> api: Check is_active status
+        
+        alt Account bị khóa
+            api --> ui: Error: "Account inactive"
+        else Account hoạt động
+            api -> api: Generate JWT Token
+            api --> ui: Return Token + User Info
+            ui -> ui: Save Token (Cookie/Storage)
+            ui --> user: Redirect to Dashboard
+        end
+    end
+end
+
+deactivate api
+deactivate ui
+@enduml

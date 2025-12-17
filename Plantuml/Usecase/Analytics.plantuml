@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+title Use Case: Analytics & Reporting
+
+actor "Quản trị viên (Admin)" as Admin
+rectangle "Báo cáo & Thống kê" {
+  usecase "Xem Dashboard tổng quan" as UC_Dashboard
+  usecase "Xem báo cáo doanh thu" as UC_Revenue
+  usecase "Xem hiệu suất sản phẩm" as UC_ProductPerf
+  usecase "Xuất dữ liệu (Excel)" as UC_Export
+}
+
+Admin --> UC_Dashboard
+Admin --> UC_Revenue
+Admin --> UC_ProductPerf
+Admin --> UC_Export
+
+UC_Revenue ..> UC_Export : <<extend>>
+UC_ProductPerf ..> UC_Export : <<extend>>
+@enduml

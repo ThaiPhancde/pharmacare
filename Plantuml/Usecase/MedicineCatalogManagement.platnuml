@@ -1,0 +1,22 @@
+@startuml
+left to right direction
+title Use Case: Medicine Catalog Management
+
+actor "Thủ kho (Warehouse)" as Staff
+rectangle "Quản lý Danh mục Thuốc" {
+  usecase "Thêm thuốc mới" as UC_AddMed
+  usecase "Cập nhật thông tin thuốc" as UC_EditMed
+  usecase "Ngừng kinh doanh (Ẩn)" as UC_HideMed
+  usecase "Tìm kiếm thuốc" as UC_Search
+  usecase "Xem chi tiết thuốc" as UC_ViewDetail
+}
+
+Staff --> UC_AddMed
+Staff --> UC_EditMed
+Staff --> UC_HideMed
+Staff --> UC_Search
+Staff --> UC_ViewDetail
+
+UC_EditMed ..> UC_Search : <<include>>
+UC_ViewDetail ..> UC_Search : <<include>>
+@enduml

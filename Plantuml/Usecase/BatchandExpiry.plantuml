@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+title Use Case: Batch & Expiry Management
+
+actor "Thủ kho (Warehouse)" as Staff
+rectangle "Quản lý Lô & Hạn dùng" {
+  usecase "Xem danh sách Lô hàng" as UC_ViewBatch
+  usecase "Cập nhật hạn sử dụng" as UC_UpdateExpiry
+  usecase "Truy vết lịch sử Lô" as UC_Trace
+  usecase "In mã vạch Lô" as UC_PrintBarcode
+}
+
+Staff --> UC_ViewBatch
+Staff --> UC_UpdateExpiry
+Staff --> UC_Trace
+Staff --> UC_PrintBarcode
+
+UC_UpdateExpiry ..> UC_ViewBatch : <<extend>>
+@enduml

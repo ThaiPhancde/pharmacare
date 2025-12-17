@@ -1,0 +1,62 @@
+@startuml
+title Detailed Class Diagram - Product & Inventory Module
+
+class Category {
+  +String id
+  +String name
+  +String description
+  +Boolean isActive
+  +getProducts()
+}
+
+class Unit {
+  +String id
+  +String name
+  +String code
+}
+
+class Medicine {
+  +String id
+  +String name
+  +String barCode
+  +String genericName
+  +Double retailPrice
+  +String description
+  +Boolean prescriptionRequired
+  +Int maxDailyQuantity
+  +String[] images
+  +getAvailableStock()
+  +updatePrice()
+}
+
+class Stock {
+  +String id
+  +String batchId
+  +Date expiryDate
+  +Int unitQuantity
+  +Double purchasePrice
+  +Double originalPrice
+  +isExpired()
+  +addStock()
+  +deductStock()
+}
+
+class Supplier {
+  +String id
+  +String name
+  +String contactInfo
+}
+
+' Relationships
+Category "1" -- "*" Medicine : categorizes >
+Unit "1" -- "*" Medicine : measures >
+Medicine "1" *-- "*" Stock : manages batches >
+Supplier "1" ..> "*" Stock : supplies >
+
+note right of Stock
+  Quản lý tồn kho theo
+  nguyên tắc FEFO
+  (Hết hạn trước - Xuất trước)
+end note
+
+@enduml

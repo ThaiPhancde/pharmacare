@@ -1,0 +1,67 @@
+@startuml
+left to right direction
+title General Use Case Diagram - Pharmacare System
+
+' Actors
+actor "Admin\n(Quản trị viên)" as Admin
+actor "Warehouse Staff\n(Thủ kho)" as Warehouse
+actor "Sales Staff\n(Nhân viên bán hàng)" as Sales
+
+rectangle "Hệ thống Pharmacare (Web App)" {
+
+    ' Group: Authentication (Shared)
+    usecase "Đăng nhập / Đăng xuất" as UC_Login
+    usecase "Quản lý hồ sơ cá nhân" as UC_Profile
+
+    ' Group: Sales / POS
+    package "Phân hệ Bán hàng (POS)" {
+        usecase "Tạo hóa đơn & Thanh toán" as UC_Invoice
+        usecase "Tra cứu sản phẩm" as UC_SearchProduct
+        usecase "Quản lý Khách hàng" as UC_Customer
+        usecase "Áp dụng Voucher" as UC_Voucher
+    }
+
+    ' Group: Warehouse
+    package "Phân hệ Kho hàng" {
+        usecase "Quản lý Danh mục thuốc" as UC_ManageMedicine
+        usecase "Nhập kho (Purchase)" as UC_Import
+        usecase "Quản lý Lô & Hạn dùng" as UC_Batch
+        usecase "Kiểm kê & Cảnh báo" as UC_InventoryCheck
+    }
+
+    ' Group: Admin / Management
+    package "Phân hệ Quản trị" {
+        usecase "Quản lý Nhân sự" as UC_ManageUser
+        usecase "Cấu hình hệ thống" as UC_Config
+        usecase "Xem Báo cáo thống kê" as UC_Report
+    }
+}
+
+' Relationships
+' Shared
+Admin -- UC_Login
+Warehouse -- UC_Login
+Sales -- UC_Login
+
+Admin -- UC_Profile
+Warehouse -- UC_Profile
+Sales -- UC_Profile
+
+' Sales Logic
+Sales --> UC_Invoice
+Sales --> UC_SearchProduct
+Sales --> UC_Customer
+Sales --> UC_Voucher
+
+' Warehouse Logic
+Warehouse --> UC_ManageMedicine
+Warehouse --> UC_Import
+Warehouse --> UC_Batch
+Warehouse --> UC_InventoryCheck
+
+' Admin Logic
+Admin --> UC_ManageUser
+Admin --> UC_Config
+Admin --> UC_Report
+
+@enduml

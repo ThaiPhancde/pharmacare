@@ -1,0 +1,27 @@
+@startuml
+title Sequence Diagram: Add to Cart
+actor "Sales Staff" as staff
+participant "POS UI" as ui
+participant "Store State (Pinia)" as store
+
+staff -> ui: Chọn thuốc & Nhập số lượng
+activate ui
+
+ui -> store: Action: addToCart(product, qty)
+activate store
+
+store -> store: Check Available Stock
+alt Số lượng > Tồn kho
+    store --> ui: Error: "Insufficient Stock"
+    ui --> staff: Cảnh báo "Không đủ hàng"
+else Số lượng hợp lệ
+    store -> store: Update Cart List
+    store -> store: Recalculate Subtotal
+    store --> ui: Success
+    ui --> staff: Cập nhật giao diện giỏ hàng
+end
+
+deactivate store
+deactivate ui
+@enduml
+

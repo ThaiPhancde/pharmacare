@@ -1,0 +1,67 @@
+@startuml
+title Entity Relationship Diagram (ERD) - Pharmacare
+hide circle
+skinparam linetype ortho
+
+entity "Users" as user {
+  *_id : ObjectId <<PK>>
+  --
+  email : String
+  password : String
+  role : String
+}
+
+entity "Medicines" as medicine {
+  *_id : ObjectId <<PK>>
+  --
+  name : String
+  bar_code : String <<Unique>>
+  generic : String
+  *unit_id : ObjectId <<FK>>
+  *category_id : ObjectId <<FK>>
+}
+
+entity "Stocks" as stock {
+  *_id : ObjectId <<PK>>
+  --
+  *medicine : ObjectId <<FK>>
+  batch_id : String
+  expiry_date : Date
+  unit_quantity : Number
+}
+
+entity "Customers" as customer {
+  *_id : ObjectId <<PK>>
+  --
+  full_name : String
+  phone : String <<Index>>
+  medical_profile : Object
+}
+
+entity "Invoices" as invoice {
+  *_id : ObjectId <<PK>>
+  --
+  invoice_no : String
+  *customer : ObjectId <<FK>>
+  *created_by : ObjectId <<FK>>
+  created_at : Date
+  grand_total : Number
+}
+
+entity "InvoiceItems" as item <<Embedded>> {
+  --
+  *medicine : ObjectId <<FK>>
+  batch_id : String
+  quantity : Number
+  price : Number <<Snapshot>>
+}
+
+' Relationships
+medicine ||..|{ stock : "has inventory batches"
+user ||..|{ invoice : "creates"
+customer ||..|{ invoice : "places"
+invoice *--|{ item : "contains"
+item }|..|| medicine : "references"
+item }|..|| stock : "deducts from batch"
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+title Use Case: Customer Management at POS
+
+actor "Nhân viên Bán hàng" as Sales
+rectangle "Quản lý Khách hàng (POS)" {
+  usecase "Tra cứu Khách hàng" as UC_FindCustomer
+  usecase "Thêm nhanh Khách hàng (Quick Add)" as UC_AddCustomer
+  usecase "Xem lịch sử mua hàng" as UC_ViewHistory
+  usecase "Chọn khách hàng vào đơn" as UC_SelectCustomer
+}
+
+Sales --> UC_FindCustomer
+Sales --> UC_AddCustomer
+Sales --> UC_ViewHistory
+
+UC_FindCustomer ..> UC_SelectCustomer : <<include>>
+UC_AddCustomer ..> UC_SelectCustomer : <<include>>
+@enduml
+

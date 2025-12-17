@@ -1,0 +1,37 @@
+@startuml
+title Layered Architecture - Pharmacare (MVC Variant)
+
+package "Presentation Layer (View)" {
+    [Vue Pages] 
+    [Shadcn Components]
+    [Pinia Store]
+}
+
+package "Domain/Logic Layer (Controller)" {
+    [API Routes (/server/api)]
+    [Server Middleware]
+    [Auth Service]
+}
+
+package "Data Access Layer (Model)" {
+    [Mongoose Models]
+    [Data Schemas]
+}
+
+database "MongoDB"
+
+' Inter-layer communication
+[Vue Pages] --> [Pinia Store] : User Action
+[Pinia Store] --> [API Routes (/server/api)] : Fetch() / Axios
+[API Routes (/server/api)] --> [Server Middleware] : Validate Request
+[API Routes (/server/api)] --> [Auth Service] : Verify Token
+[API Routes (/server/api)] --> [Mongoose Models] : Query Data
+[Mongoose Models] --> [Data Schemas] : Enforce Rules
+[Mongoose Models] <--> [MongoDB] : Read / Write Documents
+
+note right of [API Routes (/server/api)]
+  Nitro Engine xử lý
+  logic nghiệp vụ
+end note
+
+@enduml

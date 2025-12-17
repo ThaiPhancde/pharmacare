@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+title Use Case: Purchase Order (Import)
+
+actor "Thủ kho (Warehouse)" as Staff
+rectangle "Quản lý Nhập kho" {
+  usecase "Tạo phiếu nhập mới" as UC_CreatePO
+  usecase "Chọn nhà cung cấp" as UC_SelectSupplier
+  usecase "Thêm thuốc vào phiếu" as UC_AddItem
+  usecase "Nhập thông tin Lô mới" as UC_InputBatch
+  usecase "Xác nhận nhập kho" as UC_Confirm
+}
+
+Staff --> UC_CreatePO
+Staff --> UC_Confirm
+
+UC_CreatePO ..> UC_SelectSupplier : <<include>>
+UC_CreatePO ..> UC_AddItem : <<include>>
+UC_AddItem ..> UC_InputBatch : <<include>>
+@enduml

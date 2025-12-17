@@ -1,0 +1,48 @@
+@startuml
+title General Class Diagram - Pharmacare System
+hide empty members
+
+class User {
+  +String uid
+  +String role
+  +Boolean isActive
+}
+
+class Customer {
+  +String phone
+  +String fullName
+  +Int loyaltyPoints
+}
+
+class Medicine {
+  +String name
+  +String barCode
+  +Double price
+}
+
+class Stock {
+  +String batchId
+  +Date expiryDate
+  +Int quantity
+}
+
+class Invoice {
+  +String invoiceNo
+  +Double totalAmount
+  +Date createdAt
+}
+
+class Discount {
+  +String code
+  +Double value
+  +Date endDate
+}
+
+' Relationships
+User "1" --> "*" Invoice : creates >
+Customer "1" --> "*" Invoice : places >
+Invoice "1" --> "0..1" Discount : applies >
+Medicine "1" *-- "*" Stock : has inventory >
+Invoice ..> Stock : updates quantity >
+
+@enduml

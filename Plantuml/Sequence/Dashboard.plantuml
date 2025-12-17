@@ -1,0 +1,28 @@
+@startuml
+title Sequence Diagram: View Dashboard Stats
+actor "Admin" as admin
+participant "Dashboard UI" as ui
+participant "Analytics API" as api
+database "MongoDB" as db
+
+admin -> ui: Truy cập Dashboard
+activate ui
+
+ui -> api: GET /api/dashboard/stats
+activate api
+
+par Truy vấn song song
+    api -> db: Count Total Orders
+    api -> db: Sum Today Revenue
+    api -> db: Count Low Stock Items
+    api -> db: Count New Customers
+end
+
+db --> api: Return Aggregated Data
+
+api --> ui: JSON { revenue, orders, alerts... }
+deactivate api
+
+ui --> admin: Hiển thị Biểu đồ & Thẻ chỉ số
+deactivate ui
+@enduml

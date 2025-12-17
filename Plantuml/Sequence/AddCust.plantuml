@@ -1,0 +1,33 @@
+@startuml
+title Sequence Diagram: Quick Add Customer (POS)
+actor "Sales Staff" as staff
+participant "POS UI (Modal)" as ui
+participant "Customer API" as api
+database "Customers Collection" as db
+
+staff -> ui: Nhấn "Thêm khách hàng"
+activate ui
+staff -> ui: Nhập Tên, SĐT, Địa chỉ
+staff -> ui: Nhấn "Lưu"
+
+ui -> api: POST /api/customers
+activate api
+
+api -> db: Check Phone Exists
+alt SĐT đã tồn tại
+    api --> ui: Error: "Customer exists"
+else SĐT hợp lệ
+    api -> db: Insert Customer
+    activate db
+    db --> api: Return New Customer ID
+    deactivate db
+    
+    api --> ui: Return Customer Object
+    deactivate api
+    
+    ui -> ui: Auto-select Customer for Cart
+    ui --> staff: Đóng Modal & Cập nhật đơn hàng
+end
+
+deactivate ui
+@enduml

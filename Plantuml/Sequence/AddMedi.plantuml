@@ -1,0 +1,37 @@
+@startuml
+title Sequence Diagram: Add New Medicine
+actor "Warehouse Staff" as staff
+participant "Medicine UI" as ui
+participant "Medicine API" as api
+database "MongoDB" as db
+
+staff -> ui: Nhập thông tin thuốc mới
+staff -> ui: Upload hình ảnh (nếu có)
+staff -> ui: Nhấn "Lưu"
+activate ui
+
+ui -> api: POST /api/medicines
+activate api
+
+api -> api: Validate Data (Check Duplicate Barcode)
+alt Dữ liệu hợp lệ
+    api -> db: Insert Medicine Document
+    activate db
+    db --> api: Return New Medicine ID
+    deactivate db
+    
+    api -> db: Insert Initial Stock (qty=0)
+    activate db
+    db --> api: Success
+    deactivate db
+    
+    api --> ui: Success Message
+    ui --> staff: Thông báo "Thêm thuốc thành công"
+else Lỗi Validation
+    api --> ui: Error Message
+    ui --> staff: Hiển thị lỗi
+end
+
+deactivate api
+deactivate ui
+@enduml

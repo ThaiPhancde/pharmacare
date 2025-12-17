@@ -1,0 +1,25 @@
+@startuml
+title Sequence Diagram: Auto Stock Alert Scan
+actor "System Cron / Timer" as cron
+participant "Alert Service" as service
+database "Stocks Collection" as db
+participant "Notification Store" as notif
+
+cron -> service: Trigger: Daily Scan
+activate service
+
+group Quét thuốc sắp hết hàng
+    service -> db: Query: unit_quantity <= min_stock
+    db --> service: List Low Stock Items
+    service -> notif: Create Alert: "Low Stock"
+end
+
+group Quét thuốc cận date
+    service -> db: Query: expiry_date <= (Today + 90 days)
+    db --> service: List Near Expiry Batches
+    service -> notif: Create Alert: "Expiring Soon"
+end
+
+service -> service: Log Scan Result
+deactivate service
+@enduml

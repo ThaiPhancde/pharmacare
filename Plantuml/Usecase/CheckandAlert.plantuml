@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+title Use Case: Inventory Check & Alerts
+
+actor "Thủ kho (Warehouse)" as Staff
+rectangle "Kiểm kê & Cảnh báo" {
+  usecase "Xem cảnh báo sắp hết hàng" as UC_LowStock
+  usecase "Xem cảnh báo cận date" as UC_NearExpiry
+  usecase "Thực hiện Kiểm kê" as UC_StockTake
+  usecase "Điều chỉnh tồn kho" as UC_Adjust
+}
+
+Staff --> UC_LowStock
+Staff --> UC_NearExpiry
+Staff --> UC_StockTake
+Staff --> UC_Adjust
+
+UC_Adjust ..> UC_StockTake : <<extend>>
+@enduml

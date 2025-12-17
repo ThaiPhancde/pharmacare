@@ -1,0 +1,28 @@
+@startuml
+title Deployment Diagram - Pharmacare System
+left to right direction
+
+node "Client Workstation" as Client {
+    component "Web Browser\n(Chrome/Edge)" as Browser
+}
+
+cloud "Cloud Infrastructure" {
+    node "Application Server\n(Nuxt 3 Runtime)" as AppServer {
+        component "Nitro Engine" as Backend
+        component "Vue Renderer" as Frontend
+    }
+    
+    database "Database Cluster\n(MongoDB Atlas)" as DBServer {
+        component "Pharmacare DB" as Mongo
+    }
+}
+
+Browser <--> AppServer : HTTPS (JSON/HTML)
+Backend --> Mongo : Mongoose Connection (TCP/IP)
+Frontend ..> Backend : Internal API Call
+
+note bottom of AppServer
+  Xử lý SSR và API
+  trong cùng một Instance
+end note
+@enduml

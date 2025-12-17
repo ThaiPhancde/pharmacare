@@ -1,0 +1,37 @@
+@startuml
+title Sequence Diagram: Apply Voucher
+actor "Sales Staff" as staff
+participant "POS UI" as ui
+participant "Voucher API" as api
+database "Discounts Collection" as db
+
+staff -> ui: Nhập mã Voucher
+staff -> ui: Nhấn "Áp dụng"
+activate ui
+
+ui -> api: POST /api/vouchers/validate
+activate api
+
+api -> db: Find Voucher by Code
+activate db
+db --> api: Return Voucher Doc
+deactivate db
+
+alt Voucher không tồn tại / Hết hạn
+    api --> ui: Error: "Invalid Voucher"
+else Voucher hợp lệ
+    api -> api: Check Min Order Value
+    
+    alt Không đủ điều kiện đơn hàng
+        api --> ui: Error: "Order value too low"
+    else Đủ điều kiện
+        api -> api: Calculate Discount Amount
+        api --> ui: Return Discount Value
+        ui -> ui: Update Grand Total
+        ui --> staff: Hiển thị số tiền giảm
+    end
+end
+
+deactivate api
+deactivate ui
+@enduml
