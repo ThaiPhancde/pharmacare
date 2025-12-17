@@ -1,49 +1,50 @@
+import process from 'node:process'
 import AutoImport from 'unplugin-auto-import/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
-// @ts-ignore
+// @ts-expect-error nuxt auto-imports defineNuxtConfig
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
   nitro: {
     preset: 'vercel',
     externals: {
-      inline: ['mongoose', 'bson', 'mongodb', 'mongodb-connection-string-url', '@mongodb-js/saslprep', 'kareem', 'mpath', 'mquery', 'ms', 'sift']
+      inline: ['mongoose', 'bson', 'mongodb', 'mongodb-connection-string-url', '@mongodb-js/saslprep', 'kareem', 'mpath', 'mquery', 'ms', 'sift'],
     },
     esbuild: {
       options: {
-        target: 'esnext'
-      }
-    }
+        target: 'esnext',
+      },
+    },
   },
 
   runtimeConfig: {
     // Các khóa bí mật chỉ có trên server-side
-    mongodbUri: process.env.MONGODB_URI || process.env.MONGO_URI || "",
-    jwtSecret: process.env.JWT_SECRET || "",
-    ghnToken: process.env.GHN_TOKEN || "",
-    ghnShopId: process.env.GHN_SHOP_ID || "",
-    geminiApiKey: process.env.GEMINI_API_KEY || "",
-    paypalClientId: process.env.PAYPAL_CLIENT_ID || "",
-    paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || "",
+    mongodbUri: process.env.MONGODB_URI || process.env.MONGO_URI || '',
+    jwtSecret: process.env.JWT_SECRET || '',
+    ghnToken: process.env.GHN_TOKEN || '',
+    ghnShopId: process.env.GHN_SHOP_ID || '',
+    geminiApiKey: process.env.GEMINI_API_KEY || '',
+    paypalClientId: process.env.PAYPAL_CLIENT_ID || '',
+    paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || '',
     // Các khóa trong public sẽ được hiển thị cả ở client-side
     public: {
-      appUrl: process.env.APP_URL || "http://localhost:3000",
-      paypalMode: process.env.PAYPAL_MODE || "sandbox", // 'sandbox' or 'live'
-    }
+      appUrl: process.env.APP_URL || 'http://localhost:3000',
+      paypalMode: process.env.PAYPAL_MODE || 'sandbox', // 'sandbox' or 'live'
+    },
   },
 
   modules: [
-    "@unocss/nuxt",
-    "shadcn-nuxt",
-    "@vueuse/nuxt",
-    "@nuxt/eslint",
-    "@nuxt/icon",
-    "@pinia/nuxt",
-    "@nuxtjs/color-mode",
-    "nuxtjs-naive-ui",
+    '@unocss/nuxt',
+    'shadcn-nuxt',
+    '@vueuse/nuxt',
+    '@nuxt/eslint',
+    '@nuxt/icon',
+    '@pinia/nuxt',
+    '@nuxtjs/color-mode',
+    'nuxtjs-naive-ui',
   ],
   postcss: {
     plugins: {
@@ -52,11 +53,10 @@ export default defineNuxtConfig({
     },
   },
 
-
-  css: ["@unocss/reset/tailwind.css"],
+  css: ['@unocss/reset/tailwind.css'],
 
   colorMode: {
-    classSuffix: "",
+    classSuffix: '',
   },
 
   features: {
@@ -72,15 +72,15 @@ export default defineNuxtConfig({
               'useDialog',
               'useMessage',
               'useNotification',
-              'useLoadingBar'
-            ]
-          }
-        ]
+              'useLoadingBar',
+            ],
+          },
+        ],
       }),
       Components({
-        resolvers: [NaiveUiResolver()]
-      })
-    ]
+        resolvers: [NaiveUiResolver()],
+      }),
+    ],
   },
   eslint: {
     config: {
@@ -89,18 +89,18 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/components": { redirect: "/components/accordion" },
-    "/settings": { redirect: "/settings/profile" },
+    '/components': { redirect: '/components/accordion' },
+    '/settings': { redirect: '/settings/profile' },
   },
 
   imports: {
-    dirs: ["./lib"],
+    dirs: ['./lib'],
   },
   ssr: false,
 
-  compatibilityDate: "2024-12-14",
+  compatibilityDate: '2024-12-14',
 
   build: {
-    transpile: ['@vuepic/vue-datepicker']
+    transpile: ['@vuepic/vue-datepicker'],
   },
-});
+})
