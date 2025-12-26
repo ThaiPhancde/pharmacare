@@ -1,52 +1,23 @@
 /**
  * Test Suite: Model Validation with Zod
- * Tests for medicine, customer, supplier model schemas
+ * Kiểm thử validation cho các model dữ liệu Medicine, Customer, Supplier
+ * 
+ * Mục đích: Đảm bảo các schema validation hoạt động đúng
+ * - Medicine Schema: Kiểm tra validation thuốc (tên, đơn vị, giá, danh mục...)
+ * - Customer Schema: Kiểm tra validation khách hàng (tên, thông tin liên hệ...)
+ * - Supplier Schema: Kiểm tra validation nhà cung cấp (tên, địa chỉ, số dư...)
+ * 
+ * Công nghệ: Vitest, TypeScript, Zod Schema Validation
  */
 import { describe, it, expect } from 'vitest'
-import { z } from 'zod'
 
-// Medicine Schema
-const medicineSchema = z.object({
-  id: z.string(),
-  barcode: z.string().optional(),
-  name: z.string().min(1, 'Medicine Name is required'),
-  unit: z.string().min(1, 'Unit is required'),
-  category: z.string().min(1, 'Category is required'),
-  supplier: z.string().min(1, 'Supplier is required'),
-  supplierPrice: z.coerce.number().min(0, 'Supplier Price must be positive'),
-  price: z.coerce.number().min(0, 'Price must be positive'),
-  status: z.boolean(),
-  prescription_required: z.boolean().optional().default(false),
-  max_quantity_per_day: z.coerce.number().min(0).optional().nullable(),
-})
-
-// Customer Schema
-const customerSchema = z.object({
-  customer_id: z.string().optional(),
-  full_name: z.string().min(1, 'Tên là bắt buộc'),
-  contact_info: z.object({
-    phone: z.string().optional(),
-    email: z.string().optional(),
-    address: z.string().optional(),
-  }).optional(),
-  notes: z.string().optional(),
-})
-
-// Supplier Schema
-const supplierSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  mail: z.string().optional(),
-  city: z.string().optional(),
-  balance: z.preprocess(
-    (val) => (val !== '' ? Number(val) : 0),
-    z.number().min(0, 'Balance must be positive').optional()
-  ),
-})
+// Import trực tiếp các schema từ project để test validation thực tế
+import { data as medicineSchema, form as medicineFormSchema } from '@/models/medicine'
+import { data as customerSchema, form as customerFormSchema } from '@/models/customer'
+import { data as supplierSchema, form as supplierFormSchema } from '@/models/supplier'
 
 describe('Medicine Schema Validation', () => {
-  it('TC027: should validate a complete medicine object', () => {
+  it('TC027: should validate a complete medicine object (data schema)', () => {
     const validMedicine = {
       id: 'med-001',
       name: 'Paracetamol',
@@ -62,9 +33,8 @@ describe('Medicine Schema Validation', () => {
     expect(result.success).toBe(true)
   })
 
-  it('TC028: should fail validation when name is empty', () => {
+  it('TC028: should fail validation when name is empty (form schema)', () => {
     const invalidMedicine = {
-      id: 'med-002',
       name: '',
       unit: 'Viên',
       category: 'Thuốc',
@@ -74,13 +44,12 @@ describe('Medicine Schema Validation', () => {
       status: true,
     }
     
-    const result = medicineSchema.safeParse(invalidMedicine)
+    const result = medicineFormSchema.safeParse(invalidMedicine)
     expect(result.success).toBe(false)
   })
 
-  it('TC029: should fail validation when price is negative', () => {
+  it('TC029: should fail validation when price is negative (form schema)', () => {
     const invalidMedicine = {
-      id: 'med-003',
       name: 'Test Medicine',
       unit: 'Viên',
       category: 'Thuốc',
@@ -90,13 +59,12 @@ describe('Medicine Schema Validation', () => {
       status: true,
     }
     
-    const result = medicineSchema.safeParse(invalidMedicine)
+    const result = medicineFormSchema.safeParse(invalidMedicine)
     expect(result.success).toBe(false)
   })
 
-  it('TC030: should coerce string numbers to numbers', () => {
+  it('TC030: should coerce string numbers to numbers (form schema)', () => {
     const medicine = {
-      id: 'med-004',
       name: 'Test Medicine',
       unit: 'Viên',
       category: 'Thuốc',
@@ -106,7 +74,7 @@ describe('Medicine Schema Validation', () => {
       status: true,
     }
     
-    const result = medicineSchema.safeParse(medicine)
+    const result = medicineFormSchema.safeParse(medicine)
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.price).toBe(10000)
@@ -115,7 +83,7 @@ describe('Medicine Schema Validation', () => {
 })
 
 describe('Customer Schema Validation', () => {
-  it('TC031: should validate a complete customer object', () => {
+  it('TC031: should validate a complete customer object (form schema)', () => {
     const validCustomer = {
       full_name: 'Nguyễn Văn A',
       contact_info: {
@@ -125,11 +93,11 @@ describe('Customer Schema Validation', () => {
       },
     }
     
-    const result = customerSchema.safeParse(validCustomer)
+    const result = customerFormSchema.safeParse(validCustomer)
     expect(result.success).toBe(true)
   })
 
-  it('TC032: should fail validation when full_name is empty', () => {
+  it('TC032: should fail validation when full_name is empty (form schema)', () => {
     const invalidCustomer = {
       full_name: '',
       contact_info: {
@@ -137,22 +105,22 @@ describe('Customer Schema Validation', () => {
       },
     }
     
-    const result = customerSchema.safeParse(invalidCustomer)
+    const result = customerFormSchema.safeParse(invalidCustomer)
     expect(result.success).toBe(false)
   })
 
-  it('TC033: should allow customer without contact_info', () => {
+  it('TC033: should allow customer without contact_info (form schema)', () => {
     const minimalCustomer = {
       full_name: 'Khách hàng Test',
     }
     
-    const result = customerSchema.safeParse(minimalCustomer)
+    const result = customerFormSchema.safeParse(minimalCustomer)
     expect(result.success).toBe(true)
   })
 })
 
 describe('Supplier Schema Validation', () => {
-  it('TC034: should validate a complete supplier object', () => {
+  it('TC034: should validate a complete supplier object (form schema)', () => {
     const validSupplier = {
       name: 'Công ty Dược phẩm ABC',
       address: '456 Đường XYZ',
@@ -162,27 +130,27 @@ describe('Supplier Schema Validation', () => {
       balance: 1000000,
     }
     
-    const result = supplierSchema.safeParse(validSupplier)
+    const result = supplierFormSchema.safeParse(validSupplier)
     expect(result.success).toBe(true)
   })
 
-  it('TC035: should fail validation when name is empty', () => {
+  it('TC035: should fail validation when name is empty (form schema)', () => {
     const invalidSupplier = {
       name: '',
       phone: '02812345678',
     }
     
-    const result = supplierSchema.safeParse(invalidSupplier)
+    const result = supplierFormSchema.safeParse(invalidSupplier)
     expect(result.success).toBe(false)
   })
 
-  it('TC036: should convert empty string balance to 0', () => {
+  it('TC036: should convert empty string balance to 0 (form schema)', () => {
     const supplier = {
       name: 'Test Supplier',
       balance: '',
     }
     
-    const result = supplierSchema.safeParse(supplier)
+    const result = supplierFormSchema.safeParse(supplier)
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.balance).toBe(0)

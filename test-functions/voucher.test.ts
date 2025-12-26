@@ -1,6 +1,18 @@
 /**
  * Test Suite: Voucher Management Functions
- * Tests for utils/voucher.ts functions
+ * Kiểm thử hệ thống quản lý voucher/khuyến mãi của PharmaCare
+ * 
+ * Mục đích: Đảm bảo các chức năng voucher hoạt động chính xác
+ * - createDefaultVoucherForm: Tạo form voucher với giá trị mặc định
+ * - normalizeNumber: Chuẩn hóa số (xử lý null, undefined, NaN)
+ * - serializeVoucherPayload: Serialize payload để gửi lên API
+ * 
+ * Các logic này tương ứng với:
+ * - components/voucher/VoucherForm.vue: Form tạo/sửa voucher
+ * - components/voucher/VoucherList.vue: Danh sách voucher
+ * - server/api/voucher/: API quản lý voucher
+ * 
+ * Công nghệ: Vitest, TypeScript
  */
 import { describe, it, expect } from 'vitest'
 

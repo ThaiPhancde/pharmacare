@@ -1,48 +1,23 @@
 /**
  * Test Suite: Authentication & Role-based Access Control
- * Tests for utils/auth.ts functions
+ * Kiểm thử các hàm xác thực và phân quyền trong utils/auth.ts
+ * 
+ * Mục đích: Đảm bảo hệ thống RBAC (Role-Based Access Control) hoạt động đúng
+ * - normalizeRole: Chuẩn hóa chuỗi role từ API/cookies
+ * - getAllowedPathsForRole: Lấy danh sách đường dẫn được phép theo vai trò
+ * - isRouteAllowed: Kiểm tra quyền truy cập route
+ * 
+ * Công nghệ: Vitest, TypeScript
  */
 import { describe, it, expect } from 'vitest'
 
-// Role-based access control configuration
-const ROLE_ALLOWED_PATHS: Record<string, string[]> = {
-  admin: ['*'],
-  sales: [
-    '/',
-    '/invoice',
-    '/customers',
-    '/medicine',
-    '/stock',
-    '/bank',
-    '/returns',
-    '/report',
-  ],
-  warehouse: [
-    '/',
-    '/suppliers',
-    '/medicine',
-    '/stock',
-    '/purchase',
-    '/bank',
-  ],
-}
-
-// Normalize role strings
-const normalizeRole = (role: string | undefined | null) => {
-  return (role || '').toLowerCase().trim()
-}
-
-const getAllowedPathsForRole = (role: string) => {
-  const normalized = normalizeRole(role)
-  return ROLE_ALLOWED_PATHS[normalized] || []
-}
-
-const isRouteAllowed = (role: string, path: string) => {
-  const normalized = normalizeRole(role)
-  if (normalized === 'admin') return true
-  const allowed = getAllowedPathsForRole(normalized)
-  return allowed.some(prefix => path === prefix || path.startsWith(prefix + '/'))
-}
+// Import trực tiếp từ project để test các hàm thực tế
+import { 
+  normalizeRole, 
+  getAllowedPathsForRole, 
+  isRouteAllowed,
+  ROLE_ALLOWED_PATHS 
+} from '@/utils/auth'
 
 describe('normalizeRole - Role Normalization', () => {
   it('TC006: should normalize uppercase role to lowercase', () => {

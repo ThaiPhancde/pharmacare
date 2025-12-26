@@ -1,6 +1,20 @@
 /**
  * Test Suite: Business Logic & Helper Functions
- * Additional tests for pharmacy management system
+ * Kiểm thử các logic nghiệp vụ quan trọng của hệ thống quản lý nhà thuốc PharmaCare
+ * 
+ * Mục đích: Đảm bảo các logic nghiệp vụ hoạt động chính xác
+ * - Medicine Expiry Check: Kiểm tra hạn sử dụng thuốc (expired, expiring-soon, valid)
+ * - Invoice Calculation: Tính toán hóa đơn (total, tax, grand total)
+ * - Stock Management: Quản lý tồn kho (low stock, out of stock, reorder)
+ * - Search & Filter: Tìm kiếm và lọc thuốc
+ * 
+ * Các logic này tương ứng với:
+ * - server/api/stock/expiring.ts: Kiểm tra thuốc sắp hết hạn
+ * - server/models/Stock.ts: Model tồn kho với expiry_date
+ * - server/models/Invoice.ts: Model hóa đơn
+ * - components/medicine/: Tìm kiếm thuốc
+ * 
+ * Công nghệ: Vitest, TypeScript
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 

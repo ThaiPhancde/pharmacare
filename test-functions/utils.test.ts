@@ -1,18 +1,16 @@
 /**
  * Test Suite: Utils Functions
- * Tests for utility functions in lib/utils.ts
+ * Kiểm thử các hàm tiện ích trong lib/utils.ts
+ * 
+ * Mục đích: Đảm bảo các utility functions hoạt động chính xác
+ * - formatVND: Định dạng số tiền theo chuẩn VND Việt Nam
+ * 
+ * Công nghệ: Vitest, TypeScript, Intl.NumberFormat
  */
 import { describe, it, expect } from 'vitest'
 
-// Test formatVND function
-const formatVND = (value: number) => {
-  if (!value) return "0 ₫";
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    minimumFractionDigits: 0,
-  }).format(value);
-}
+// Import trực tiếp từ project để test hàm thực tế
+import { formatVND } from '@/lib/utils'
 
 describe('formatVND - Currency Formatting', () => {
   it('TC001: should format positive number to VND currency', () => {

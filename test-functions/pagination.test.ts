@@ -1,6 +1,17 @@
 /**
  * Test Suite: Pagination Functions
- * Tests for composables/usePaginationData.ts logic
+ * Kiểm thử các logic phân trang dữ liệu dựa trên composables/usePaginationData.ts
+ * 
+ * Mục đích: Đảm bảo logic phân trang hoạt động chính xác
+ * - calculateTotalPages: Tính tổng số trang
+ * - calculateStt: Tính số thứ tự item trong trang
+ * - isValidPage: Kiểm tra trang hợp lệ
+ * - getPageRange: Tạo range các trang hiển thị
+ * 
+ * Lưu ý: Các hàm này được extract từ usePaginationData để test độc lập
+ * Trong composable thực tế, logic tương tự được implement trong reactive object
+ * 
+ * Công nghệ: Vitest, TypeScript
  */
 import { describe, it, expect } from 'vitest'
 
