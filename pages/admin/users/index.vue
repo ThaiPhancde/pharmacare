@@ -1,12 +1,84 @@
 <script setup>
 import DataTable from "@/components/base/DataTable/index.vue";
 import { useToast } from "@/components/ui/toast";
-import { User, UserCog, UserX, Shield, ShieldCheck, Package } from "lucide-vue-next";
+import { User, UserCog, UserX, Shield, ShieldCheck, Package, UserPlus } from "lucide-vue-next";
 
 const { toast } = useToast();
 const roleFilter = ref("");
 const showEditModal = ref(false);
+const showAddModal = ref(false);
 const editingUser = ref(null);
+const addingUser = ref(false);
+
+// New user form
+const newUser = ref({
+  name: "",
+  email: "",
+  password: "",
+  role: "sales",
+  isActive: true,
+  phone: ""
+});
+
+// Reset new user form
+const resetNewUserForm = () => {
+  newUser.value = {
+    name: "",
+    email: "",
+    password: "",
+    role: "sales",
+    isActive: true,
+    phone: ""
+  };
+};
+
+// Open add user modal
+const openAddModal = () => {
+  resetNewUserForm();
+  showAddModal.value = true;
+};
+
+// Create new user
+const createUser = async () => {
+  // Validation
+  if (!newUser.value.name || !newUser.value.email || !newUser.value.password) {
+    toast({
+      title: "Lỗi",
+      description: "Vui lòng điền đầy đủ thông tin bắt buộc",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (newUser.value.password.length < 6) {
+    toast({
+      title: "Lỗi",
+      description: "Mật khẩu phải có ít nhất 6 ký tự",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  addingUser.value = true;
+  try {
+    await api.post("/api/admin/users", newUser.value);
+    toast({
+      title: "Thành công",
+      description: "Tạo người dùng mới thành công",
+    });
+    showAddModal.value = false;
+    resetNewUserForm();
+    fetchData();
+  } catch (error) {
+    toast({
+      title: "Lỗi",
+      description: error.message || "Không thể tạo người dùng",
+      variant: "destructive",
+    });
+  } finally {
+    addingUser.value = false;
+  }
+};
 
 const roleOptions = [
   { label: "All Roles", value: "" },
@@ -197,9 +269,16 @@ const columns = [
         <p class="text-gray-500">Manage system users and their permissions</p>
       </div>
 
-      <div class="flex items-center gap-2 p-2 rounded-lg shadow-sm">
-        <span class="text-sm font-medium">Filter by role:</span>
-        <n-select v-model:value="roleFilter" :options="roleOptions" style="width: 150px" class="text-primary" />
+      <div class="flex items-center gap-3">
+        <n-button type="primary" @click="openAddModal" class="!bg-green-600 hover:!bg-green-700">
+          <UserPlus class="w-4 h-4 mr-2" />
+          Add User
+        </n-button>
+        
+        <div class="flex items-center gap-2 p-2 rounded-lg shadow-sm">
+          <span class="text-sm font-medium">Filter by role:</span>
+          <n-select v-model:value="roleFilter" :options="roleOptions" style="width: 150px" class="text-primary" />
+        </div>
       </div>
     </div>
 
@@ -293,6 +372,57 @@ const columns = [
         <n-button @click="showEditModal = false">Cancel</n-button>
         <n-button type="primary" @click="updateUser"
           class="!bg-green-600 hover:!bg-green-700 text-white font-semibold">Update</n-button>
+      </template>
+    </n-modal>
+
+    <!-- Add User Modal -->
+    <n-modal v-model:show="showAddModal" preset="dialog" title="Thêm User Mới">
+      <div class="space-y-4">
+        <div>
+          <n-form-item label="Họ tên" required>
+            <n-input v-model:value="newUser.name" placeholder="Nhập họ tên" />
+          </n-form-item>
+        </div>
+        <div>
+          <n-form-item label="Email" required>
+            <n-input v-model:value="newUser.email" placeholder="Nhập email" type="email" />
+          </n-form-item>
+        </div>
+        <div>
+          <n-form-item label="Mật khẩu" required>
+            <n-input v-model:value="newUser.password" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" type="password" show-password-on="click" />
+          </n-form-item>
+        </div>
+        <div>
+          <n-form-item label="Số điện thoại">
+            <n-input v-model:value="newUser.phone" placeholder="Nhập số điện thoại" />
+          </n-form-item>
+        </div>
+        <div>
+          <n-form-item label="Vai trò" required>
+            <n-select v-model:value="newUser.role" :options="[
+              { label: 'Admin - Quản trị viên', value: 'admin' },
+              { label: 'Warehouse - Kho', value: 'warehouse' },
+              { label: 'Sales - Bán hàng', value: 'sales' }
+            ]" />
+          </n-form-item>
+        </div>
+        <div>
+          <n-form-item label="Trạng thái">
+            <n-switch v-model:value="newUser.isActive">
+              <template #checked>Active</template>
+              <template #unchecked>Inactive</template>
+            </n-switch>
+          </n-form-item>
+        </div>
+      </div>
+      <template #action>
+        <n-button @click="showAddModal = false" :disabled="addingUser">Hủy</n-button>
+        <n-button type="primary" @click="createUser" :loading="addingUser"
+          class="!bg-green-600 hover:!bg-green-700 text-white font-semibold">
+          <UserPlus class="w-4 h-4 mr-2" v-if="!addingUser" />
+          Tạo User
+        </n-button>
       </template>
     </n-modal>
   </div>
