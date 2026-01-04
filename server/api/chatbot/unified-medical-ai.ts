@@ -1,17 +1,15 @@
 /**
- * 🏥 UNIFIED MEDICAL AI v3.3 - WITH OFFLINE FALLBACK
+ * 🏥 UNIFIED MEDICAL AI v4.0 - OPTIMIZED FLOW
  * 
- * Tối ưu hóa:
- * ✅ Lazy load medicine context (chỉ load khi cần)
- * ✅ Smart search (10 thuốc thay vì 50)
- * ✅ Rút gọn prompt 90% (20K tokens thay vì 200K)
- * ✅ Rate limiting (8s giữa các requests) - INCREASED
- * ✅ Retry với exponential backoff
- * ✅ Giảm maxOutputTokens (1024)
- * ✅ Local responses cho greetings/thanks - NEW
- * ✅ Smart cache với TTL theo intent - NEW
- * ✅ Enhanced intent detection - NEW
- * ✅ OFFLINE AI FALLBACK - Trả lời thông minh khi bị rate limit - NEW v3.3
+ * LUỒNG HOẠT ĐỘNG MỚI:
+ * 1. Confidence QA >= 80% → Check medicine DB để verify → Trả lời từ QA + medicine info
+ * 2. Confidence QA < 80% → Gọi Gemini AI (tra mạng internet - kiến thức đã train)
+ * 3. AI bị quá tải/rate limit → Fallback về QA Database + offline patterns
+ * 
+ * DATA SOURCES:
+ * - ChatbotQA collection: Dữ liệu hỏi đáp đã chuẩn bị sẵn
+ * - Medicine collection: Thông tin thuốc trong kho
+ * - Gemini AI: Kiến thức y khoa đã được train (không real-time internet)
  */
 
 import { Buffer } from 'node:buffer'
@@ -21,13 +19,15 @@ import { MedicalConsultation, Medicine, Stock, ChatbotQA } from '~/server/models
 
 // ============== CONFIGURATION ==============
 const CONFIG = {
-  MIN_REQUEST_INTERVAL: 10000, // 10 giây - tăng thêm để tránh rate limit
-  MAX_RETRIES: 2, // Giảm xuống 2 để không chờ quá lâu
+  MIN_REQUEST_INTERVAL: 10000, // 10 giây
+  MAX_RETRIES: 2,
   MAX_HISTORY: 3,
+  QA_CONFIDENCE_THRESHOLD: 80, // Ngưỡng để dùng QA trực tiếp
+  QA_FALLBACK_THRESHOLD: 40, // Ngưỡng tối thiểu cho fallback
   CACHE_TTL: {
-    medicine_search: 10 * 60 * 1000,   // 10 phút cho tìm thuốc
-    general_query: 15 * 60 * 1000,     // 15 phút cho câu hỏi chung
-    medical_consultation: 5 * 60 * 1000, // 5 phút cho tư vấn y tế
+    medicine_search: 10 * 60 * 1000,
+    general_query: 15 * 60 * 1000,
+    medical_consultation: 5 * 60 * 1000,
   },
 }
 
@@ -201,6 +201,157 @@ async function searchQADatabase(message: string): Promise<{ found: boolean, answ
  */
 function escapeRegexString(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * 🔍 SEARCH MEDICINE DATABASE - Tìm thuốc trong collection medicines
+ * Trả về thông tin thuốc liên quan đến câu hỏi
+ */
+async function searchMedicineDatabase(message: string): Promise<{
+  found: boolean,
+  medicines: any[],
+  confidence: number
+}> {
+  try {
+    const msgLower = message.toLowerCase().trim()
+    
+    // Extract potential medicine names from message
+    const keywords = msgLower.split(/\s+/).filter(word => word.length > 2)
+    
+    if (keywords.length === 0) {
+      return { found: false, medicines: [], confidence: 0 }
+    }
+    
+    // Search in Medicine collection
+    const medicines = await Medicine.find({
+      $or: [
+        { name: { $regex: keywords.join('|'), $options: 'i' } },
+        { generic: { $regex: keywords.join('|'), $options: 'i' } },
+        { description: { $regex: keywords.join('|'), $options: 'i' } },
+      ]
+    }).limit(5).lean()
+    
+    if (medicines.length === 0) {
+      return { found: false, medicines: [], confidence: 0 }
+    }
+    
+    // Get stock info for each medicine - SỬA LẠI ĐÚNG FIELD NAME
+    const medicinesWithStock = await Promise.all(
+      medicines.map(async (med: any) => {
+        // Stock collection dùng field "medicine" (không phải medicine_id)
+        // và dùng "unit_quantity" (không phải quantity)
+        const stocks = await Stock.find({ medicine: med._id }).lean()
+        
+        // Tính tổng stock từ tất cả các batch
+        let totalStock = 0
+        let nearestExpiry: Date | null = null
+        let isExpired = false
+        
+        for (const stock of stocks) {
+          const stockData = stock as any
+          totalStock += stockData.unit_quantity || 0
+          
+          if (stockData.expiry_date) {
+            const expDate = new Date(stockData.expiry_date)
+            if (expDate < new Date()) {
+              isExpired = true
+            }
+            if (!nearestExpiry || expDate < nearestExpiry) {
+              nearestExpiry = expDate
+            }
+          }
+        }
+        
+        console.log(`[Medicine Search] ${med.name}: Found ${stocks.length} stock entries, total: ${totalStock}`)
+        
+        return {
+          id: med._id.toString(),
+          name: med.name,
+          generic: med.generic || 'N/A',
+          price: med.price || 0,
+          unit: med.unit || 'viên',
+          description: med.description || '',
+          usage: med.usage || '',
+          sideEffects: med.side_effects || '',
+          stockQuantity: totalStock,
+          expiryDate: nearestExpiry?.toLocaleDateString('vi-VN') || 'N/A',
+          isExpired,
+          status: isExpired ? 'Hết hạn' : (totalStock > 0 ? 'Còn hàng' : 'Hết hàng'),
+        }
+      })
+    )
+    
+    // Calculate confidence based on name match
+    let maxConfidence = 0
+    for (const med of medicinesWithStock) {
+      const medNameLower = med.name.toLowerCase()
+      for (const keyword of keywords) {
+        if (medNameLower.includes(keyword) || keyword.includes(medNameLower.split(' ')[0])) {
+          maxConfidence = Math.max(maxConfidence, 85)
+        }
+      }
+    }
+    
+    console.log(`[Medicine Search] Found ${medicinesWithStock.length} medicines (confidence: ${maxConfidence}%)`)
+    
+    return {
+      found: medicinesWithStock.length > 0,
+      medicines: medicinesWithStock,
+      confidence: maxConfidence
+    }
+  } catch (error) {
+    console.error('[Medicine Search] Error:', error)
+    return { found: false, medicines: [], confidence: 0 }
+  }
+}
+
+/**
+ * 🔗 VERIFY AND ENRICH QA ANSWER - Kiểm tra và bổ sung thông tin từ medicine DB
+ * Khi QA confidence >= 80%, verify với medicine collection
+ */
+async function verifyAndEnrichQAAnswer(
+  qaAnswer: string,
+  qaCategory: string,
+  message: string
+): Promise<{ enrichedAnswer: string, verified: boolean, medicineInfo: any[] }> {
+  try {
+    // Search for related medicines
+    const medicineResult = await searchMedicineDatabase(message)
+    
+    if (!medicineResult.found || medicineResult.medicines.length === 0) {
+      return {
+        enrichedAnswer: qaAnswer,
+        verified: true, // QA answer is valid even without medicine match
+        medicineInfo: []
+      }
+    }
+    
+    // Enrich answer with actual medicine info from database
+    let enrichedAnswer = qaAnswer
+    
+    // Add medicine info section
+    const medicineSection = medicineResult.medicines.map(med => {
+      const statusIcon = med.isExpired ? '⚠️' : (med.stockQuantity > 0 ? '✅' : '❌')
+      return `- **${med.name}**: ${med.price?.toLocaleString()}đ/${med.unit} | ${statusIcon} ${med.status} (Tồn: ${med.stockQuantity})`
+    }).join('\n')
+    
+    enrichedAnswer += `\n\n📦 **Thông tin thuốc tại Pharmacare:**\n${medicineSection}`
+    
+    console.log(`[QA Enrichment] Verified and enriched with ${medicineResult.medicines.length} medicines`)
+    
+    return {
+      enrichedAnswer,
+      verified: true,
+      medicineInfo: medicineResult.medicines
+    }
+  } catch (error) {
+    console.error('[QA Enrichment] Error:', error)
+    return {
+      enrichedAnswer: qaAnswer,
+      verified: false,
+      medicineInfo: []
+    }
+  }
 }
 
 /**
@@ -1025,23 +1176,47 @@ async function fetchMedicineContext(intent: string, message: string) {
         .lean()
     }
     else {
-      const popularIds = await Stock.find({ quantity: { $gt: 0 } })
-        .sort({ quantity: -1 })
+      // Sửa lại field name đúng với Stock schema
+      const popularIds = await Stock.find({ unit_quantity: { $gt: 0 } })
+        .sort({ unit_quantity: -1 })
         .limit(10)
-        .distinct('medicine_id')
+        .distinct('medicine')
 
       medicines = await Medicine.find({ _id: { $in: popularIds } }).lean()
     }
 
     const formatted = await Promise.all(
       medicines.map(async (med: any) => {
-        const stock = await Stock.findOne({ medicine_id: med._id }).lean()
+        // Sửa lại: dùng "medicine" thay vì "medicine_id", "unit_quantity" thay vì "quantity"
+        const stocks = await Stock.find({ medicine: med._id }).lean()
+        
+        // Tính tổng stock từ tất cả các batch
+        let totalStock = 0
+        let nearestExpiry: Date | null = null
+        let isExpired = false
+        let batchCode = 'N/A'
 
-        // Check if expired
-        const expiryDate = (stock as any)?.expiry_date ? new Date((stock as any).expiry_date) : null
-        const isExpired = expiryDate ? expiryDate < new Date() : false
-        const daysUntilExpiry = expiryDate
-          ? Math.ceil((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        for (const stock of stocks) {
+          const stockData = stock as any
+          totalStock += stockData.unit_quantity || 0
+          
+          if (!batchCode || batchCode === 'N/A') {
+            batchCode = stockData.batch_id || 'N/A'
+          }
+          
+          if (stockData.expiry_date) {
+            const expDate = new Date(stockData.expiry_date)
+            if (expDate < new Date()) {
+              isExpired = true
+            }
+            if (!nearestExpiry || expDate < nearestExpiry) {
+              nearestExpiry = expDate
+            }
+          }
+        }
+        
+        const daysUntilExpiry = nearestExpiry
+          ? Math.ceil((nearestExpiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
           : null
 
         return {
@@ -1050,12 +1225,12 @@ async function fetchMedicineContext(intent: string, message: string) {
           generic: med.generic || 'N/A',
           price: med.price || 0,
           unit: med.unit || 'viên',
-          stockQuantity: (stock as any)?.quantity || 0,
-          batchCode: (stock as any)?.batch_code || 'N/A',
-          expiryDate: expiryDate?.toLocaleDateString('vi-VN') || 'Không có thông tin',
+          stockQuantity: totalStock,
+          batchCode,
+          expiryDate: nearestExpiry?.toLocaleDateString('vi-VN') || 'Không có thông tin',
           isExpired,
           daysUntilExpiry,
-          status: isExpired ? 'Hết hạn' : ((stock as any)?.quantity || 0) > 0 ? 'Còn hàng' : 'Hết hàng',
+          status: isExpired ? 'Hết hạn' : (totalStock > 0 ? 'Còn hàng' : 'Hết hàng'),
         }
       }),
     )
@@ -1178,37 +1353,7 @@ export default defineEventHandler(async (event) => {
     const intent = detectIntent(message)
     console.warn(`[Unified AI] Intent: ${intent}`)
 
-    // 2.5 🆕 CHECK QA DATABASE FIRST - Tìm kiếm trong dữ liệu đã quản lý từ Admin
-    const qaResult = await searchQADatabase(message)
-    if (qaResult.found && qaResult.confidence >= 50) {
-      console.log(`[Unified AI] Using QA Database response (confidence: ${qaResult.confidence}%)`)
-      
-      // Format lại câu trả lời với thương hiệu
-      let formattedAnswer = qaResult.answer || ''
-      
-      // Thêm header nếu là tư vấn y tế
-      if (qaResult.category === 'medical' || qaResult.category === 'dosage' || qaResult.category === 'side-effects') {
-        formattedAnswer = `🏥 **Pharmacare - Tư vấn dược**\n\n${formattedAnswer}\n\n⚠️ _Đây là tư vấn sơ bộ, bạn nên gặp bác sĩ/dược sĩ để được tư vấn chi tiết hơn._`
-      }
-      
-      // Save to cache
-      const cacheKey = getCacheKey(message, intent)
-      saveToCache(cacheKey, formattedAnswer, intent)
-      
-      return {
-        success: true,
-        intent: 'qa_database',
-        response: formattedAnswer,
-        consultationStage: 'greeting',
-        sessionId,
-        timestamp: new Date().toISOString(),
-        qaMatch: true,
-        qaConfidence: qaResult.confidence,
-        qaCategory: qaResult.category,
-      }
-    }
-
-    // 3. Check smart cache
+    // 3. Check smart cache first
     const cacheKey = getCacheKey(message, intent)
     const cachedResponse = getFromCache(cacheKey, intent)
     if (cachedResponse) {
@@ -1223,10 +1368,92 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 4. Get session
+    // 4. SEARCH QA DATABASE - Tìm trong chatbot QA
+    const qaResult = await searchQADatabase(message)
+    console.log(`[Unified AI] QA Search result: confidence=${qaResult.confidence}%, found=${qaResult.found}`)
+
+    // 5. SEARCH MEDICINE DATABASE - Tìm thuốc liên quan
+    const medicineResult = await searchMedicineDatabase(message)
+    console.log(`[Unified AI] Medicine Search: found=${medicineResult.found}, count=${medicineResult.medicines.length}`)
+
+    // ============================================================
+    // LOGIC CHÍNH: QA >= 80% → Dùng QA + verify medicine
+    //              QA < 80% → Gọi Gemini AI
+    //              AI fail → Fallback về QA/Offline
+    // ============================================================
+
+    // 6. NẾU QA CONFIDENCE >= 80% → Trả lời từ QA + enrich với medicine info
+    if (qaResult.found && qaResult.confidence >= CONFIG.QA_CONFIDENCE_THRESHOLD) {
+      console.log(`[Unified AI] HIGH CONFIDENCE QA (${qaResult.confidence}%) - Using QA + Medicine verification`)
+      
+      // Verify và enrich với medicine database
+      const { enrichedAnswer, verified, medicineInfo } = await verifyAndEnrichQAAnswer(
+        qaResult.answer || '',
+        qaResult.category || 'general',
+        message
+      )
+      
+      // Format response
+      let finalResponse = `🏥 **Pharmacare - Tư vấn dược**\n\n${enrichedAnswer}`
+      
+      // Add disclaimer
+      if (qaResult.category === 'medical' || qaResult.category === 'dosage' || qaResult.category === 'side-effects') {
+        finalResponse += `\n\n⚠️ _Đây là tư vấn sơ bộ, bạn nên gặp bác sĩ/dược sĩ để được tư vấn chi tiết hơn._`
+      }
+      
+      // Save to cache
+      saveToCache(cacheKey, finalResponse, intent)
+      
+      return {
+        success: true,
+        intent: 'qa_verified',
+        response: finalResponse,
+        consultationStage: 'greeting',
+        sessionId,
+        timestamp: new Date().toISOString(),
+        source: 'qa_database',
+        qaConfidence: qaResult.confidence,
+        qaCategory: qaResult.category,
+        medicineVerified: verified,
+        medicineCount: medicineInfo.length,
+      }
+    }
+
+    // 7. NẾU CÓ THUỐC TRONG DATABASE VÀ INTENT LÀ MEDICINE_SEARCH
+    if (medicineResult.found && intent === 'medicine_search') {
+      console.log(`[Unified AI] Found medicines in database, returning medicine info`)
+      
+      const medList = medicineResult.medicines.map((m: any, i: number) => {
+        const statusIcon = m.isExpired ? '⚠️' : (m.stockQuantity > 0 ? '✅' : '❌')
+        return `${i + 1}. **${m.name}**
+   💰 Giá: ${m.price?.toLocaleString() || 'Liên hệ'}đ/${m.unit}
+   📦 Tồn: ${m.stockQuantity} ${m.unit} (${statusIcon} ${m.status})
+   📅 HSD: ${m.expiryDate}
+   ${m.description ? `📝 ${m.description.substring(0, 100)}...` : ''}`
+      }).join('\n\n')
+      
+      const response = `🔍 **Kết quả tìm kiếm tại Pharmacare:**\n\n${medList}\n\n💬 Bạn cần tư vấn thêm về thuốc nào?`
+      
+      saveToCache(cacheKey, response, intent)
+      
+      return {
+        success: true,
+        intent: 'medicine_database',
+        response,
+        sessionId,
+        timestamp: new Date().toISOString(),
+        source: 'medicine_database',
+        medicineCount: medicineResult.medicines.length,
+      }
+    }
+
+    // 8. QA CONFIDENCE < 80% → GỌI GEMINI AI
+    console.log(`[Unified AI] QA confidence (${qaResult.confidence}%) < ${CONFIG.QA_CONFIDENCE_THRESHOLD}% - Calling Gemini AI`)
+
+    // Get session
     const consultation = await getOrCreateSession(sessionId)
 
-    // 5. Rate limiting
+    // Rate limiting
     const now = Date.now()
     const timeSinceLastRequest = now - lastRequestTime
     if (timeSinceLastRequest < CONFIG.MIN_REQUEST_INTERVAL) {
@@ -1234,19 +1461,18 @@ export default defineEventHandler(async (event) => {
     }
     lastRequestTime = Date.now()
 
-    // 6. Fetch context
+    // Fetch context for AI
     const medicineContext = await fetchMedicineContext(intent, message)
 
-    // 6.5 🆕 TÌM KIẾM QA LIÊN QUAN để bổ sung vào prompt
+    // Build prompt - Include QA info if available (as reference)
     let qaContext = ''
-    if (qaResult.found && qaResult.confidence >= 30) {
-      qaContext = `\n\nTHÔNG TIN TỪ QA DATABASE (confidence: ${qaResult.confidence}%):\nCategory: ${qaResult.category}\nAnswer: ${qaResult.answer?.substring(0, 500) || 'N/A'}`
+    if (qaResult.found && qaResult.confidence >= CONFIG.QA_FALLBACK_THRESHOLD) {
+      qaContext = `\n\nTHÔNG TIN THAM KHẢO TỪ DATABASE (confidence: ${qaResult.confidence}%):\n${qaResult.answer?.substring(0, 300) || 'N/A'}`
     }
 
-    // 7. Build prompt với QA context
     const prompt = buildOptimizedPrompt(intent, message, consultation, medicineContext) + qaContext
 
-    // 8. Call Gemini với retry
+    // Call Gemini với retry
     const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyDVqknKtMNdW7EUoROduEZTddjQnNLOHCs'
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`
 
@@ -1314,10 +1540,28 @@ export default defineEventHandler(async (event) => {
 
     // Nếu không có response sau tất cả retries, dùng OFFLINE AI FALLBACK
     if (!response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-      console.warn('[Unified AI] No valid response, using OFFLINE AI FALLBACK')
+      console.warn('[Unified AI] No valid AI response, using FALLBACK')
 
-      // 🧠 SỬ DỤNG OFFLINE AI THAY VÌ MESSAGE ĐƠN GIẢN
-      const offlineResponse = await generateOfflineResponse(message, intent, medicineContext)
+      // 🧠 FALLBACK STRATEGY:
+      // 1. Nếu QA có kết quả (dù confidence thấp) → Dùng QA + enrich
+      // 2. Nếu không → Dùng offline patterns
+      
+      let offlineResponse: string
+      
+      if (qaResult.found && qaResult.confidence >= CONFIG.QA_FALLBACK_THRESHOLD) {
+        console.log(`[Unified AI] Fallback to QA Database (confidence: ${qaResult.confidence}%)`)
+        
+        const { enrichedAnswer } = await verifyAndEnrichQAAnswer(
+          qaResult.answer || '',
+          qaResult.category || 'general',
+          message
+        )
+        
+        offlineResponse = `🏥 **Pharmacare - Tư vấn dược**\n\n${enrichedAnswer}\n\n⚠️ _Đây là tư vấn sơ bộ, bạn nên gặp bác sĩ/dược sĩ để được tư vấn chi tiết hơn._`
+      } else {
+        console.log('[Unified AI] Using offline patterns (no QA match)')
+        offlineResponse = await generateOfflineResponse(message, intent, medicineContext)
+      }
 
       // Save to cache để không phải generate lại
       saveToCache(cacheKey, offlineResponse, intent)
@@ -1365,6 +1609,8 @@ export default defineEventHandler(async (event) => {
         : (consultation as any).consultationStage,
     })
 
+    console.log('[Unified AI] SUCCESS - Response from Gemini AI')
+
     return {
       success: true,
       intent,
@@ -1372,6 +1618,7 @@ export default defineEventHandler(async (event) => {
       consultationStage: (consultation as any).consultationStage,
       sessionId: (consultation as any).sessionId,
       timestamp: new Date().toISOString(),
+      source: 'gemini_ai', // Đánh dấu nguồn là AI
     }
   }
   catch (error: any) {
