@@ -16,6 +16,11 @@ const baseCustomerSchema = {
     chronic_conditions: z.array(z.string()).optional(),
     allergies: z.array(z.string()).optional(),
     current_medications: z.array(z.string()).optional(),
+    medical_notes: z.string().optional(),
+    blood_type: z.string().optional(),
+    pregnancy_status: z.boolean().optional(),
+    weight: z.number().nullable().optional(),
+    age: z.number().nullable().optional(),
   }).optional(),
   notes: z.string().optional(),
 };
@@ -57,6 +62,11 @@ export interface ICustomer extends Document {
     chronic_conditions?: string[];
     allergies?: string[];
     current_medications?: string[];
+    medical_notes?: string;
+    blood_type?: string;
+    pregnancy_status?: boolean;
+    weight?: number;
+    age?: number;
   };
   purchase_history?: Array<{
     date: string;
@@ -85,6 +95,11 @@ const CustomerSchema = new Schema<ICustomer>(
       chronic_conditions: [{ type: String }],
       allergies: [{ type: String }],
       current_medications: [{ type: String }],
+      medical_notes: { type: String, default: "" },
+      blood_type: { type: String, default: "" },
+      pregnancy_status: { type: Boolean, default: false },
+      weight: { type: Number, default: null },
+      age: { type: Number, default: null },
     },
     purchase_history: [
       {

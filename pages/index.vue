@@ -11,6 +11,7 @@ import {
 import { useToast } from "@/components/ui/toast/use-toast";
 import TopCustomers from "@/components/dashboard/TopCustomers.vue";
 import TopProducts from "@/components/dashboard/TopProducts.vue";
+import UserGrowth from "@/components/dashboard/UserGrowth.vue";
 import { downloadExcelReport, type WorkbookData } from "@/utils/excel-export";
 
 interface CardData {
@@ -243,6 +244,10 @@ watch([() => date.value.from, () => date.value.to], () => {
             </p>
           </CardContent>
         </Card>
+      </div>
+      <!-- User Growth Chart - Full Width -->
+      <div class="grid gap-4 lg:grid-cols-1 md:gap-8">
+        <UserGrowth />
       </div>
       <div class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 md:gap-8">
         <Card class="xl:col-span-2">

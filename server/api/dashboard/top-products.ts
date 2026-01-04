@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
       {
         $group: {
           _id: "$items.medicine",
-          medicineName: { $first: "$items.medicine_name" },
+          storedMedicineName: { $first: "$items.medicine_name" },
           totalQuantitySold: { $sum: "$items.quantity" },
           totalRevenue: { $sum: "$items.subtotal" },
           orderCount: { $sum: 1 }
@@ -40,14 +40,20 @@ export default defineEventHandler(async (event) => {
           medicineName: {
             $cond: {
               if: { $gt: [{ $size: "$medicineInfo" }, 0] },
-              then: { $arrayElemAt: ["$medicineInfo.medicine_name", 0] },
-              else: "$medicineName"
+              then: { $arrayElemAt: ["$medicineInfo.name", 0] },
+              else: {
+                $cond: {
+                  if: { $and: [{ $ne: ["$storedMedicineName", null] }, { $ne: ["$storedMedicineName", ""] }] },
+                  then: "$storedMedicineName",
+                  else: "Unknown Product"
+                }
+              }
             }
           },
           totalQuantitySold: 1,
           totalRevenue: 1,
           orderCount: 1,
-          category: { $arrayElemAt: ["$medicineInfo.category", 0] }
+          category: { $arrayElemAt: ["$medicineInfo.category_id", 0] }
         }
       }
     ]);

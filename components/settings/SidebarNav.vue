@@ -10,10 +10,6 @@ const route = useRoute()
 
 const sidebarNavItems: Item[] = [
   {
-    title: 'Profile',
-    href: '/settings/profile',
-  },
-  {
     title: 'Account',
     href: '/settings/account',
   },

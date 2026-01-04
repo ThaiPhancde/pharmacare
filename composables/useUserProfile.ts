@@ -12,23 +12,31 @@ interface UserProfile {
   dob?: string
   language?: string
   bio?: string
+  address?: string
   createdAt: string
   updatedAt: string
 }
 
 export function useUserProfile() {
   const userProfile = useState<UserProfile | null>('userProfile', () => null)
-  const loading = ref(false)
+  const loading = useState<boolean>('userProfileLoading', () => false)
+  const hasFetched = useState<boolean>('userProfileFetched', () => false)
   const api = useApi()
 
   // Lấy thông tin profile
-  async function fetchProfile() {
+  async function fetchProfile(force = false) {
+    // Nếu đã fetch và không force thì bỏ qua
+    if (hasFetched.value && !force && userProfile.value) {
+      return userProfile.value
+    }
+    
     loading.value = true
     try {
       const response = await api.get<UserProfile>('/api/user/profile')
 
       if (response.status) {
         userProfile.value = response.data
+        hasFetched.value = true
         return response.data
       }
       else {
@@ -41,6 +49,11 @@ export function useUserProfile() {
     finally {
       loading.value = false
     }
+  }
+  
+  // Reset state (gọi khi cần refresh)
+  function resetState() {
+    hasFetched.value = false
   }
 
   // Cập nhật profile
@@ -122,9 +135,11 @@ export function useUserProfile() {
   return {
     userProfile,
     loading,
+    hasFetched,
     fetchProfile,
     updateProfile,
     uploadAvatar,
     changePassword,
+    resetState,
   }
 }

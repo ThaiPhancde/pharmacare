@@ -67,8 +67,8 @@ function handleLegendItemClick(d: BulletLegendItemInterface, i: number) {
         <defs>
           <linearGradient v-for="(color, i) in colors" :id="`color-${i}`" :key="i" x1="0" y1="0" x2="0" y2="1">
             <template v-if="showGradiant">
-              <stop offset="5%" :stop-color="color" stop-opacity="0.4" />
-              <stop offset="95%" :stop-color="color" stop-opacity="0" />
+              <stop offset="5%" :stop-color="color" stop-opacity="0.7" />
+              <stop offset="95%" :stop-color="color" stop-opacity="0.1" />
             </template>
             <template v-else>
               <stop offset="0%" :stop-color="color" />

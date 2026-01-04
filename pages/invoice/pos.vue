@@ -156,6 +156,16 @@
         </div>
       </n-card>
 
+      <!-- Medical Profile AI Warning -->
+      <MedicalProfileWarning
+        v-if="medicalAnalysis?.analyzed"
+        :has-warnings="medicalAnalysis?.hasWarnings"
+        :has-profile="medicalAnalysis?.hasProfile"
+        :warnings="medicalAnalysis?.warnings || []"
+        :recommendations="medicalAnalysis?.recommendations || []"
+        :medical-profile="medicalAnalysis?.medicalProfile"
+      />
+
       <!-- Cart items -->
       <n-card title="Cart" size="small" class="flex-shrink-0 min-h-[300px] max-h-[400px] flex flex-col shadow-sm">
         <div class="flex-1 overflow-y-auto min-h-[250px] pr-1">
@@ -550,6 +560,18 @@
         </div>
       </template>
     </n-modal>
+
+    <!-- Medication Guide Dialog - Shows after payment -->
+    <MedicationGuideDialog
+      v-model:show="showMedicationGuide"
+      :customer-name="medicationGuideData.customerName"
+      :has-profile="medicationGuideData.hasProfile"
+      :medical-profile="medicationGuideData.medicalProfile"
+      :usage-guides="medicationGuideData.usageGuides"
+      :warnings="medicationGuideData.warnings"
+      :recommendations="medicationGuideData.recommendations"
+      @close="onMedicationGuideClose"
+    />
   </div>
 </template>
 
@@ -560,6 +582,8 @@ import { useRoute } from 'vue-router';
 import { api } from '@/utils/api';
 import { Trash } from 'lucide-vue-next';
 import BarcodeScanner from '@/components/BarcodeScanner.vue';
+import MedicalProfileWarning from '@/components/medicine/MedicalProfileWarning.vue';
+import MedicationGuideDialog from '@/components/medicine/MedicationGuideDialog.vue';
 
 const message = useMessage();
 const dialog = useDialog();
@@ -576,6 +600,7 @@ const categories = ref([
 ]);
 const medicines = ref([]);
 const customers = ref([]);
+const customersData = ref<any[]>([]); // Store full customer data including medical profile
 const selectedCustomer = ref(null);
 const customerMode = ref<'select' | 'new'>('select');
 const newCustomerInfo = ref({
@@ -644,6 +669,131 @@ const momoQrCode = ref(null);
 const currentOrderId = ref(null);
 const momoPaymentStatus = ref('Pending');
 const momoLoading = ref(false);
+
+// Medical Profile AI Analysis
+const medicalAnalysis = ref({
+  analyzed: false,
+  hasWarnings: false,
+  hasProfile: false,
+  warnings: [] as string[],
+  recommendations: [] as string[],
+  medicalProfile: null as any,
+  usageGuides: [] as any[]
+});
+
+// Medication Guide Dialog (shows after payment)
+const showMedicationGuide = ref(false);
+const medicationGuideData = ref({
+  customerName: '',
+  hasProfile: false,
+  medicalProfile: null as any,
+  usageGuides: [] as any[],
+  warnings: [] as string[],
+  recommendations: [] as string[]
+});
+
+// Analyze medical profile when customer or cart changes
+const analyzeMedicalProfile = async (customerId: string | null) => {
+  if (!customerId || cart.value.length === 0) {
+    medicalAnalysis.value = {
+      analyzed: false,
+      hasWarnings: false,
+      hasProfile: false,
+      warnings: [],
+      recommendations: [],
+      medicalProfile: null,
+      usageGuides: []
+    };
+    return;
+  }
+
+  try {
+    const cartItems = cart.value.map(item => ({
+      medicine: item._id,
+      name: item.name
+    }));
+
+    const response = await api.post('/api/chatbot/medical-profile-analysis', {
+      customer_id: customerId,
+      cart_items: cartItems,
+      action: 'quick' // Quick analysis for POS checkout
+    });
+
+    if (response && response.status && response.data) {
+      medicalAnalysis.value = {
+        analyzed: true,
+        hasWarnings: response.data.has_warnings,
+        hasProfile: response.data.has_profile,
+        warnings: response.data.warnings || [],
+        recommendations: response.data.recommendations || [],
+        medicalProfile: response.data.medical_profile || null,
+        usageGuides: response.data.usageGuides || []
+      };
+
+      console.log('[POS] Medical analysis result:', medicalAnalysis.value);
+
+      // Show warning notification if has warnings
+      if (response.data.has_warnings) {
+        message.warning('⚠️ Medical warning for this customer. Please check before checkout.');
+      }
+    }
+  } catch (error) {
+    console.error('Medical profile analysis error:', error);
+    medicalAnalysis.value.analyzed = false;
+  }
+};
+
+// Get full medication guide after payment
+const getMedicationGuide = async (customerId: string | null, customerName: string) => {
+  try {
+    const cartItems = cart.value.map(item => ({
+      medicine: item._id,
+      name: item.name
+    }));
+
+    const response = await api.post('/api/chatbot/medical-profile-analysis', {
+      customer_id: customerId,
+      cart_items: cartItems,
+      action: 'full' // Full analysis with AI for usage guide
+    });
+
+    if (response && response.status && response.data) {
+      medicationGuideData.value = {
+        customerName: customerName,
+        hasProfile: response.data.has_profile,
+        medicalProfile: response.data.medical_profile || null,
+        usageGuides: response.data.usageGuides || [],
+        warnings: response.data.warnings || [],
+        recommendations: response.data.recommendations || []
+      };
+      showMedicationGuide.value = true;
+    }
+  } catch (error) {
+    console.error('Get medication guide error:', error);
+  }
+};
+
+// Close medication guide dialog
+const onMedicationGuideClose = () => {
+  showMedicationGuide.value = false;
+  medicationGuideData.value = {
+    customerName: '',
+    hasProfile: false,
+    medicalProfile: null,
+    usageGuides: [],
+    warnings: [],
+    recommendations: []
+  };
+};
+
+// Watch cart changes to trigger medical analysis
+watch(() => cart.value.length, async (newLength, oldLength) => {
+  console.log('[POS] Cart changed:', { newLength, oldLength, customer: selectedCustomer.value });
+  if (selectedCustomer.value && newLength > 0) {
+    // Run analysis when cart has items and customer is selected
+    await analyzeMedicalProfile(selectedCustomer.value);
+  }
+}, { immediate: false });
 
 // Format currency
 const formatCurrency = (value: number | string | undefined | null) => {
@@ -1461,11 +1611,50 @@ const proceedWithPayment = async () => {
 
     console.log("Creating POS invoice with data:", invoiceData);
 
+    // Store customer name before clearing cart
+    const currentCustomerName = selectedCustomer.value 
+      ? customers.value.find((c: any) => c.value === selectedCustomer.value)?.label || 'Khách hàng'
+      : newCustomerInfo.value.full_name || 'Khách hàng';
+    const currentCustomerId = selectedCustomer.value;
+    const currentCart = [...cart.value]; // Clone cart before clearing
+
     // Submit invoice to POS API endpoint
     const response = await api.post('/api/invoice/pos', invoiceData);
 
     if (response && response.status) {
       message.success('Transaction completed successfully');
+
+      // Show medication guide dialog after successful payment
+      if (currentCart.length > 0) {
+        // Get full medication guide with AI analysis
+        try {
+          const guideCartItems = currentCart.map(item => ({
+            medicine: item._id,
+            name: item.name
+          }));
+
+          const guideResponse = await api.post('/api/chatbot/medical-profile-analysis', {
+            customer_id: currentCustomerId,
+            cart_items: guideCartItems,
+            action: 'full'
+          });
+
+          if (guideResponse && guideResponse.status && guideResponse.data) {
+            medicationGuideData.value = {
+              customerName: currentCustomerName,
+              hasProfile: guideResponse.data.has_profile,
+              medicalProfile: guideResponse.data.medical_profile || null,
+              usageGuides: guideResponse.data.usageGuides || [],
+              warnings: guideResponse.data.warnings || [],
+              recommendations: guideResponse.data.recommendations || []
+            };
+            showMedicationGuide.value = true;
+          }
+        } catch (guideError) {
+          console.error('Failed to get medication guide:', guideError);
+        }
+      }
+
       clearCart();
 
       // Reload medicine data to reflect updated stock quantities in the database
@@ -1488,6 +1677,7 @@ const proceedWithPayment = async () => {
 
     // Extract error message from response if available
     let errorMessage = 'Failed to process payment';
+
 
     // Try to get error message from different possible locations
     if (error.response?.data?.error) {
@@ -1560,7 +1750,15 @@ const fetchCustomers = async () => {
   try {
     const response = await api.get('/api/customers', { params: { limit: 100 } });
     if (response && response.data) {
-      customers.value = response.data.map(item => ({ label: item.full_name || item.customer_id, value: item._id }));
+      // Store full customer data for medical profile access
+      customersData.value = response.data;
+      customers.value = response.data.map(item => ({ 
+        label: item.full_name || item.customer_id, 
+        value: item._id,
+        hasMedicalProfile: !!(item.medical_profile?.chronic_conditions?.length || 
+                             item.medical_profile?.allergies?.length || 
+                             item.medical_profile?.current_medications?.length)
+      }));
     }
   } catch (error) {
     console.error('Failed to fetch customers:', error);
@@ -1568,10 +1766,28 @@ const fetchCustomers = async () => {
 };
 
 // Handle customer selection
-const handleCustomerSelect = (value: string | null) => {
+const handleCustomerSelect = async (value: string | null) => {
+  console.log('[POS] Customer selected:', value, 'Cart items:', cart.value.length);
   if (value) {
     customerMode.value = 'select';
     clearNewCustomer();
+    
+    // Trigger medical profile analysis when customer is selected and cart has items
+    if (cart.value.length > 0) {
+      console.log('[POS] Triggering medical analysis for customer:', value);
+      await analyzeMedicalProfile(value);
+    }
+  } else {
+    // Clear medical analysis when customer is deselected
+    medicalAnalysis.value = {
+      analyzed: false,
+      hasWarnings: false,
+      hasProfile: false,
+      warnings: [],
+      recommendations: [],
+      medicalProfile: null,
+      usageGuides: []
+    };
   }
 };
 

@@ -111,6 +111,11 @@ const editForm = ref({
     chronic_conditions: [] as string[],
     allergies: [] as string[],
     current_medications: [] as string[],
+    medical_notes: '', // Free-text notes for AI analysis
+    blood_type: '',
+    pregnancy_status: false,
+    weight: null as number | null,
+    age: null as number | null,
   },
   notes: '',
 });
@@ -123,7 +128,8 @@ const handleViewDetail = (item: Customer) => {
     console.log("Medical profile:", {
       chronic_conditions: item.medical_profile.chronic_conditions,
       allergies: item.medical_profile.allergies,
-      current_medications: item.medical_profile.current_medications
+      current_medications: item.medical_profile.current_medications,
+      medical_notes: item.medical_profile.medical_notes
     });
   } else {
     console.log("Medical profile is undefined");
@@ -146,6 +152,11 @@ const handleEdit = (item: Customer) => {
       chronic_conditions: item.medical_profile?.chronic_conditions || [],
       allergies: item.medical_profile?.allergies || [],
       current_medications: item.medical_profile?.current_medications || [],
+      medical_notes: item.medical_profile?.medical_notes || '',
+      blood_type: item.medical_profile?.blood_type || '',
+      pregnancy_status: item.medical_profile?.pregnancy_status || false,
+      weight: item.medical_profile?.weight || null,
+      age: item.medical_profile?.age || null,
     },
     notes: item.notes || '',
   };
@@ -325,6 +336,11 @@ const handleDelete = async (item: Customer) => {
           </div>
         </div>
         
+        <div v-if="selectedCustomer.medical_profile?.medical_notes">
+          <h3 class="font-semibold mb-1">Medical Notes (AI Analysis):</h3>
+          <p class="bg-blue-50 p-3 rounded-lg text-blue-800">{{ selectedCustomer.medical_profile.medical_notes }}</p>
+        </div>
+        
         <div v-if="selectedCustomer.notes">
           <h3 class="font-semibold mb-1">Notes:</h3>
           <p>{{ selectedCustomer.notes }}</p>
@@ -343,8 +359,8 @@ const handleDelete = async (item: Customer) => {
     </n-modal>
     
     <!-- Edit Customer Modal -->
-    <n-modal v-model:show="showEdit" preset="card" style="width: 600px" title="Edit Customer">
-      <div v-if="selectedCustomer" class="grid gap-4 py-4">
+    <n-modal v-model:show="showEdit" preset="card" style="width: 700px" title="Edit Customer">
+      <div v-if="selectedCustomer" class="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
         <n-form>
           <n-form-item label="Full Name">
             <n-input v-model:value="editForm.full_name" placeholder="Enter full name" />
@@ -361,31 +377,78 @@ const handleDelete = async (item: Customer) => {
             <n-input v-model:value="editForm.contact_info.address" placeholder="Enter address" />
           </n-form-item>
           
-          <h3 class="font-semibold mt-4 mb-2">Medical Profile</h3>
+          <h3 class="font-semibold mt-4 mb-2 text-blue-600">🏥 Medical Profile (AI Analysis)</h3>
+          <div class="bg-blue-50 p-4 rounded-lg mb-4">
+            <p class="text-sm text-blue-700 mb-2">
+              💡 This medical information will be analyzed by AI when the customer purchases medicine to provide warnings and appropriate usage guidelines.
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <n-form-item label="Age">
+              <n-input-number v-model:value="editForm.medical_profile.age" placeholder="Age" :min="0" :max="150" class="w-full" />
+            </n-form-item>
+            <n-form-item label="Weight (kg)">
+              <n-input-number v-model:value="editForm.medical_profile.weight" placeholder="Weight" :min="0" :max="300" class="w-full" />
+            </n-form-item>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <n-form-item label="Blood Type">
+              <n-select 
+                v-model:value="editForm.medical_profile.blood_type" 
+                placeholder="Select blood type"
+                :options="[
+                  { label: 'A', value: 'A' },
+                  { label: 'B', value: 'B' },
+                  { label: 'AB', value: 'AB' },
+                  { label: 'O', value: 'O' },
+                  { label: 'Unknown', value: '' }
+                ]"
+                clearable
+              />
+            </n-form-item>
+            <n-form-item label="Pregnant">
+              <n-switch v-model:value="editForm.medical_profile.pregnancy_status">
+                <template #checked>Yes</template>
+                <template #unchecked>No</template>
+              </n-switch>
+            </n-form-item>
+          </div>
+          
           <n-form-item label="Chronic Conditions (comma separated)">
-            <n-input 
-              :value="editForm.medical_profile.chronic_conditions.join(', ')"
-              @update:value="(v: string) => editForm.medical_profile.chronic_conditions = v.split(',').map(s => s.trim()).filter(s => s)"
-              placeholder="e.g., Diabetes, Hypertension"
-            />
+            <n-dynamic-tags v-model:value="editForm.medical_profile.chronic_conditions" />
+            <template #feedback>
+              <span class="text-gray-500 text-xs">E.g.: Diabetes, Hypertension, Heart Disease, Liver Disease, Kidney Disease...</span>
+            </template>
           </n-form-item>
-          <n-form-item label="Allergies (comma separated)">
-            <n-input 
-              :value="editForm.medical_profile.allergies.join(', ')"
-              @update:value="(v: string) => editForm.medical_profile.allergies = v.split(',').map(s => s.trim()).filter(s => s)"
-              placeholder="e.g., Penicillin, Aspirin"
-            />
+          <n-form-item label="Drug Allergies (comma separated)">
+            <n-dynamic-tags v-model:value="editForm.medical_profile.allergies" />
+            <template #feedback>
+              <span class="text-gray-500 text-xs">E.g.: Penicillin, Aspirin, Sulfa, Codeine...</span>
+            </template>
           </n-form-item>
           <n-form-item label="Current Medications (comma separated)">
-            <n-input 
-              :value="editForm.medical_profile.current_medications.join(', ')"
-              @update:value="(v: string) => editForm.medical_profile.current_medications = v.split(',').map(s => s.trim()).filter(s => s)"
-              placeholder="e.g., Metformin, Lisinopril"
-            />
+            <n-dynamic-tags v-model:value="editForm.medical_profile.current_medications" />
+            <template #feedback>
+              <span class="text-gray-500 text-xs">E.g.: Metformin, Lisinopril, Warfarin...</span>
+            </template>
           </n-form-item>
           
-          <n-form-item label="Notes">
-            <n-input type="textarea" v-model:value="editForm.notes" placeholder="Additional notes" />
+          <n-form-item label="📝 Detailed Medical Notes (AI will analyze)">
+            <n-input 
+              type="textarea" 
+              v-model:value="editForm.medical_profile.medical_notes" 
+              placeholder="Enter detailed medical information for AI analysis. E.g.: Patient has type 2 diabetes for 5 years, taking Metformin 500mg twice daily, unstable blood pressure, allergic to penicillin antibiotics..."
+              :rows="4"
+            />
+            <template #feedback>
+              <span class="text-blue-500 text-xs">AI will automatically analyze this content to provide warnings when the customer purchases medicine</span>
+            </template>
+          </n-form-item>
+          
+          <n-form-item label="Other Notes">
+            <n-input type="textarea" v-model:value="editForm.notes" placeholder="Additional notes (non-medical)" :rows="2" />
           </n-form-item>
         </n-form>
       </div>

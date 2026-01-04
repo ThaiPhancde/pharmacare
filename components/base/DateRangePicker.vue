@@ -10,7 +10,9 @@ const df = new DateFormatter('en-US', {
   dateStyle: 'medium',
 })
 
-const calendarDate = new CalendarDate(2025, 0, 20)
+// Use current date dynamically
+const now = new Date()
+const calendarDate = new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
 
 const value = ref({
   start: calendarDate,

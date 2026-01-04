@@ -15,6 +15,11 @@ export const data = z.object({
     chronic_conditions: z.array(z.string()).optional(),
     allergies: z.array(z.string()).optional(),
     current_medications: z.array(z.string()).optional(),
+    medical_notes: z.string().optional(), // Free-text notes for AI analysis
+    blood_type: z.string().optional(),
+    pregnancy_status: z.boolean().optional(),
+    weight: z.number().optional(),
+    age: z.number().optional(),
   }).optional(),
   purchase_history: z.array(
     z.object({
@@ -45,6 +50,11 @@ export const form = z.object({
     chronic_conditions: z.array(z.string()).optional(),
     allergies: z.array(z.string()).optional(),
     current_medications: z.array(z.string()).optional(),
+    medical_notes: z.string().optional(), // Free-text notes for AI analysis
+    blood_type: z.string().optional(),
+    pregnancy_status: z.boolean().optional(),
+    weight: z.number().optional(),
+    age: z.number().optional(),
   }).optional(),
   notes: z.string().optional(),
 });

@@ -156,22 +156,29 @@ const paymentOptions = [
 
 const medicineMap = ref(new Map()); // Store medicine details for quick lookup
 
-// Fetch medicines using usePaginationData
-const {
-  data: medicines,
-  loading: loadingMedicines,
-  fetchData: fetchMedicines,
-} = usePaginationData(async ({ page, limit }) => {
-  const res = await fetch(
-    "/api/medicine?" +
-    new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    })
-  );
-  const data = await res.json();
-  return data.data;
-});
+// Fetch all medicines directly (not using pagination to ensure we get all)
+const fetchAllMedicines = async () => {
+  try {
+    const res = await fetch("/api/medicine?limit=500"); // Get all medicines
+    const data = await res.json();
+    if (data.data) {
+      // Update options for select
+      medicineOptions.value = data.data.map((medicine) => ({
+        label: medicine.name,
+        value: medicine._id,
+      }));
+
+      // Store full medicine data for lookup
+      medicineMap.value = new Map(
+        data.data.map((medicine) => [medicine._id, medicine])
+      );
+      
+      console.log('[Purchase] Loaded medicines:', data.data.length);
+    }
+  } catch (error) {
+    console.error('Error fetching medicines:', error);
+  }
+};
 
 // Fetch customers/suppliers using usePaginationData
 const {
@@ -185,26 +192,7 @@ const {
   return res.data;
 });
 
-// Watch for changes in medicines and customers to update options
-watch(
-  medicines,
-  (newMedicines) => {
-    if (newMedicines) {
-      // Update options for select
-      medicineOptions.value = newMedicines.map((medicine) => ({
-        label: medicine.name,
-        value: medicine._id,
-      }));
-
-      // Store full medicine data for lookup
-      medicineMap.value = new Map(
-        newMedicines.map((medicine) => [medicine._id, medicine])
-      );
-    }
-  },
-  { immediate: true }
-);
-
+// Watch for changes in customers to update options
 watch(
   customers,
   (newCustomers) => {
@@ -258,7 +246,7 @@ onMounted(async () => {
   if (!isMounted.value) return;
   try {
     await Promise.all([
-      fetchMedicines({ page: 1, limit: 100 }),
+      fetchAllMedicines(),
       fetchCustomers({ page: 1, limit: 100 }),
       generateInvoiceNo(),
     ]);

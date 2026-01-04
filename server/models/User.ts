@@ -10,6 +10,7 @@ interface IUser extends Document {
   avatar?: string;
   username?: string;
   phone?: string;
+  address?: string;
   dob?: Date;
   language?: string;
   bio?: string;
@@ -44,6 +45,7 @@ const UserSchema = new Schema<IUser>({
   avatar: { type: String, default: '' },
   username: { type: String, default: '' },
   phone: { type: String, default: '' },
+  address: { type: String, default: '' },
   dob: { type: Date },
   language: { type: String, default: 'en' },
   bio: { type: String, default: '' },
